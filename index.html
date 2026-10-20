@@ -373,6 +373,23 @@ function unequip(slot){if(!state.equipped[slot])return;delete state.equipped[slo
 .vm-page .vm-rank:first-of-type{color:#ffda8d}
 @media(max-width:650px){.vm-page .vm-hero-banner{padding:16px;gap:10px;min-height:110px}.vm-page .vm-hero-mark{font-size:30px;padding:6px 9px}.vm-page .vm-hero-banner>.vm-pill{display:none}.vm-page .vm-summary>div{padding:10px 8px}.vm-page .vm-summary b{font-size:20px}.vm-page .vm-summary span{font-size:10px}.vm-page .vm-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.vm-page .vm-card h3{font-size:15px}.vm-page .vm-card-content{padding:9px}.vm-page .vm-art{height:130px}.vm-page .vm-card-top{font-size:8px}.vm-page .vm-card-rarity{font-size:8px}}
 .vm-simplified .vm-simple-heading{display:flex;align-items:center;gap:12px;padding:13px 17px;margin-bottom:12px;background:linear-gradient(90deg,#38271a,#18202a);border:1px solid #ad8147;border-radius:9px}.vm-simplified .vm-simple-heading span{font-size:31px;color:#eac17a}.vm-simplified .vm-simple-heading h1{font:700 27px Georgia,serif;color:#f6d28c;margin:0}.vm-simplified .vm-training{margin-bottom:16px}.vm-simplified .vm-cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.vm-simplified .vm-art.vm-real-art{height:clamp(145px,19vw,240px);margin:7px 7px 0;position:relative;overflow:hidden}.vm-simplified .vm-real-art img{width:100%;height:100%;object-fit:cover;display:block}.vm-simplified .vm-image-fallback{width:100%;height:100%;align-items:center;justify-content:center}.vm-simplified .vm-card-content{padding:10px 8px}.vm-simplified .vm-card h3{font-size:clamp(13px,1.5vw,17px)}.vm-simplified .vm-card-state{text-align:center;margin-top:9px;padding:7px 3px;border:1px solid #8f754a;border-radius:5px;background:#42341d;color:#f0cf8b;font-size:11px}.vm-simplified .vm-stats{font-size:10px}.vm-simplified .vm-stats span{padding:5px 4px}@media(max-width:850px){.vm-simplified .vm-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:520px){.vm-simplified .vm-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.vm-simplified .vm-art.vm-real-art{height:175px}.vm-simplified .vm-simple-heading h1{font-size:23px}}
+/* İki sütunlu MMORPG binek galerisi */
+.vm-page.vm-simplified{max-width:100%}
+.vm-page.vm-simplified .vm-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+.vm-page.vm-simplified .vm-card{background:linear-gradient(155deg,#34281c,#151e29 64%,#10141c);border:2px solid #8c6b3c;border-radius:10px;box-shadow:inset 0 0 0 1px #d5a35b40,0 9px 22px #0009}
+.vm-page.vm-simplified .vm-card:hover{border-color:#e7bd70;box-shadow:0 0 18px #d6a14a44}
+.vm-page.vm-simplified .vm-art.vm-real-art{height:clamp(200px,34vw,335px);margin:10px 10px 0;border:1px solid #ad844a;box-shadow:inset 0 0 30px #0009}
+.vm-page.vm-simplified .vm-real-art img{object-fit:cover;object-position:center 42%}
+.vm-page.vm-simplified .vm-card-content{padding:13px 15px 15px}
+.vm-page.vm-simplified .vm-card h3{font-size:20px;letter-spacing:.2px}
+.vm-page.vm-simplified .vm-stats{font-size:12px;gap:7px}
+.vm-page.vm-simplified .vm-stats span{padding:9px 10px;border:1px solid #675238;background:linear-gradient(90deg,#242a30,#141b24)}
+.vm-page.vm-simplified .vm-card-state{padding:9px;font-size:12px}
+.vm-page.vm-simplified .vm-simple-heading{border:2px solid #a27b46;box-shadow:inset 0 0 0 1px #e3c08144}
+.vm-page.vm-simplified .vm-training{border:2px solid #81633c;background:linear-gradient(145deg,#252c36,#111923);box-shadow:inset 0 0 0 1px #d6ac6440}
+.vm-page.vm-simplified .vm-train-card{padding:12px 14px}
+.vm-page.vm-simplified .vm-train-card.vm-train-selected{box-shadow:inset 4px 0 #ffc870,0 0 12px #f6bc4840}
+@media(max-width:520px){.vm-page.vm-simplified .vm-cards{gap:9px!important}.vm-page.vm-simplified .vm-art.vm-real-art{height:clamp(140px,43vw,230px);margin:6px 6px 0}.vm-page.vm-simplified .vm-card-content{padding:8px}.vm-page.vm-simplified .vm-card h3{font-size:15px}.vm-page.vm-simplified .vm-stats{font-size:10px;gap:4px}.vm-page.vm-simplified .vm-stats span{padding:5px}.vm-page.vm-simplified .vm-card-state{font-size:10px}}
 </style>
 <script id="valor-mount-system-v1">
 /* Yerel test verileri: gerçek çok oyunculu sıralama değildir. */
