@@ -302,4 +302,6 @@ function closeBagPopup(){const e=document.getElementById('valor-bag-popup');if(e
 function deleteInventoryItem(n){const it=state.inventory[n];if(!it)return;if(!confirm('“'+it.name+' +'+(it.plus||0)+'” eşyasını kalıcı olarak silmek istiyor musun?'))return;Object.keys(state.equipped||{}).forEach(function(slot){if(state.equipped[slot]&&state.equipped[slot].id===it.id)delete state.equipped[slot]});state.inventory.splice(n,1);selected=null;closeBagPopup();save();render();toast('Eşya silindi')}
 function equip(n){const it=state.inventory[n];if(!it||it.cls!==state.class||it.level>state.level)return toast('Bu eşyayı kuşanamazsın');state.equipped[it.slot]=it;save();closeBagPopup();render();toast(it.name+' kuşanıldı')}
 function unequipById(id){const slot=Object.keys(state.equipped||{}).find(function(k){return String(state.equipped[k]&&state.equipped[k].id)===String(id)});if(slot)delete state.equipped[slot];save();closeBagPopup();render();toast('Eşya çıkarıldı')}
+
+function unequip(slot){if(!state.equipped[slot])return;delete state.equipped[slot];save();render();toast('Eşya çantada kaldı ve çıkarıldı')}
 </script></body></html>
