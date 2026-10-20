@@ -332,7 +332,7 @@ const valorMounts=[
 {id:'gokkiran',name:'Gökkıran',kind:'dragon',color:'#b99aef',stats:[7,12,8,9],spirit:60},
 {id:'ormanmuhafizi',name:'Orman Muhafızı',kind:'stag',color:'#74c28c',stats:[5,7,12,12],spirit:40}
 ];
-function vmData(){if(!state.mountsV1){state.mountsV1={owned:valorMounts.map(x=>x.id),cards:[],souls:0,temporary:[]};save()}const d=state.mountsV1;if(!d.training){d.training=Array.from({length:4},()=>({level:0,xp:0}));d.stones=100;save()}return d}
+function vmData(){if(!state.mountsV1){state.mountsV1={owned:valorMounts.map(x=>x.id),cards:[],souls:0,temporary:[]};save()}const d=state.mountsV1;if(!d.training){d.training=Array.from({length:4},()=>({level:0,xp:0}));d.stones=100;save()}if(!d.bonus200v1){d.stones=(Number(d.stones)||0)+200;d.bonus200v1=true;save()}return d}
 function vmActive(){const d=vmData();return [...valorMounts.filter(m=>d.owned.includes(m.id)),...d.temporary.filter(t=>t.until>Date.now()).map(t=>valorMounts.find(m=>m.id===t.id)).filter(Boolean)]}
 function vmTotals(){return vmActive().reduce((a,m)=>{m.stats.forEach((v,i)=>a.stats[i]+=v);a.spirit+=m.spirit;return a},{stats:[0,0,0,0],spirit:0})}
 function vmDerived(){const a=vmTotals().stats.map((v,i)=>v+vmData().training[i].level*5);return {Saldırı:a[0]*4,Sihir:a[1]*4,Savunma:a[2]*4,'Sihir Savunma':a[2]*4,Can:a[0]+a[1]+a[3]*40}}
