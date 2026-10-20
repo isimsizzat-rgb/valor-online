@@ -448,4 +448,42 @@ const vmOldRender=render;render=function(){if(page==='Binek'&&state.class){docum
 const vmOldProfile=profile;profile=function(){const base=vmOldProfile(),win=vmBoard().winner;const tag=win.me?'<span class="vm-tag">✦ [Binek Tanrısı] ✦</span> ':'';return base.replace('<div class="vp-header"><strong>','<div class="vp-header"><strong>'+tag).replace('Ekipman bonusları takılı eşyalara göre hesaplanır.','Ekipman ve binek bonusları toplam istatistiklere dahildir.')};
 const vmOldChat=chatPage;chatPage=function(){const w=vmBoard().winner;return vmOldChat()+'<div class="vm-chat"><b>💬 Sohbet TAG Önizlemesi</b><p>'+(w.me?'<span class="vm-tag">[Binek Tanrısı]</span> ':'')+'<b>'+escapeAttr(state.name||'Oyuncu')+':</b> Herkese iyi oyunlar!</p><p class="vm-lead">Gerçek zamanlı sohbet ve sunucu TAG doğrulaması henüz aktif değil.</p></div>'};
 </script>
+
+<style id="valor-equipment-gems-v1">
+.ve-gems{margin:12px 0;padding:11px;border:1px solid #967142;background:linear-gradient(130deg,#28221c,#141c27);border-radius:8px}
+.ve-gems-title{font-weight:800;color:#f3cf89;font-size:14px;margin-bottom:9px}
+.ve-gem-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.ve-gem-slot{min-width:0;min-height:66px;border:1px solid #8e724b;border-radius:7px;background:#141a23;color:#dfd0b7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 3px;font-size:10px;cursor:pointer}
+.ve-gem-slot.filled{border-color:#d9a856;background:linear-gradient(#493420,#1c2430)}
+.ve-gem-symbol{font-size:22px;color:#eac278}.ve-gem-slot b{font-size:10px;color:#ffdd98}.ve-gem-slot small{font-size:9px}
+.ve-gem-modal{position:fixed;inset:0;z-index:999999;background:#000b;display:flex;align-items:center;justify-content:center;padding:14px}
+.ve-gem-dialog{width:min(410px,100%);max-height:85vh;overflow:auto;background:linear-gradient(#2b261f,#151d28);border:2px solid #bd9051;border-radius:12px;padding:17px;color:#f1e0c0;box-shadow:0 15px 50px #000}
+.ve-gem-dialog h3{color:#f4cb7d;margin:0 0 8px}.ve-gem-dialog p{font-size:12px;color:#c4b7a5}
+.ve-gem-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}
+.ve-gem-types button{font-size:12px;padding:9px 5px;border:1px solid #856741;background:#202733;color:#f1d6a1;border-radius:6px}
+.ve-gem-types button:disabled{opacity:.35}.ve-gem-types button.active{border-color:#ffce72;background:#574022}
+.ve-gem-dialog select{width:100%;background:#151d27;color:#f3d493;border:1px solid #957342;padding:10px;border-radius:6px;margin:6px 0 12px}
+.ve-gem-controls{display:flex;gap:8px}.ve-gem-controls button{flex:1;padding:10px;font-size:12px}
+@media(max-width:420px){.ve-gem-slot{min-height:58px}.ve-gem-symbol{font-size:18px}}
+</style>
+<script id="valor-equipment-gems-system-v1">
+/* Taşların sayısal bonusları henüz belirlenmedi; bu aşama yuva ve tür kurallarını uygular. */
+const veGemTypes=['Saldırı','Sihirli Saldırı','Defans','Sihirli Defans','Kritik','Bloke','Can'];
+const veGemIcons=['⚔','✦','⬡','✧','✷','◈','♥'];
+let veGemSelection=0,veGemLevel=1;
+function veGemSlots(it){if(!it)return '';const gems=Array.isArray(it.gems)?it.gems:[];return '<div class="ve-gems"><div class="ve-gems-title">💎 Ekipman Taşları · '+gems.filter(Boolean).length+'/4</div><div class="ve-gem-grid">'+Array.from({length:4},(_,i)=>{const g=gems[i];return '<button type="button" class="ve-gem-slot '+(g?'filled':'')+'" onclick="veOpenGem(\''+String(it.id)+'\','+i+')"><span class="ve-gem-symbol">'+(g?veGemIcons[veGemTypes.indexOf(g.type)]:'◇')+'</span><b>'+(g?g.type:'Boş Yuva')+'</b><small>'+(g?'Sv. '+g.level:'Taş Tak')+'</small></button>'}).join('')+'</div></div>'}
+function veFindItem(id){return (state.inventory||[]).find(x=>String(x.id)===String(id))||Object.values(state.equipped||{}).find(x=>x&&String(x.id)===String(id))}
+function veAddToPopup(id,popupId){const it=veFindItem(id),box=document.getElementById(popupId);if(!it||!box)return;const dialog=box.querySelector('.valor-item-dialog');if(!dialog)return;const buttons=dialog.querySelector('.detail-buttons,.valor-item-remove');if(buttons)buttons.insertAdjacentHTML('beforebegin',veGemSlots(it));else dialog.insertAdjacentHTML('beforeend',veGemSlots(it))}
+const veOldBagPopup=showBagItemPopup;
+showBagItemPopup=function(n){veOldBagPopup(n);const it=state.inventory[n];if(it)veAddToPopup(it.id,'valor-bag-popup')};
+const veOldProfileDetails=showProfileDetails;
+showProfileDetails=function(slot){veOldProfileDetails(slot);const it=state.equipped[slot];if(it)veAddToPopup(it.id,'valor-item-overlay')};
+function veOpenGem(id,slot){const it=veFindItem(id);if(!it||slot<0||slot>3)return;document.getElementById('ve-gem-overlay')?.remove();const gems=Array.isArray(it.gems)?it.gems:[],current=gems[slot];veGemSelection=current?veGemTypes.indexOf(current.type):0;veGemLevel=current?current.level:1;const used=new Set(gems.filter((g,i)=>g&&i!==slot).map(g=>g.type));const overlay=document.createElement('div');overlay.className='ve-gem-modal';overlay.id='ve-gem-overlay';overlay.innerHTML='<div class="ve-gem-dialog"><h3>💎 '+(slot+1)+'. Taş Yuvası</h3><p>'+escapeAttr(it.name)+' · Aynı tür taş bir ekipmana yalnızca bir kez takılabilir.</p><div class="ve-gem-types">'+veGemTypes.map((type,i)=>'<button type="button" '+(used.has(type)?'disabled':'')+' class="'+(veGemSelection===i?'active':'')+'" onclick="veSelectGem('+i+')">'+veGemIcons[i]+' '+type+(used.has(type)?' · Takılı':'')+'</button>').join('')+'</div><label for="ve-gem-level">Taş Seviyesi (1–10)</label><select id="ve-gem-level" onchange="veGemLevel=Number(this.value)">'+Array.from({length:10},(_,i)=>'<option value="'+(i+1)+'" '+(veGemLevel===i+1?'selected':'')+'>Seviye '+(i+1)+'</option>').join('')+'</select><p>Test aşaması: Taş envanteri ve taşların verdiği sayısal bonuslar henüz tanımlanmadı.</p><div class="ve-gem-controls"><button onclick="veCloseGem()">Vazgeç</button>'+(current?'<button onclick="veRemoveGem(\''+String(id)+'\','+slot+')">Taşı Çıkar</button>':'')+'<button onclick="veSaveGem(\''+String(id)+'\','+slot+')">Taşı Tak</button></div></div>';overlay.addEventListener('click',e=>{if(e.target===overlay)veCloseGem()});document.body.appendChild(overlay)}
+function veSelectGem(i){veGemSelection=i;document.querySelectorAll('#ve-gem-overlay .ve-gem-types button').forEach((b,j)=>b.classList.toggle('active',j===i))}
+function veCloseGem(){document.getElementById('ve-gem-overlay')?.remove()}
+function veRefreshItemGem(id){veCloseGem();const bag=document.getElementById('valor-bag-popup'),prof=document.getElementById('valor-item-overlay');if(bag){const n=state.inventory.findIndex(x=>String(x.id)===String(id));if(n>=0)showBagItemPopup(n)}else if(prof){const slot=Object.keys(state.equipped).find(k=>state.equipped[k]&&String(state.equipped[k].id)===String(id));if(slot)showProfileDetails(slot)}render()}
+function veSaveGem(id,slot){const it=veFindItem(id);if(!it)return;const type=veGemTypes[veGemSelection],level=Number(veGemLevel);if(!type||!Number.isInteger(level)||level<1||level>10)return toast('Geçersiz taş');if(!Array.isArray(it.gems))it.gems=[];if(it.gems.some((g,i)=>i!==slot&&g&&g.type===type))return toast('Bu taş türü zaten takılı!');it.gems[slot]={type,level};save();veRefreshItemGem(id);toast(type+' taşı takıldı (Sv. '+level+')')}
+function veRemoveGem(id,slot){const it=veFindItem(id);if(!it||!Array.isArray(it.gems))return;it.gems[slot]=null;save();veRefreshItemGem(id);toast('Taş çıkarıldı')}
+</script>
+
 </body></html>
