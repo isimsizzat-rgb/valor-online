@@ -329,8 +329,8 @@ function bossTick(){
  bossSettle();
  if(!bossAttacking||page!=='Dünya Bossu'||document.hidden)return;
  const e=bossSession(w.id);
- const base=Math.max(1,Math.round(totalPower()+state.level*4));
- const crit=Math.random()<Math.min(.75,Math.max(0,(state.stats.Kritik||0)*.005));
+ const base=Math.max(1,Math.round((state.class==='Büyücü'?(state.stats.Sihir||0):(state.stats.Saldırı||0))*3+totalPower()+state.level*4));
+ const crit=Math.random()<Math.min(.75,Math.max(.10,.10+(state.stats.Kritik||0)*.005));
  const hit=Math.round(base*(crit?2:1));
  e.damage+=hit;e.hits++;if(crit)e.crits++;
  bossLastHit=hit;bossCritical=crit;save();
