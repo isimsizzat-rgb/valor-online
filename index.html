@@ -670,4 +670,12 @@ const vt3Shapes=[
 ];
 function vt3Icon(i){const c=['#ffcb4b','#f25d50','#8c80ff','#efb455','#54b8ff','#fa6254','#b1c8ec','#ff6798'][i];return '<span class="tech-v3-icon"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><radialGradient id="vt3g'+i+'"><stop stop-color="'+c+'" stop-opacity=".42"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></radialGradient></defs><circle cx="32" cy="32" r="31" fill="url(#vt3g'+i+')"/>'+vt3Shapes[i]+'</svg></span>'}
 vsTechnology=function(){const d=vsData(),g=vaGoldData();const items=[{name:'Altın Üretimi',level:g.level,bonus:money(g.level*100)+' altın/dk',action:'vaGoldUpgrade()',disabled:g.level>=100||d.crystals<1}].concat(vsNames.map((name,i)=>({name,level:d.tech[i],bonus:'+'+money(d.tech[i]*vsSteps[i]),action:'vsUpgrade('+i+')',disabled:d.tech[i]>=100||d.crystals<1})));return '<div class="vsys tech-v3"><h2>Teknoloji</h2><p class="tech-v3-meta">💠 Kristal: '+money(d.crystals)+'</p><div class="vsys-grid">'+items.map((it,i)=>'<div class="vsys-card"><div class="tech-v3-title">'+vt3Icon(i)+'<h3>'+it.name+'</h3></div><div class="tech-v3-info">Seviye: '+it.level+' / 100<br>'+(i===0?'Üretim: ':'Bonus: ')+it.bonus+'</div><button '+(it.disabled?'disabled':'')+' onclick="'+it.action+'">⬆ Geliştir · 1 Kristal</button></div>').join('')+'</div></div>'};
+</script><style id="valor-tech-real-art-v4">
+/* Referans görselden alınan ikonların dosyası assets/images/technology-icons.webp */
+#main .tech-v3 .tech-v3-icon{background-image:url('assets/images/technology-icons.webp');background-size:800% 100%;background-repeat:no-repeat;border-radius:6px;overflow:hidden}
+#main .tech-v3 .tech-v3-icon svg{display:none!important}
+#main .tech-v3 .tech-v3-icon:nth-child(1){background-position:0 0}
+</style><script id="valor-tech-real-art-v4-js">
+const vt4OldIcon=vt3Icon;
+vt3Icon=function(i){return '<span class="tech-v3-icon" style="background-position:'+((i*100)/7)+'% 0" aria-hidden="true"></span>'};
 </script></body></html>
