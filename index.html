@@ -603,4 +603,21 @@ render=function(){if(state.class&&['Teknoloji','Çiftlik','Zindan'].includes(pag
 const vsOldProfile=profile;
 profile=function(){const html=vsOldProfile(),tech=vsTechBonus();return html.replace(/(<div class="vp-stat"><span>)(Saldırı|Sihir|Savunma|Sihir Savunma|Kritik|Bloke|Can)(<\/span><b>)([0-9]+)(<\/b><\/div>)/g,(all,a,k,b,n,c)=>a+k+b+(Number(n)+(tech[k]||0))+c)};
 </script>
+
+<style id="valor-afk-gold-style">
+.vsys-gold{border:1px solid #d6a64f;background:linear-gradient(135deg,#48351c,#1b2029);box-shadow:inset 0 0 20px #c48a2815;margin-bottom:12px}.vsys-gold h3{color:#ffe09b}.vsys-gold-stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.vsys-gold-stats span{border:1px solid #9a7138;border-radius:5px;padding:6px;background:#181b21;font-size:12px}
+</style>
+<script id="valor-afk-gold-v1">
+/* Offline altın: son kaydedilen zamandan bu yana geçen süreye göre, tam saniye hassasiyetinde birikir. */
+function vaGoldData(){const d=vsData();if(!d.goldProduction){d.goldProduction={level:0,lastTick:Date.now(),fraction:0,total:0};save()}return d.goldProduction}
+function vaGoldCollect(){if(!state.class)return 0;const g=vaGoldData(),now=Date.now(),last=Number(g.lastTick)||now,elapsed=Math.max(0,Math.min(now-last,365*24*60*60*1000));g.lastTick=now;if(g.level<=0)return 0;const produced=elapsed*g.level*100/60000+(Number(g.fraction)||0);const amount=Math.floor(produced);g.fraction=produced-amount;if(amount){state.gold+=amount;g.total=(Number(g.total)||0)+amount}return amount}
+function vaGoldUpgrade(){vaGoldCollect();const d=vsData(),g=vaGoldData();if(g.level>=100)return toast('Altın Üretimi maksimum seviyede');if(d.crystals<1)return toast('Kristal yetersiz, çiftlikten kazanabilirsin');d.crystals--;g.level++;save();render();toast('Altın Üretimi Sv. '+g.level+' · +'+money(g.level*100)+' altın/dk')}
+const vaOldTechnology=vsTechnology;
+vsTechnology=function(){const html=vaOldTechnology(),g=vaGoldData(),d=vsData();const card='<div class="vsys-card vsys-gold"><h3>🪙 Altın Üretimi · AFK</h3><p>Seviye '+g.level+' / 100</p><div class="vsys-bar"><span style="width:'+g.level+'%"></span></div><div class="vsys-gold-stats"><span>Üretim: <b>'+money(g.level*100)+'</b> altın/dk</span><span>Saatlik: <b>'+money(g.level*6000)+'</b> altın</span><span>Toplam üretilen: <b>'+money(g.total||0)+'</b></span></div><p>Oyunu kapatsan bile altın birikir. Yeniden giriş yaptığında otomatik olarak hesabına eklenir.</p><button '+(g.level>=100||d.crystals<1?'disabled':'')+' onclick="vaGoldUpgrade()">Geliştir · 1 Kristal</button></div>';return html.replace('<div class="vsys-grid">',card+'<div class="vsys-grid">')};
+const vaOldRender=render;
+render=function(){if(state.class){const earned=vaGoldCollect();if(earned)save()}vaOldRender()};
+if(state.class){vaGoldCollect();save()}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&state.class){vaGoldCollect();save();render()}else if(state.class){vaGoldCollect();save()}});
+setInterval(function(){if(!state.class||document.hidden)return;const gained=vaGoldCollect();if(gained){save();const el=document.getElementById('gold');if(el)el.textContent=money(state.gold);if(page==='Teknoloji')render()}},15000);
+</script>
 </body></html>
