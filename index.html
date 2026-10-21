@@ -294,7 +294,7 @@ const DRAGON_PRICE=50000;
 const DRAGON_BONUS={Can:500,Saldırı:50,Savunma:50,Hız:20};
 function dragonTokenIndex(){return (state.inventory||[]).findIndex(i=>i.mountId==='threeDragon')}
 function dragonRegistered(){return !!state.dragonRegistered||!!state.dragonActive}
-function dragonPurchased(){return dragonRegistered()||!!state.dragonUnlocked||dragonTokenIndex()>=0}
+function dragonPurchased(){return dragonRegistered()||dragonTokenIndex()>=0}
 function buyDragon(){if(dragonPurchased())return toast('Bu bineği zaten satın aldın');if(state.gold<DRAGON_PRICE)return toast('Yeterli altının yok');state.gold-=DRAGON_PRICE;state.inventory.push({id:Date.now(),name:'Üç Başlı Ejderha',slot:'Binek',mountId:'threeDragon',cls:state.class,level:1,plus:0,epic:true});state.dragonUnlocked=true;state.dragonActive=false;save();render();toast('Binek kartı çantana eklendi')}
 function activateDragon(){const idx=dragonTokenIndex();if(idx>=0){state.inventory.splice(idx,1);selected=null;state.dragonRegistered=true;state.dragonUnlocked=true;}else if(!dragonRegistered())return toast('Önce çantadaki binek kartını kullan');state.dragonActive=true;state.hp=(state.hp||0)+500;save();render();toast('Üç Başlı Ejderha etkinleştirildi')}
 function deactivateDragon(){if(!dragonRegistered())return;state.dragonActive=false;state.hp=Math.max(1,(state.hp||1)-500);save();render();toast('Binek pasif duruma alındı')}
