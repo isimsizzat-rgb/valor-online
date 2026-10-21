@@ -938,4 +938,48 @@ html body .vp-wrap .vp-scene .vp-gear.vp-right{right:2%!important}
 html body .vp-wrap .vp-scene .vp-gear .vp-slot{width:88%!important;max-width:78px!important;justify-self:center!important}
 html body .vp-wrap .vp-scene .vp-hero img{object-position:center 32%!important}
 @media(max-width:420px){html body .vp-wrap .vp-scene{height:clamp(370px,104vw,450px)!important;min-height:370px!important}html body .vp-wrap .vp-scene .vp-gear{top:4%!important;height:66%!important}}
-</style></body></html>
+</style><script id="profile-layout-direct-fix-v5">
+(function(){
+const previous=render;
+render=function(){
+previous();
+const onProfile=!!state.class&&page==='Profil';
+const hud=document.querySelector('header.top.valor-resource-bar');
+if(hud){hud.style.setProperty('display',onProfile?'none':'','important')}
+const layout=document.querySelector('.layout');
+if(layout)layout.style.setProperty('margin-top',onProfile?'4px':'','important');
+if(!onProfile)return;
+const scene=document.querySelector('#main .vp-scene');
+if(!scene)return;
+scene.style.setProperty('height','420px','important');
+scene.style.setProperty('min-height','0','important');
+scene.style.setProperty('overflow','hidden','important');
+const hero=scene.querySelector('.vp-hero img');
+if(hero){hero.style.setProperty('width','100%','important');hero.style.setProperty('height','100%','important');hero.style.setProperty('transform','none','important');hero.style.setProperty('object-fit','cover','important')}
+scene.querySelectorAll('.vp-gear').forEach((column)=>{
+column.style.setProperty('position','absolute','important');
+column.style.setProperty('top','12px','important');
+column.style.setProperty('bottom','auto','important');
+column.style.setProperty('height','250px','important');
+column.style.setProperty('width','18%','important');
+column.style.setProperty('display','flex','important');
+column.style.setProperty('flex-direction','column','important');
+column.style.setProperty('justify-content','flex-start','important');
+column.style.setProperty('align-items','center','important');
+column.style.setProperty('gap','12px','important');
+column.style.setProperty('transform','none','important');
+column.style.setProperty(column.classList.contains('vp-left')?'left':'right','2%','important');
+column.querySelectorAll('.vp-slot').forEach(slot=>{
+slot.style.setProperty('width','min(100%,76px)','important');
+slot.style.setProperty('height','76px','important');
+slot.style.setProperty('aspect-ratio','1','important');
+slot.style.setProperty('flex','0 0 76px','important');
+slot.style.setProperty('margin','0','important');
+slot.style.setProperty('padding','0','important');
+slot.style.setProperty('background','rgba(10,9,13,.17)','important');
+});
+});
+};
+render();
+})();
+</script></body></html>
