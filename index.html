@@ -951,7 +951,7 @@ if(layout)layout.style.setProperty('margin-top',onProfile?'4px':'','important');
 if(!onProfile)return;
 const scene=document.querySelector('#main .vp-scene');
 if(!scene)return;
-scene.style.setProperty('height','420px','important');
+scene.style.setProperty('height','330px','important');
 scene.style.setProperty('min-height','0','important');
 scene.style.setProperty('overflow','hidden','important');
 const hero=scene.querySelector('.vp-hero img');
@@ -982,4 +982,11 @@ slot.style.setProperty('background','rgba(10,9,13,.17)','important');
 };
 render();
 })();
-</script></body></html>
+</script><style id="valor-profile-short-two-columns-v6">
+html body #main .vp-wrap .vp-scene{height:330px!important;min-height:0!important;max-height:330px!important;overflow:hidden!important}
+html body #main .vp-wrap .vp-stats .vp-statgrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+html body #main .vp-wrap .vp-stats .vp-statgrid .vp-stat{box-sizing:border-box!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:6px!important;padding:11px 9px!important;overflow:hidden!important}
+html body #main .vp-wrap .vp-stats .vp-statgrid .vp-stat span{font-size:clamp(11px,3.1vw,15px)!important;line-height:1.2!important;overflow-wrap:anywhere!important}
+html body #main .vp-wrap .vp-stats .vp-statgrid .vp-stat b{font-size:clamp(15px,4vw,20px)!important;align-self:flex-end!important;line-height:1.1!important;max-width:100%!important;overflow-wrap:anywhere!important}
+@media(max-width:420px){html body #main .vp-wrap .vp-scene{height:330px!important;min-height:0!important}}
+</style></body></html>
