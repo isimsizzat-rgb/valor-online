@@ -678,4 +678,10 @@ vsTechnology=function(){const d=vsData(),g=vaGoldData();const items=[{name:'AltÄ
 </style><script id="valor-tech-real-art-v4-js">
 const vt4OldIcon=vt3Icon;
 vt3Icon=function(i){return '<span class="tech-v3-icon" style="background-position:'+((i*100)/7)+'% 0" aria-hidden="true"></span>'};
+</script><style id="valor-tech-hd-icons-v5">
+#main .tech-v3 .tech-v3-icon{background-image:none!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important}
+</style>
+<script id="valor-tech-hd-icons-v5-js">
+const vt5Files=['altin-uretimi','saldiri','sihirli-saldiri','defans','sihirli-defans','kritik','bloke','can'];
+vt3Icon=function(i){return '<span class="tech-v3-icon" style="background-image:url(assets/images/technology-icons/'+vt5Files[i]+'.webp)!important" aria-hidden="true"></span>'};
 </script></body></html>
