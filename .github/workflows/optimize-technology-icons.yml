@@ -1,0 +1,38 @@
+name: Optimize technology icons
+on:
+  push:
+    paths:
+      - 'assets/images/technology-icons.png'
+      - '.github/workflows/optimize-technology-icons.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install Pillow
+      - name: Compress and activate icon sheet
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('assets/images/technology-icons.png')
+          im=Image.open(p).convert('RGBA')
+          im.save(p.with_suffix('.webp'), 'WEBP', quality=85, method=6)
+          html=Path('index.html')
+          s=html.read_text()
+          s=s.replace('assets/images/technology-icons.png','assets/images/technology-icons.webp')
+          html.write_text(s)
+          print('PNG bytes:',p.stat().st_size,'WebP bytes:',p.with_suffix('.webp').stat().st_size)
+          PY
+      - name: Commit compressed asset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/images/technology-icons.webp
+          git diff --cached --quiet || (git commit -m "Optimize technology icon sprite to WebP" && git push)
