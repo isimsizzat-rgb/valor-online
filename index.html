@@ -539,4 +539,35 @@ veRemoveGem=function(id,slot){const it=veFindItem(id),g=it&&it.gems&&it.gems[slo
 const vwOldGemRefresh=veRefreshItemGem;
 veRefreshItemGem=function(id){veCloseGem();if(page==='Atölye'&&workTab==='mosaic'){render();return}vwOldGemRefresh(id)};
 </script>
+
+<style id="valor-gem-art-v2">
+.vg-icon{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;flex:0 0 46px;vertical-align:middle}
+.vg-icon svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 4px #000b)}
+.vw-gem-chip{display:flex;align-items:center;gap:7px;min-width:0}
+.vw-gem-chip .vg-icon{width:48px;height:48px;flex-basis:48px}
+.vw-gem-chip .vg-meta{min-width:0;overflow-wrap:anywhere}
+.vw-bag-gems .vw-gem-bag{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-height:420px;overflow-y:auto;gap:7px}
+.ve-gem-slot .vg-icon{width:37px;height:37px;flex:0 0 37px}
+.ve-gem-slot{min-height:78px}
+.ve-gem-types button .vg-icon{width:34px;height:34px;flex-basis:34px}
+.ve-gem-types button{display:flex;align-items:center;gap:7px;text-align:left}
+@media(max-width:600px){.vw-bag-gems .vw-gem-bag{grid-template-columns:repeat(2,minmax(0,1fr))}.vw-gem-chip .vg-icon{width:39px;height:39px;flex-basis:39px}.ve-gem-slot .vg-icon{width:29px;height:29px;flex-basis:29px}.ve-gem-slot{min-height:73px}}
+</style>
+<script id="valor-gem-art-v2-script">
+/* Şeffaf SVG mozaik taşları: aynı kristal silueti, seviyeye göre artan altın süsler. */
+function vgArt(type,level){const index=veGemTypes.indexOf(type),n=Math.max(1,Math.min(10,Number(level)||1));if(index<0)return '';
+const colors=[['#ff8982','#e92026','#7d0b15'],['#83dcff','#1586ff','#073b9e'],['#7bffb5','#16c96d','#075a39'],['#fff4a3','#ffc42d','#98600c'],['#eab1ff','#a73bea','#55118b'],['#b4b8c7','#34394b','#090b13'],['#ffffff','#dbe7f6','#8998b6']][index];
+const a=colors[0],b=colors[1],c=colors[2],id='vg'+index+'x'+n;
+const ring=n>=3?'<path d="M13 40 Q16 54 39 59 Q62 52 65 39" fill="none" stroke="#bd792c" stroke-width="'+(n>=7?4:2.5)+'"/><path d="M16 42 Q28 58 40 55 Q55 53 62 42" fill="none" stroke="#ffcf6b" stroke-width="1.5"/>':'';
+const arms=n>=5?'<path d="M17 48 L7 36 L19 42 L24 54 M62 48 L72 36 L60 42 L55 54" fill="#9c601e" stroke="#ffd36d" stroke-width="1.4"/>':'';
+const crown=n>=8?'<path d="M19 21 L10 13 L26 17 L40 5 L53 17 L70 13 L60 21" fill="none" stroke="#e5ad50" stroke-width="2.6"/>':'';
+const aura=n>=6?'<ellipse cx="40" cy="37" rx="31" ry="31" fill="none" stroke="'+b+'" stroke-opacity=".25" stroke-width="3"/><path d="M8 20 L11 15 M69 23 L73 18 M18 64 L15 70 M61 63 L65 69" stroke="'+a+'" stroke-width="2"/>':'';
+return '<span class="vg-icon" aria-label="'+type+' Seviye '+n+'"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="'+id+'" x1="0" x2=".9" y1="0" y2="1"><stop stop-color="'+a+'"/><stop offset=".48" stop-color="'+b+'"/><stop offset="1" stop-color="'+c+'"/></linearGradient></defs>'+aura+'<path d="M40 6 L60 25 L55 55 L37 70 L19 53 L21 27 Z" fill="url(#'+id+')" stroke="'+a+'" stroke-width="1.5"/><path d="M40 6 L39 38 L21 27 Z" fill="'+a+'" opacity=".75"/><path d="M40 6 L60 25 L39 38 Z" fill="'+b+'" opacity=".72"/><path d="M21 27 L39 38 L19 53 Z" fill="'+c+'" opacity=".72"/><path d="M60 25 L55 55 L39 38 Z" fill="'+c+'" opacity=".62"/><path d="M19 53 L39 38 L37 70 Z" fill="'+b+'" opacity=".65"/><path d="M55 55 L37 70 L39 38 Z" fill="'+a+'" opacity=".5"/><path d="M25 26 L39 11 L37 29" fill="none" stroke="#fff" stroke-opacity=".72" stroke-width="1.7"/>'+ring+arms+crown+'</svg></span>'}
+const vgOldInit=vwInit;
+vwInit=function(){vgOldInit();if(!state.gemVisualTest70v1){for(const type of veGemTypes)for(let level=1;level<=10;level++)vwAddGem(type,level,1);state.gemVisualTest70v1=true;save()}}
+vwGemBag=function(){vwInit();const gems=state.gemInventory.filter(g=>g.count>0).sort((a,b)=>veGemTypes.indexOf(a.type)-veGemTypes.indexOf(b.type)||a.level-b.level);return '<div class="vw-gem-bag">'+(gems.length?gems.map(g=>{const i=veGemTypes.indexOf(g.type);return '<div class="vw-gem-chip" style="--ve-gem-color:'+veGemColors[i]+'">'+vgArt(g.type,g.level)+'<div class="vg-meta"><b>'+g.type+'</b><div>Sv. '+g.level+' · +'+veGemValue(g.type,g.level)+'</div><strong>Adet: '+g.count+'</strong></div></div>'}).join(''):'<p class="vw-muted">Çantanda taş bulunmuyor.</p>')+'</div>'}
+veGemSlots=function(it){if(!it)return '';const gems=Array.isArray(it.gems)?it.gems:[];return '<div class="ve-gems"><div class="ve-gems-title">💎 Ekipman Taşları · '+gems.filter(Boolean).length+'/4</div><div class="ve-gem-grid">'+Array.from({length:4},(_,i)=>{const g=gems[i];return '<button type="button" class="ve-gem-slot '+(g?'filled':'')+'" style="--ve-gem-color:'+(g?veGemColors[veGemTypes.indexOf(g.type)]:'#eac278')+'" onclick="veOpenGem(\''+String(it.id)+'\','+i+')">'+(g?vgArt(g.type,g.level):'<span class="ve-gem-symbol">◇</span>')+'<b>'+(g?g.type:'Boş Yuva')+'</b><small>'+(g?'Sv. '+g.level+' · +'+veGemValue(g.type,g.level):'Taş Tak')+'</small></button>'}).join('')+'</div></div>'}
+const vgOldGemOpen=veOpenGem;
+veOpenGem=function(id,slot){vgOldGemOpen(id,slot);const box=document.querySelector('#ve-gem-overlay .ve-gem-types');if(!box)return;box.querySelectorAll('button').forEach((button,i)=>{button.innerHTML=vgArt(veGemTypes[i],veGemLevel)+'<span>'+veGemTypes[i]+'</span>'})}
+</script>
 </body></html>
