@@ -680,6 +680,7 @@ vsTechnology=function(){const d=vsData(),g=vaGoldData();const items=[{name:'Alt�
 vt3Icon=function(i){var x=(i%4)*100/3,y=Math.floor(i/4)*100;return '<span class="tech-v3-icon" style="background-position:'+x+'% '+y+'%!important" aria-hidden="true"></span>'};
 </script><style id="valor-affix-v1-style">
 .va-affixes{margin:12px 0;padding:10px;border:1px solid #a57b43;border-radius:8px;background:#211b19;color:#f7e2b7}.va-affixes h4{margin:0 0 9px;color:#f7c879}.va-affix{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #ffffff15;font-size:12px}.va-affix:last-child{border:0}.va-stars{color:#ffc94b;font-size:12px;letter-spacing:1px}.va-affix small{color:#e8c995}.va-refine-help{font-size:12px;color:#dbc5a4;line-height:1.5}.va-refine-btn{width:100%;margin-top:10px}
+.va-affix>span:last-child{display:flex;align-items:center;gap:8px;white-space:nowrap}.va-affix .va-stars{white-space:nowrap;letter-spacing:0}.va-affix>span:first-child{min-width:0}
 </style>
 <script id="valor-affix-v1-js">
 /* 5 benzersiz efsun; arıtma aynı ekipmanın beş efsununu yeniden belirler. */
@@ -689,7 +690,7 @@ const vaRefineCost=1000;
 function vaRollAffixes(){const pool=vaAffixPool.slice(),out=[];for(let i=0;i<5;i++){const j=Math.floor(Math.random()*pool.length);out.push({type:pool.splice(j,1)[0],stars:1+Math.floor(Math.random()*10)})}return out}
 function vaEnsureAffixes(it){if(!it)return [];if(!Array.isArray(it.affixes)||it.affixes.length!==5||it.affixes.some(a=>!a||!vaAffixPool.includes(a.type)||a.stars<1||a.stars>10)){it.affixes=vaRollAffixes();save()}return it.affixes}
 function vaAffixValue(a){return a.stars*(vaAffixBase[a.type]||25)}
-function vaAffixMarkup(it){return '<div class="va-affixes"><h4>✦ Ekipman Efsunları · 5/5</h4>'+vaEnsureAffixes(it).map(a=>'<div class="va-affix"><span>'+escapeAttr(a.type)+'</span><span><span class="va-stars">'+('★'.repeat(a.stars))+'</span> <small>+'+vaAffixValue(a)+'</small></span></div>').join('')+'</div>'}
+function vaAffixMarkup(it){return '<div class="va-affixes"><h4>✦ Ekipman Efsunları · 5/5</h4>'+vaEnsureAffixes(it).map(a=>'<div class="va-affix"><span>'+escapeAttr(a.type)+'</span><span><span class="va-stars">'+(a.stars+'⭐')+'</span> <small>+'+vaAffixValue(a)+'</small></span></div>').join('')+'</div>'}
 function vaAffixBonuses(){const out={Saldırı:0,Sihir:0,Savunma:0,'Sihir Savunma':0,Kritik:0,Bloke:0,Can:0};for(const it of Object.values(state.equipped||{})){if(!it)continue;for(const a of vaEnsureAffixes(it)){const v=vaAffixValue(a);switch(a.type){case 'Saldırı':out.Saldırı+=v;break;case 'Sihirli Saldırı':out.Sihir+=v;break;case 'Defans':out.Savunma+=v;break;case 'Sihirli Defans':out['Sihir Savunma']+=v;break;case 'Kritik':out.Kritik+=v;break;case 'Bloke':out.Bloke+=v;break;case 'Can':out.Can+=v;break;case 'Güç':out.Saldırı+=v*4;break;case 'Zeka':out.Sihir+=v*4;break;case 'Zırh':out.Savunma+=v*4;out['Sihir Savunma']+=v*4;break;case 'Beden':out.Can+=v*40;break}}}return out}
 const vaOldItem=item;
 item=function(){const it=vaOldItem.apply(this,arguments);it.affixes=vaRollAffixes();return it};
