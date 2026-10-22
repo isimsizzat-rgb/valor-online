@@ -1,8 +1,8 @@
 html body #main .vp-wrap .vp-scene .vd-hero{background:#11100f!important;isolation:isolate}
 .vd-backdrop{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 33%,#8c683d44,transparent 62%),radial-gradient(ellipse at 50% 100%,#674b2a55,transparent 40%),linear-gradient(145deg,#24201b,#0d1014 70%);z-index:0}
-.vd-stack{position:absolute;top:0;bottom:0;left:50%;height:100%;aspect-ratio:2/3;transform:translateX(-50%);z-index:2;pointer-events:none}
+.vd-stack{position:absolute;top:4%;bottom:auto;left:50%;height:94%;aspect-ratio:2/3;transform:translateX(-50%);z-index:2;pointer-events:none}
 .vd-layer{position:absolute;inset:0;background-size:100% 100%;background-position:center;background-repeat:no-repeat;pointer-events:none;transform-origin:0 0}
-.vd-base{z-index:2}.vd-weapon{z-index:1}.vd-armor{z-index:3}.vd-boots{z-index:4}.vd-helmet{z-index:5}
+.vd-base{z-index:2}.vd-weapon{z-index:1}.vd-leggings{z-index:2}.vd-armor{z-index:3}.vd-boots{z-index:4}.vd-helmet{z-index:5}
 .vd-wings{position:absolute;left:50%;top:9%;width:77%;height:67%;transform:translateX(-50%);background-size:contain;background-position:center;background-repeat:no-repeat;z-index:1;pointer-events:none;filter:drop-shadow(0 0 5px #b7b3dd33)}
 .vd-layer.vd-epic{filter:drop-shadow(0 0 3px #f2d076) drop-shadow(0 0 7px #ffc04d66);animation:vd-epic-pulse 2.8s ease-in-out infinite}
 @keyframes vd-epic-pulse{0%,100%{filter:drop-shadow(0 0 2px #f2d076aa) drop-shadow(0 0 5px #ffc04d44)}50%{filter:drop-shadow(0 0 4px #ffe8a6) drop-shadow(0 0 9px #ffc04d88)}}
