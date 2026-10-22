@@ -22,9 +22,9 @@ function valorAdventurePage(){
   return '<button type="button" class="adventure-zone '+(locked?'is-locked':'')+'" style="--ad-accent:'+zone.color+'" onclick="valorAdventureConfirm('+i+')" aria-label="'+zone.name+', seviye '+zone.min+' ile '+zone.max+', '+(locked?'kilitli':'macera başlat')+'">'
    +'<span class="adventure-zone-icon" aria-hidden="true">'+zone.icon+'</span>'
    +'<span class="adventure-zone-name">'+zone.name+'</span>'
-   +'<span class="adventure-zone-level">Sv. '+zone.min+'–'+zone.max+'</span>'
+   +'<span class="adventure-zone-level">Sv. '+zone.min+'–'+zone.max+(locked?' 🔒':'')+'</span>'
    +(wins[i]?'<span class="adventure-zone-wins">🏆 '+wins[i]+'</span>':'')
-   +'<span class="adventure-zone-arrow" aria-hidden="true">'+(locked?'🔒':'❯')+'</span>'
+   +'<span class="adventure-zone-arrow" aria-hidden="true">❯</span>'
    +'</button>';
  }).join('');
  return '<section class="adventure-v2">'
