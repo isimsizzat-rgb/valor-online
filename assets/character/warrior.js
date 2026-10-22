@@ -20,7 +20,7 @@ render=function(){
   const scene=hero.closest('.vp-scene'),image=hero.querySelector('img');
   scene.style.setProperty('background','radial-gradient(ellipse at 50% 45%,#33231d 0%,#17110f 65%,#0d0b0a 100%)','important');
   for(const [property,value] of Object.entries({inset:'6px 1%',width:'98%',height:'calc(100% - 12px)',display:'block'}))hero.style.setProperty(property,value,'important');
-  for(const [property,value] of Object.entries({left:'0',top:'0',width:'100%',height:'100%','object-fit':'contain','object-position':'center',transform:'none',filter:'drop-shadow(0 4px 8px #0008)'}))image.style.setProperty(property,value,'important');
+  for(const [property,value] of Object.entries({left:'0',top:'0',width:'100%',height:'100%','object-fit':'contain','object-position':'center',transform:'scale(.93)','transform-origin':'center center',filter:'drop-shadow(0 4px 8px #0008)'}))image.style.setProperty(property,value,'important');
   return result;
 };
 /* Items remain in the bag while equipped, so removing them must not duplicate them. */
