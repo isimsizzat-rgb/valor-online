@@ -1048,24 +1048,26 @@ scene.style.setProperty('min-height','0','important');
 scene.style.setProperty('overflow','hidden','important');
 const hero=scene.querySelector('.vp-hero img');
 if(hero){hero.style.setProperty('width','100%','important');hero.style.setProperty('height','100%','important');hero.style.setProperty('transform','none','important');hero.style.setProperty('object-fit','cover','important')}
+const eightSlots=scene.classList.contains('vf-eight-slots');
 scene.querySelectorAll('.vp-gear').forEach((column)=>{
 column.style.setProperty('position','absolute','important');
-column.style.setProperty('top','48px','important');
+column.style.setProperty('top',eightSlots?'8px':'48px','important');
 column.style.setProperty('bottom','auto','important');
-column.style.setProperty('height','250px','important');
+column.style.setProperty('height',eightSlots?'calc(100% - 16px)':'250px','important');
 column.style.setProperty('width','18%','important');
-column.style.setProperty('display','flex','important');
+column.style.setProperty('display',eightSlots?'grid':'flex','important');
+if(eightSlots){column.style.setProperty('grid-template-rows','repeat(4,minmax(0,1fr))','important');column.style.setProperty('grid-template-columns','minmax(0,1fr)','important');column.style.setProperty('justify-items','center','important')}
 column.style.setProperty('flex-direction','column','important');
 column.style.setProperty('justify-content','flex-start','important');
 column.style.setProperty('align-items','center','important');
-column.style.setProperty('gap','12px','important');
+column.style.setProperty('gap',eightSlots?'4px':'12px','important');
 column.style.setProperty('transform','none','important');
 column.style.setProperty(column.classList.contains('vp-left')?'left':'right','2%','important');
 column.querySelectorAll('.vp-slot').forEach(slot=>{
 slot.style.setProperty('width','min(100%,76px)','important');
-slot.style.setProperty('height','76px','important');
+slot.style.setProperty('height',eightSlots?'auto':'76px','important');
 slot.style.setProperty('aspect-ratio','1','important');
-slot.style.setProperty('flex','0 0 76px','important');
+slot.style.setProperty('flex',eightSlots?'none':'0 0 76px','important');
 slot.style.setProperty('margin','0','important');
 slot.style.setProperty('padding','0','important');
 slot.style.setProperty('background','rgba(10,9,13,.17)','important');
