@@ -677,7 +677,7 @@ function veGemStat(type){return ({'Saldırı':'Saldırı','Sihirli Saldırı':'S
 let veGemSelection=0,veGemLevel=1;
 function veGemSlots(it){if(!it)return '';const gems=Array.isArray(it.gems)?it.gems:[];return '<div class="ve-gems"><div class="ve-gems-title">💎 Ekipman Taşları · '+gems.filter(Boolean).length+'/4</div><div class="ve-gem-grid">'+Array.from({length:4},(_,i)=>{const g=gems[i];return '<button type="button" class="ve-gem-slot '+(g?'filled':'')+'" style="--ve-gem-color:'+(g?veGemColors[veGemTypes.indexOf(g.type)]:'#eac278')+'" onclick="veOpenGem(\''+String(it.id)+'\','+i+')"><span class="ve-gem-symbol">'+(g?veGemIcons[veGemTypes.indexOf(g.type)]:'◇')+'</span><b>'+(g?g.type:'Boş Yuva')+'</b><small>'+(g?'Sv. '+g.level+' · +'+veGemValue(g.type,g.level):'Taş Tak')+'</small></button>'}).join('')+'</div></div>'}
 function veFindItem(id){return (state.inventory||[]).find(x=>String(x.id)===String(id))||Object.values(state.equipped||{}).find(x=>x&&String(x.id)===String(id))}
-function veAddToPopup(id,popupId){const it=veFindItem(id),box=document.getElementById(popupId);if(!it||!box)return;const dialog=box.querySelector('.valor-item-dialog');if(!dialog)return;const buttons=dialog.querySelector('.detail-buttons,.valor-item-remove');if(buttons)buttons.insertAdjacentHTML('beforebegin',veGemSlots(it));else dialog.insertAdjacentHTML('beforeend',veGemSlots(it))}
+function veAddToPopup(id,popupId){const it=veFindItem(id),box=document.getElementById(popupId);if(!it||it.marketItemId||it.slot==='Binek'||!box)return;const dialog=box.querySelector('.valor-item-dialog');if(!dialog)return;const buttons=dialog.querySelector('.detail-buttons,.valor-item-remove');if(buttons)buttons.insertAdjacentHTML('beforebegin',veGemSlots(it));else dialog.insertAdjacentHTML('beforeend',veGemSlots(it))}
 const veOldBagPopup=showBagItemPopup;
 showBagItemPopup=function(n){veOldBagPopup(n);const it=state.inventory[n];if(it)veAddToPopup(it.id,'valor-bag-popup')};
 const veOldProfileDetails=showProfileDetails;
@@ -897,7 +897,7 @@ const vaRefineCost=1000;
 function vaRollAffixes(){const pool=vaAffixPool.slice(),out=[];for(let i=0;i<5;i++){const j=Math.floor(Math.random()*pool.length);out.push({type:pool.splice(j,1)[0],stars:1+Math.floor(Math.random()*10)})}return out}
 function vaEnsureAffixes(it){if(!it)return [];if(!Array.isArray(it.affixes)||it.affixes.length!==5||it.affixes.some(a=>!a||!vaAffixPool.includes(a.type)||a.stars<1||a.stars>10)){it.affixes=vaRollAffixes();save()}return it.affixes}
 function vaAffixValue(a){return a.stars*(vaAffixBase[a.type]||25)}
-function vaAffixMarkup(it){return '<div class="va-affixes"><h4>✦ Ekipman Efsunları · 5/5</h4>'+vaEnsureAffixes(it).map(a=>'<div class="va-affix"><span>'+escapeAttr(a.type)+'</span><span><span class="va-stars">'+(a.stars+'⭐')+'</span> <small>+'+vaAffixValue(a)+'</small></span></div>').join('')+'</div>'}
+function vaAffixMarkup(it){if(!it||it.marketItemId||it.slot==='Binek')return '';return '<div class="va-affixes"><h4>✦ Ekipman Efsunları · 5/5</h4>'+vaEnsureAffixes(it).map(a=>'<div class="va-affix"><span>'+escapeAttr(a.type)+'</span><span><span class="va-stars">'+(a.stars+'⭐')+'</span> <small>+'+vaAffixValue(a)+'</small></span></div>').join('')+'</div>'}
 function vaAffixBonuses(){const out={Saldırı:0,Sihir:0,Savunma:0,'Sihir Savunma':0,Kritik:0,Bloke:0,Can:0};for(const it of Object.values(state.equipped||{})){if(!it)continue;for(const a of vaEnsureAffixes(it)){const v=vaAffixValue(a);switch(a.type){case 'Saldırı':out.Saldırı+=v;break;case 'Sihirli Saldırı':out.Sihir+=v;break;case 'Defans':out.Savunma+=v;break;case 'Sihirli Defans':out['Sihir Savunma']+=v;break;case 'Kritik':out.Kritik+=v;break;case 'Bloke':out.Bloke+=v;break;case 'Can':out.Can+=v;break;case 'Güç':out.Saldırı+=v*4;break;case 'Zeka':out.Sihir+=v*4;break;case 'Zırh':out.Savunma+=v*4;out['Sihir Savunma']+=v*4;break;case 'Beden':out.Can+=v*40;break}}}return out}
 const vaOldItem=item;
 item=function(){const it=vaOldItem.apply(this,arguments);it.affixes=vaRollAffixes();return it};
@@ -910,7 +910,7 @@ const vaOldBagPopup=showBagItemPopup;
 showBagItemPopup=function(n){vaOldBagPopup(n);const it=state.inventory[n],box=document.getElementById('valor-bag-popup');if(it&&box){const d=box.querySelector('.valor-item-dialog');if(d)d.insertAdjacentHTML('beforeend',vaAffixMarkup(it))}};
 const vaOldProfilePopup=showProfileDetails;
 showProfileDetails=function(slot){vaOldProfilePopup(slot);const it=state.equipped[slot],box=document.getElementById('valor-item-overlay');if(it&&box){const d=box.querySelector('.valor-item-dialog');if(d)d.insertAdjacentHTML('beforeend',vaAffixMarkup(it))}};
-for(const it of [...(state.inventory||[]),...Object.values(state.equipped||{}).filter(Boolean)])vaEnsureAffixes(it);
+for(const it of [...(state.inventory||[]),...Object.values(state.equipped||{}).filter(Boolean)])if(it&&!it.marketItemId&&it.slot!=='Binek')vaEnsureAffixes(it);
 </script><style id="valor-workshop-top-dropdown-v1">
 #main .vw-shell{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important}
 #main .vw-top-dropdown{width:100%;position:relative;z-index:4;border:1px solid #a47742;border-radius:8px;background:linear-gradient(#51351f,#251b18);color:#f7d79b}
