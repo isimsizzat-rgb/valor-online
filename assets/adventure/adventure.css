@@ -1,0 +1,40 @@
+/* Valor Online: Macera haritasi */
+.adventure-v2{padding:8px 0 26px;color:#eee2cd}
+.adventure-head{display:flex;gap:15px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.adventure-head h1{font:700 clamp(24px,5vw,32px) Georgia,serif;margin:6px 0 7px;color:#f2cc85}
+.adventure-head p{font-size:13px;color:#c2b7a5;margin:0}
+.adventure-eyebrow{font-size:10px;letter-spacing:1.7px;font-weight:800;color:#ddbd7e}
+.adventure-energy{min-width:155px;padding:12px 14px;border:1px solid #796039;border-radius:10px;background:#171d23}
+.adventure-energy>span{display:block;font-size:10px;color:#e7c17a;letter-spacing:.7px}
+.adventure-energy strong{display:block;font:700 23px Georgia,serif;margin:5px 0;color:#f5ddb0}
+.adventure-energy small{color:#a99c82;font-size:12px}
+.adventure-energy-track{height:6px;border-radius:8px;overflow:hidden;background:#090d12}
+.adventure-energy-track i{display:block;height:100%;background:linear-gradient(90deg,#c9803c,#f1d287)}
+.adventure-zone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.adventure-zone{min-width:0;position:relative;display:flex;align-items:center;gap:10px;min-height:100px;padding:13px 11px;text-align:left;border:1px solid #695840;border-radius:12px;background:radial-gradient(circle at 0 50%,color-mix(in srgb,var(--ad-accent) 28%,transparent),transparent 65%),linear-gradient(130deg,#2d2b2a,#161e27);box-shadow:inset 0 1px 0 #ffffff12,0 3px 12px #0005}
+.adventure-zone.is-selected{border:2px solid #f2ca78;box-shadow:0 0 0 1px #be883344,0 0 18px #cf954933}
+.adventure-zone.is-locked{filter:saturate(.45);opacity:.77}
+.adventure-zone-icon{display:grid;place-items:center;flex:0 0 50px;height:55px;border:1px solid var(--ad-accent);border-radius:10px;background:#151a20ae;font-size:30px;text-shadow:0 3px 12px #000c}
+.adventure-zone-content{display:block;min-width:0}
+.adventure-zone-content strong{display:block;font:700 15px/1.2 Georgia,serif;color:#f1d69f;overflow-wrap:anywhere}
+.adventure-zone-content small{display:block;margin-top:7px;color:#e2d0b2;font-size:12px}
+.adventure-zone-content em{display:block;margin-top:5px;color:#c6b5a0;font:normal 10px system-ui,sans-serif}
+.adventure-zone-wins{position:absolute;top:4px;right:6px;font-size:10px;color:#e5c68c}
+.adventure-detail{margin-top:16px;border:1px solid #9b7749;border-radius:13px;padding:17px;background:radial-gradient(circle at 0 0,var(--ad-accent),transparent 95%),#1c242d;box-shadow:0 6px 21px #0005}
+.adventure-detail-top{display:flex;gap:14px;align-items:center}
+.adventure-detail-icon{display:grid;place-items:center;border:1px solid #ad884f;border-radius:14px;background:#151d26;min-width:75px;height:75px;font-size:43px}
+.adventure-detail h2{margin:6px 0;color:#f6d397;font-size:24px}
+.adventure-detail p{margin:0;color:#cebea6;font-size:13px}
+.adventure-rewards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0 13px}
+.adventure-rewards span{padding:12px 9px;border:1px solid #5a554c;border-radius:8px;background:#131c24;font-size:12px;color:#bbad94}
+.adventure-rewards b{display:block;color:#f3dcaf;margin-top:6px;font-size:14px}
+.adventure-gate{border-radius:7px;padding:10px;font-size:12px;color:#e7b1a5;background:#4f272452;margin-bottom:12px}
+.adventure-gate.is-ready{color:#b7e6bd;background:#214b3455}
+.adventure-enter{width:100%;padding:13px;border:1px solid #e2b66a;border-radius:8px;background:linear-gradient(180deg,#8b6632,#4d341c);font-weight:800;letter-spacing:.6px;color:#fff1cb}
+.adventure-enter small{font-weight:400;margin-left:6px;font-size:11px}
+.adventure-enter:disabled{opacity:.43;cursor:not-allowed}
+.adventure-log{margin:15px 0;border:1px solid #534b3b;border-radius:8px;padding:11px;background:#161f27}
+.adventure-log summary{cursor:pointer;color:#e5c184;font-weight:700}
+.adventure-log p{font-size:11px;line-height:1.4;color:#cfc2af}
+@media(min-width:800px){.adventure-zone-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:410px){.adventure-zone{padding:11px 7px;gap:7px;min-height:98px}.adventure-zone-icon{flex-basis:37px;height:44px;font-size:24px}.adventure-zone-content strong{font-size:13px}.adventure-zone-content small{font-size:11px}.adventure-rewards span{font-size:11px}}
