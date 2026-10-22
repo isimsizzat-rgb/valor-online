@@ -312,7 +312,7 @@ const marketProducts=[
 {id:'anniversaryBox',name:'Yıldönümü Kutusu',price:20,limit:100,icon:anniversaryBoxGraphic(),description:'Binek ve taş ödülleri içeren özel kutu.'}
 ];
 function marketTodayKey(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v={};p.forEach(x=>{v[x.type]=x.value});return v.year+'-'+v.month+'-'+v.day}
-function marketDailyReset(){const day=marketTodayKey();if(state.marketDailyDate!==day){state.marketDailyDate=day;state.marketDailyPurchases={};save()}if(!state.marketDailyPurchases)state.marketDailyPurchases={}}
+function marketDailyReset(){const day=marketTodayKey();if(state.marketDailyDate!==day){state.marketDailyDate=day;state.marketDailyPurchases={};save()}if(!state.marketDailyPurchases)state.marketDailyPurchases={};if(state.marketAnniversaryTapRepairDay!==day){if(state.marketDailyDate===day&&(Number(state.marketDailyPurchases.anniversaryBox)||0)>=100)state.marketDailyPurchases.anniversaryBox=0;state.marketAnniversaryTapRepairDay=day;save()}}
 function marketProduct(id){return marketProducts.find(p=>p.id===id)||({mosaicStone:{id:'mosaicStone',name:'Mozaik Taş',icon:'💠',description:'Rastgele türde Sv.1 mozaik taşı.'},luckStone:{id:'luckStone',name:'Şans Taşı',icon:'🍀',description:'Şans Taşı Sv.1.'}})[id]}
 function marketRemaining(p){marketDailyReset();return Math.max(0,p.limit-(Number(state.marketDailyPurchases[p.id])||0))}
 function addMarketStack(id,count){const p=marketProduct(id);if(!p)return;const old=state.inventory.find(i=>i.marketItemId===id);if(old)old.count=(Number(old.count)||1)+count;else state.inventory.push({id:valorUniqueItemId(),slot:'Eşya',marketItemId:id,name:p.name,count:count,description:p.description})}
