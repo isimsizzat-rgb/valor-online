@@ -1051,7 +1051,7 @@ html body .valor-vertical-home .mmorpg-home-tile.valor-vertical-tile img{width:1
 </style><script id="valor-start-home-repair-v1">
 (function(){
 function ensureHomeOnStart(){
-if(!window.state||!state.class)return;
+if(typeof state==='undefined'||!state||!state.class)return;
 if(page!=='Anasayfa')page='Anasayfa';
 try{
 render();
