@@ -1065,4 +1065,22 @@ document.body.classList.add('valor-home');
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureHomeOnStart,{once:true});else ensureHomeOnStart();
 window.addEventListener('pageshow',function(e){if(e.persisted&&state.class&&page==='Anasayfa'&&!document.querySelector('#main .valor-vertical-home'))ensureHomeOnStart()});
 })();
+</script><style id="valor-global-zoom-lock-v1">
+html,body,#app,#main{touch-action:pan-x pan-y!important;-webkit-text-size-adjust:100%}
+button,a,[role="button"],input,select,textarea{touch-action:manipulation!important}
+</style>
+<script id="valor-global-zoom-lock-script-v1">
+(function(){
+let lastTouchEnd=0;
+document.addEventListener('gesturestart',function(e){e.preventDefault()},{passive:false});
+document.addEventListener('gesturechange',function(e){e.preventDefault()},{passive:false});
+document.addEventListener('gestureend',function(e){e.preventDefault()},{passive:false});
+document.addEventListener('touchend',function(e){
+if(e.changedTouches.length!==1)return;
+const now=Date.now();
+if(now-lastTouchEnd<320&&e.target.closest('button,a,[role="button"],.valor-vertical-tile,img'))e.preventDefault();
+lastTouchEnd=now;
+},{passive:false});
+document.addEventListener('dblclick',function(e){e.preventDefault()},{passive:false});
+})();
 </script></body></html>
