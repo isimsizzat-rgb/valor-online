@@ -1048,4 +1048,21 @@ html body .valor-vertical-home .valor-vertical-tile:active{transform:scale(.97)}
 html body .mmorpg-home-grid.valor-vertical-home{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;padding:5px!important}
 html body .valor-vertical-home .mmorpg-home-tile.valor-vertical-tile{width:100%!important;height:auto!important;aspect-ratio:230/300!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
 html body .valor-vertical-home .mmorpg-home-tile.valor-vertical-tile img{width:100%!important;height:100%!important;object-fit:contain!important}
-</style></body></html>
+</style><script id="valor-start-home-repair-v1">
+(function(){
+function ensureHomeOnStart(){
+if(!window.state||!state.class)return;
+if(page!=='Anasayfa')page='Anasayfa';
+try{
+render();
+const main=document.getElementById('main');
+if(main&&!main.querySelector('.valor-vertical-home')){
+main.innerHTML=home();
+document.body.classList.add('valor-home');
+}
+}catch(e){console.error('Initial home render failed',e);const main=document.getElementById('main');if(main){main.innerHTML=home();document.body.classList.add('valor-home')}}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureHomeOnStart,{once:true});else ensureHomeOnStart();
+window.addEventListener('pageshow',function(e){if(e.persisted&&state.class&&page==='Anasayfa'&&!document.querySelector('#main .valor-vertical-home'))ensureHomeOnStart()});
+})();
+</script></body></html>
