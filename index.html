@@ -572,21 +572,21 @@ function unequip(slot){if(!state.equipped[slot])return;delete state.equipped[slo
 <script id="valor-mount-system-v1">
 /* Yerel test verileri: gerçek çok oyunculu sıralama değildir. */
 const valorMounts=[
-{id:'threeDragon',name:'Üç Başlı Ejderha',kind:'dragon',color:'#e87536',stats:[100,100,100,100],spirit:0},
+{id:'threeDragon',name:'Üç Başlı Ejderha',kind:'dragon',color:'#e87536',stats:[100,100,100,100],spirit:500},
 {id:'griffin',name:'Griffin',kind:'griffin',color:'#e5bd5a',stats:[10,10,10,10],spirit:50},
-{id:'ayazkurt',name:'Ayazkurdu',kind:'wolf',color:'#78b9e9',stats:[8,4,7,8],spirit:35},
-{id:'kozy ele',name:'Közyele',kind:'horse',color:'#e87548',stats:[12,2,5,7],spirit:45},
-{id:'gokkiran',name:'Gökkıran',kind:'dragon',color:'#b99aef',stats:[7,12,8,9],spirit:60},
-{id:'ormanmuhafizi',name:'Orman Muhafızı',kind:'stag',color:'#74c28c',stats:[5,7,12,12],spirit:40}
+{id:'ayazkurt',name:'Ayazkurdu',kind:'wolf',color:'#78b9e9',stats:[10,10,10,10],spirit:50},
+{id:'kozy ele',name:'Közyele',kind:'horse',color:'#e87548',stats:[20,10,10,10],spirit:63},
+{id:'gokkiran',name:'Gökkıran',kind:'dragon',color:'#b99aef',stats:[10,20,10,10],spirit:63},
+{id:'ormanmuhafizi',name:'Orman Muhafızı',kind:'stag',color:'#74c28c',stats:[10,10,20,20],spirit:75}
 ,
 {id:'geceyelesi',name:'Gece Yelesi',kind:'horse',color:'#7775ba',stats:[10,10,10,10],spirit:50,price:150000},
-{id:'kizilpençe',name:'Kızıl Pençe',kind:'wolf',color:'#c86b51',stats:[15,15,15,15],spirit:75,price:300000},
+{id:'kizilpençe',name:'Kızıl Pençe',kind:'wolf',color:'#c86b51',stats:[20,20,20,20],spirit:100,price:300000},
 {id:'firtinakanat',name:'Fırtına Kanat',kind:'griffin',color:'#7db3d9',stats:[20,20,20,20],spirit:100,price:600000},
-{id:'golgegeyik',name:'Gölge Geyiği',kind:'stag',color:'#668c84',stats:[25,25,25,25],spirit:125,price:1000000},
+{id:'golgegeyik',name:'Gölge Geyiği',kind:'stag',color:'#668c84',stats:[30,30,30,30],spirit:150,price:1000000},
 {id:'obsidyenboynuz',name:'Obsidyen Boynuz',kind:'dragon',color:'#a179bd',stats:[30,30,30,30],spirit:150,price:1800000},
 {id:'ayisigi',name:'Ay Işığı',kind:'horse',color:'#a9c8df',stats:[40,40,40,40],spirit:200,price:3500000},
 {id:'atesgrifonu',name:'Ateş Grifonu',kind:'griffin',color:'#db8d4c',stats:[50,50,50,50],spirit:250,price:6000000},
-{id:'kadimejder',name:'Kadim Ejder',kind:'dragon',color:'#d5b16b',stats:[75,75,75,75],spirit:375,price:12000000}
+{id:'kadimejder',name:'Kadim Ejder',kind:'dragon',color:'#d5b16b',stats:[80,80,80,80],spirit:400,price:12000000}
 ];
 function vmData(){if(!state.mountsV1){state.mountsV1={owned:valorMounts.filter(x=>x.id!=='threeDragon'&&!x.price).map(x=>x.id),cards:[],souls:0,temporary:[]};save()}const d=state.mountsV1;if(!d.training){d.training=Array.from({length:4},()=>({level:0,xp:0}));d.stones=100;save()}if(!d.bonus200v1){d.stones=(Number(d.stones)||0)+200;d.bonus200v1=true;save()}if(!d.bonus99999v1){d.stones=(Number(d.stones)||0)+99999;d.bonus99999v1=true;save()}return d}
 function vmActive(){const d=vmData();return [...valorMounts.filter(m=>m.id==='threeDragon'?dragonRegistered():d.owned.includes(m.id)),...d.temporary.filter(t=>t.until>Date.now()).map(t=>valorMounts.find(m=>m.id===t.id)).filter(Boolean)]}
