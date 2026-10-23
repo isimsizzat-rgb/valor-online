@@ -102,7 +102,7 @@ function valorAdventureFight(i){
  state.adventureEnergy-=10;
  if(typeof valorQuestRecord==='function')valorQuestRecord('energy',10);
  const heroPower=Math.max(1,combatPower()+state.level*14+40);
- const enemyPower=65+zone.min*15+i*80;
+ const enemyPower=valorAstrologyEnemyThreat(65+zone.min*15+i*80);
  const won=Math.random()<Math.max(.25,Math.min(.94,.73+(heroPower-enemyPower)/650));
  let stone=0;
  if(won){
