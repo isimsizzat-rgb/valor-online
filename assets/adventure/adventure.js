@@ -20,13 +20,14 @@ function valorAdventurePage(){
  const wins=state.adventureZoneWins||{};
  const rows=valorAdventureZones.map((zone,i)=>{
   const locked=state.level<zone.min;
-  return '<button type="button" class="adventure-zone '+(locked?'is-locked':'')+'" style="--ad-accent:'+zone.color+'" onclick="valorAdventureConfirm('+i+')" aria-label="'+zone.name+', seviye '+zone.min+' ile '+zone.max+', '+(locked?'kilitli':'macera başlat')+'">'
-   +'<span class="adventure-zone-icon" aria-hidden="true"><img src="'+zone.thumbnail+'" alt="" loading="eager" decoding="sync"></span>'
-   +'<span class="adventure-zone-name">'+zone.name+'</span>'
-   +'<span class="adventure-zone-level">Sv. '+zone.min+'–'+zone.max+(locked?' 🔒':'')+'</span>'
+  return '<article class="adventure-zone adventure-zone-banner '+(locked?'is-locked':'')+'" style="--ad-accent:'+zone.color+';background-image:url('+zone.thumbnail+')" aria-label="'+zone.name+'">'
+   +'<img class="adventure-zone-art" src="'+zone.image+'" alt="" loading="eager" decoding="async" onerror="this.hidden=true">'
+   +'<span class="adventure-zone-shade" aria-hidden="true"></span>'
+   +'<div class="adventure-zone-copy"><span class="adventure-zone-name">'+zone.name+'</span>'
+   +'<span class="adventure-zone-level">Sv. '+zone.min+'–'+zone.max+(locked?' · 🔒 Kilitli':'')+'</span></div>'
    +(wins[i]?'<span class="adventure-zone-wins">🏆 '+wins[i]+'</span>':'')
-   +'<span class="adventure-zone-arrow" aria-hidden="true">❯</span>'
-   +'</button>';
+   +'<button type="button" class="adventure-zone-arrow" onclick="valorAdventureConfirm('+i+')" ontouchend="event.stopPropagation()" aria-label="'+zone.name+' macerasını aç">❯</button>'
+   +'</article>';
  }).join('');
  return '<section class="adventure-v2">'
  +'<header class="adventure-head"><div><span class="adventure-eyebrow">✦ KADİM KRALLIKLAR ✦</span><h1>🗺️ Macera</h1><p>Bölgeyi seç, savaş ve ödül kazan. Her giriş 10 enerji.</p></div>'
@@ -47,14 +48,17 @@ function valorAdventureDialog(inner){
  modal.innerHTML='<section class="adventure-modal" role="dialog" aria-modal="true" aria-labelledby="adventure-dialog-heading">'+inner+'</section>';
  document.body.appendChild(modal);
  modal.addEventListener('click',e=>{if(e.target===modal)valorAdventureDismiss()});
+ modal.addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
  const first=modal.querySelector('button');if(first)first.focus();
 }
 function valorAdventureConfirm(i){
  if(page!=='Macera'||!state.class||!Number.isInteger(i))return;
  const zone=valorAdventureZones[i];if(!zone)return;
  stageDailyReset();
- if(state.level<zone.min)return toast('🔒 Bu bölge için '+zone.min+'. seviyeye ulaşmalısın.');
- if((Number(state.adventureEnergy)||0)<10)return toast('⚡ Maceraya girmek için 10 enerji gerekiyor.');
+ if(state.level<zone.min||(Number(state.adventureEnergy)||0)<10){
+  valorAdventureDialog('<img class="adventure-modal-art" src="'+zone.image+'" alt="'+zone.name+'"><h2 id="adventure-dialog-heading">'+zone.name+'</h2><p>'+(state.level<zone.min?'🔒 Bu bölge için '+zone.min+'. seviyeye ulaşmalısın.':'⚡ Maceraya girmek için 10 enerji gerekiyor.')+'</p><button type="button" class="adventure-result-close" onclick="valorAdventureDismiss()">Tamam</button>');
+  return;
+ }
  valorAdventureDialog(
   '<img class="adventure-modal-art" src="'+zone.image+'" alt="'+zone.name+'">'
   +'<h2 id="adventure-dialog-heading">'+zone.name+'</h2>'
