@@ -60,14 +60,15 @@ valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousAren
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
 valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.random){
   const me=valorArenaUnit({...myStats},myClass),enemy=valorArenaUnit({...rivalStats},rivalClass),log=[];
-  for(let round=1;round<=10;round++){
+  for(let round=1;me.hp>0&&enemy.hp>0&&round<=10000;round++){
     let mine=0,theirs=0,myHit=null,enemyHit=null;
     const strike=(a,b)=>{const hit=valorArenaHit(a,b,rng),damage=Math.min(b.hp,hit.damage);b.hp-=damage;hit.healed=valorAstrologyHeal(b,b.stats.astrologyHealing,rng);return {hit,damage};};
     const strikeMine=()=>{const s=strike(me,enemy);myHit=s.hit;mine=s.damage;},strikeEnemy=()=>{const s=strike(enemy,me);enemyHit=s.hit;theirs=s.damage;};
-    if(me.attack===enemy.attack){strikeMine();strikeEnemy();}else if(me.attack>enemy.attack){strikeMine();if(enemy.hp>0)strikeEnemy();}else{strikeEnemy();if(me.hp>0)strikeMine();}
+    const meFirst=me.attack===enemy.attack?rng()<.5:me.attack>enemy.attack;
+    if(meFirst){strikeMine();if(enemy.hp>0)strikeEnemy();}else{strikeEnemy();if(me.hp>0)strikeMine();}
     log.push({round,mine,theirs,myHit,enemyHit,myHp:me.hp,enemyHp:enemy.hp});if(me.hp===0||enemy.hp===0)break;
   }
-  const draw=me.hp===enemy.hp,win=!draw&&(enemy.hp===0||me.hp>0&&me.hp>enemy.hp);return {win,draw,rounds:log.length,myHp:me.hp,enemyHp:enemy.hp,myMaxHp:me.maxHp,enemyMaxHp:enemy.maxHp,reason:me.hp===0||enemy.hp===0?'knockout':'round-limit',log};
+  const knockout=me.hp===0||enemy.hp===0,draw=!knockout,win=enemy.hp===0&&me.hp>0;return {win,draw,rounds:log.length,myHp:me.hp,enemyHp:enemy.hp,myMaxHp:me.maxHp,enemyMaxHp:enemy.maxHp,reason:knockout?'knockout':'stalemate',log};
 };
 const valorAstrologyPreviousHitLabel=valorArenaHitLabel;
 valorArenaHitLabel=function(hit){return valorAstrologyPreviousHitLabel(hit)+(hit?.resisted?' <strong class="arena-blocked">Sonsuz Direnç!</strong>':'')+(hit?.healed?' <strong class="arena-healed">Yaşam Işığı +'+money(hit.healed)+' can</strong>':'');};
@@ -76,3 +77,41 @@ vsEnemy=function(floor){return Math.max(1,Math.round(valorAstrologyEnemyThreat(v
 /* NPCs copy base stat strengths, never the player's passive chances. */
 const valorAstrologyPreviousArenaPlayers=valorArenaPlayers;
 valorArenaPlayers=function(){const players=valorAstrologyPreviousArenaPlayers();let changed=false;for(const p of players)for(const k of Object.keys(p.combatStats||{}))if(k.startsWith('astrology')){delete p.combatStats[k];changed=true;}if(changed)save();return players;};
+
+/* Arena battles finish on knockout. The ten-round scoring rule is retired. */
+const VALOR_ARENA_WAIT_MS=7000;
+let valorArenaPendingBattle=null;
+function valorArenaCancelPending(){
+  if(valorArenaPendingBattle)clearTimeout(valorArenaPendingBattle.timer);
+  valorArenaPendingBattle=null;
+  document.getElementById('valor-arena-wait')?.remove();
+}
+function valorArenaBeginWait(finish){
+  if(valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
+  const overlay=document.createElement('div');overlay.id='valor-arena-wait';overlay.className='valor-item-overlay';
+  overlay.innerHTML='<style>@keyframes valorBattleSpin{to{transform:rotate(360deg)}}@keyframes valorBattlePulse{50%{transform:scale(1.14);filter:drop-shadow(0 0 20px #e3b669)}}@keyframes valorBattleProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}.arena-wait-orbit{position:relative;display:grid;place-items:center;width:112px;height:112px;margin:24px auto}.arena-wait-orbit:before{content:"";position:absolute;inset:0;border:2px solid #c4a06333;border-top-color:#f5d598;border-bottom-color:#a787c9;border-radius:50%;animation:valorBattleSpin 1.5s linear infinite}.arena-wait-swords{font-size:48px;animation:valorBattlePulse 1.1s ease-in-out infinite}.arena-wait-progress{height:7px;background:#090a13;border-radius:8px;overflow:hidden;margin:20px 0}.arena-wait-progress i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#9364bd,#e4bc79);transform-origin:left;animation:valorBattleProgress 7s linear forwards}.arena-wait-dialog h2{color:#efcf94}.arena-wait-dialog p{color:#c5b7ce;font-size:13px;line-height:1.7}@media(prefers-reduced-motion:reduce){.arena-wait-orbit:before,.arena-wait-swords{animation:none}}</style><section class="valor-item-dialog arena-wait-dialog" role="dialog" aria-modal="true" aria-labelledby="arena-wait-title" aria-busy="true"><div class="arena-wait-orbit" aria-hidden="true"><span class="arena-wait-swords">⚔</span></div><h2 id="arena-wait-title">Savaş sürüyor…</h2><p role="status">Savaşçılar son darbeye kadar mücadele ediyor.<br>Sonuç birazdan açıklanacak.</p><div class="arena-wait-progress" aria-hidden="true"><i></i></div><button type="button" onclick="valorArenaCancelPending()">Vazgeç</button></section>';
+  document.body.appendChild(overlay);
+  const pending={timer:null};valorArenaPendingBattle=pending;
+  pending.timer=setTimeout(()=>{if(valorArenaPendingBattle!==pending)return;valorArenaPendingBattle=null;overlay.remove();if(page==='Savaş'&&state.class)finish();},VALOR_ARENA_WAIT_MS);
+  overlay.querySelector('button')?.focus();
+}
+const valorArenaImmediateFight=valorArenaFight;
+valorArenaFight=function(id){
+  if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
+  if(valorArenaData().used>=10)return toast('Bugünkü 10 savaş hakkını kullandın');
+  if(!valorArenaCandidates().some(p=>p.id===id))return;
+  valorArenaBeginWait(()=>valorArenaImmediateFight(id));
+};
+const valorArenaImmediateTraining=valorArenaTraining;
+valorArenaTraining=function(){
+  if(page!=='Savaş'||!state.class)return;
+  valorArenaBeginWait(()=>valorArenaImmediateTraining());
+};
+const valorArenaBeforeBattleNavigation=go;
+go=function(destination){valorArenaCancelPending();return valorArenaBeforeBattleNavigation(destination);};
+const valorArenaBeforeKnockoutResult=valorArenaResult;
+valorArenaResult=function(result){
+  valorArenaBeforeKnockoutResult(result);
+  const overlay=document.getElementById('valor-arena-result');
+  if(overlay)overlay.innerHTML=overlay.innerHTML.replace('Kalan canlar karşılaştırıldı',result.reason==='stalemate'?'Savaş sonuçsuz kaldı':'Can tükendi');
+};
