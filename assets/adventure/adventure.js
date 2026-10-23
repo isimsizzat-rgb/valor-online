@@ -10,7 +10,7 @@ const valorAdventureZones=[
 {name:'Alev Çorakları',icon:'🌋',min:71,max:80,color:'#d0784f'},
 {name:'Lanetli Uçurum',icon:'🕳️',min:81,max:90,color:'#a060aa'},
 {name:'Ejderha Tahtı',icon:'🐉',min:91,max:100,color:'#d1a05c'}
-].map((z,i)=>({...z,gold:2500*(i+1),xp:30+i*15,stoneChance:.10+i*.01}));
+].map((z,i)=>({...z,image:'assets/adventure/region-'+(i+1)+'.webp',gold:2500*(i+1),xp:30+i*15,stoneChance:.10+i*.01}));
 
 /* Her bolge yatay tek satir; sagdaki oka dokununca onay acilir. */
 function valorAdventurePage(){
@@ -20,7 +20,7 @@ function valorAdventurePage(){
  const rows=valorAdventureZones.map((zone,i)=>{
   const locked=state.level<zone.min;
   return '<button type="button" class="adventure-zone '+(locked?'is-locked':'')+'" style="--ad-accent:'+zone.color+'" onclick="valorAdventureConfirm('+i+')" aria-label="'+zone.name+', seviye '+zone.min+' ile '+zone.max+', '+(locked?'kilitli':'macera başlat')+'">'
-   +'<span class="adventure-zone-icon" aria-hidden="true">'+zone.icon+'</span>'
+   +'<span class="adventure-zone-icon" aria-hidden="true"><img src="'+zone.image+'" alt="" loading="lazy"></span>'
    +'<span class="adventure-zone-name">'+zone.name+'</span>'
    +'<span class="adventure-zone-level">Sv. '+zone.min+'–'+zone.max+(locked?' 🔒':'')+'</span>'
    +(wins[i]?'<span class="adventure-zone-wins">🏆 '+wins[i]+'</span>':'')
@@ -55,7 +55,7 @@ function valorAdventureConfirm(i){
  if(state.level<zone.min)return toast('🔒 Bu bölge için '+zone.min+'. seviyeye ulaşmalısın.');
  if((Number(state.adventureEnergy)||0)<10)return toast('⚡ Maceraya girmek için 10 enerji gerekiyor.');
  valorAdventureDialog(
-  '<span class="adventure-modal-symbol">'+zone.icon+'</span>'
+  '<img class="adventure-modal-art" src="'+zone.image+'" alt="'+zone.name+'">'
   +'<h2 id="adventure-dialog-heading">'+zone.name+'</h2>'
   +'<p><b>Sv. '+zone.min+'–'+zone.max+'</b> bölgesine girilsin mi?</p>'
   +'<p class="adventure-modal-cost">⚡ 10 enerji harcanacak.</p>'
@@ -79,7 +79,8 @@ function valorAdventureShowResult(zone,won,gold,xp,stone){
    +(stone?'<p class="adventure-stone-note">Şansına Binek Taşı kazandın!</p>':''):
    '<p class="adventure-result-loss">Bu savaşta ödül kazanamadın.</p>';
  valorAdventureDialog(
-  '<span class="adventure-result-emblem">'+(won?'🏆':'💀')+'</span>'
+  '<img class="adventure-modal-art" src="'+zone.image+'" alt="'+zone.name+'">'
+  +'<span class="adventure-result-emblem">'+(won?'🏆':'💀')+'</span>'
   +'<h2 id="adventure-dialog-heading" class="'+(won?'adventure-victory':'adventure-defeat')+'">'+(won?'ZAFER':'YENİLGİ')+'</h2>'
   +'<p>'+zone.icon+' '+zone.name+'</p>'
   +reward
@@ -94,6 +95,7 @@ function valorAdventureFight(i){
  if(state.level<zone.min)return toast('Bu alan için en az '+zone.min+'. seviye gerekli.');
  if((Number(state.adventureEnergy)||0)<10)return toast('Macera için en az 10 enerji gerekli.');
  state.adventureEnergy-=10;
+ if(typeof valorQuestRecord==='function')valorQuestRecord('energy',10);
  const heroPower=Math.max(1,combatPower()+state.level*14+40);
  const enemyPower=65+zone.min*15+i*80;
  const won=Math.random()<Math.max(.25,Math.min(.94,.73+(heroPower-enemyPower)/650));
