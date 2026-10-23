@@ -1,4 +1,4 @@
-/* Shared adventure energy: +10 every 30 minutes, including offline time. */
+/* Adventure-only energy: +10 every 30 minutes, including offline time. */
 const VALOR_ENERGY_INTERVAL = 30 * 60 * 1000;
 const VALOR_ENERGY_GAIN = 10;
 
@@ -36,7 +36,7 @@ function valorEnergyCountdown(now = Date.now()) {
 
 function valorEnergyUpdateCountdown() {
   const text = valorEnergyCountdown();
-  for (const panel of document.querySelectorAll('.adventure-energy,.stage-energy-meter')) {
+  for (const panel of document.querySelectorAll('.adventure-energy')) {
     let timer = panel.querySelector('[data-energy-countdown]');
     if (!timer) {
       timer = document.createElement('small');
