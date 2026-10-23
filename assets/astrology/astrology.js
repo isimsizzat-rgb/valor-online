@@ -42,8 +42,19 @@ function valorAstrologyPage(){
 function valorAstrologyBoostStats(stats){const out={...stats},d=valorAstrologyData();for(const t of VALOR_ASTROLOGY_TALENTS)if(t.stat)out[t.stat]=(Number(out[t.stat])||0)*(1+d[t.id]/100);return out;}
 const valorAstrologyPreviousArenaStats=valorArenaStats;
 valorArenaStats=function(){const d=valorAstrologyData();return {...valorAstrologyBoostStats(valorAstrologyPreviousArenaStats()),astrologyDamageReduction:valorAstrologyReduction(),astrologyCriticalDamage:d.fateBreaker*.02,astrologyResistance:d.endlessResistance*.01,astrologyHealing:d.lifeLight*.01};};
-const valorAstrologyPreviousPower=combatPower;
-combatPower=function(){const bonuses=equipmentBonuses(),mount=vmDerived(),stats={};for(const t of VALOR_ASTROLOGY_TALENTS)if(t.stat)stats[t.stat]=(Number(state.stats?.[t.stat])||0)+(Number(bonuses[t.stat])||0)+(Number(mount[t.stat])||0);const boosted=valorAstrologyBoostStats(stats),mage=state.class==='Büyücü',weights={'Saldırı':mage?3:10,'Sihir':mage?10:3,'Savunma':10,'Sihir Savunma':10};return Math.round(valorAstrologyPreviousPower()+Object.keys(weights).reduce((sum,k)=>sum+(boosted[k]-stats[k])*weights[k],0));};
+/* Profile, Arena and power use the same complete stat totals. */
+combatPower=function(){
+  const stats=valorArenaStats(),mage=state.class==='Büyücü',weights={'Saldırı':mage?3:10,'Sihir':mage?10:3,'Savunma':10,'Sihir Savunma':10,'Can':3,'Kritik':4,'Bloke':4};
+  return Math.round(Object.keys(weights).reduce((sum,k)=>sum+(Number(stats[k])||0)*weights[k],0));
+};
+const valorAstrologyPreviousProfile=profile;
+profile=function(){
+  const stats=valorArenaStats(),data=valorAstrologyData();
+  let html=valorAstrologyPreviousProfile().replace(/(<div class="vp-stat"><span>)(Saldırı|Sihir|Savunma|Sihir Savunma|Kritik|Bloke|Can)(<\/span><b>)([0-9]+(?:\.[0-9]+)?)(<\/b><\/div>)/g,(all,a,k,b,n,c)=>a+k+b+(Math.round(stats[k]*100)/100)+c);
+  const passives=[['Kritik Hasar Artışı',stats.astrologyCriticalDamage],['Hasar Azaltma',stats.astrologyDamageReduction],['Sonsuz Direnç İhtimali',stats.astrologyResistance],['Yaşam Işığı İhtimali',stats.astrologyHealing]].map(([label,value])=>'<div class="vp-stat"><span>'+label+'</span><b>%'+Math.round(value*100)+'</b></div>').join('');
+  html=html.replace('</div><div class="vp-exp">',passives+'</div><div class="vp-exp">');
+  return html.replace(/<p class="vp-hint">[^<]*<\/p>/,'<p class="vp-hint">Ekipman, binek, teknoloji ve Astroloji bonusları toplam değerlere dahildir. Savaş gücü temel istatistiklerden hesaplanır. Pasif savaş etkileri ayrıca gösterilir. Yaşam Işığı etkinleştiğinde maksimum canının %5’ini yeniler.</p>');
+};
 const valorAstrologyPreviousArenaHit=valorArenaHit;
 valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousArenaHit(a,b,rng);if(hit.critical)hit.damage+=Math.round(valorArenaDamage(a,b)*Math.max(0,Number(a.stats.astrologyCriticalDamage)||0));hit.damage=valorAstrologyTakenDamage(hit.damage,b.stats.astrologyDamageReduction||0);hit.resisted=!!b.stats.astrologyResistance&&rng()<b.stats.astrologyResistance;if(hit.resisted)hit.damage=1;return hit;};
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
