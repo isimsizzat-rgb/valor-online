@@ -1,0 +1,112 @@
+/* Device-local accounts. No remote identity or cloud-sync claim is made. */
+const VALOR_ACCOUNTS_KEY='valor-accounts-v1',VALOR_ACCOUNT_OWNER=key+'-account-owner',VALOR_ACCOUNT_SESSION='valor-account-session-v1';
+const valorAccountStorageKey=id=>'valor-account-save-'+id;
+const valorAccountRead=(name,fallback=null)=>{try{return JSON.parse(localStorage.getItem(name))??fallback}catch{return fallback}};
+function valorAccountRegistry(){const r=valorAccountRead(VALOR_ACCOUNTS_KEY,[]);return Array.isArray(r)?r:[]}
+const valorAccountEscape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const valorAccountNormalize=v=>String(v).trim().normalize('NFKC').toLocaleLowerCase('tr-TR');
+let valorAccountActive=null,valorAccountGate=true,valorAccountTab='login',valorAccountBusy=false,valorAccountSelected='',valorAccountMessage='';
+try{const session=sessionStorage.getItem(VALOR_ACCOUNT_SESSION);valorAccountActive=valorAccountRegistry().find(a=>a.id===session)||null}catch{}
+const valorAccountHasLegacy=()=>!localStorage.getItem(VALOR_ACCOUNT_OWNER)&&!!state.class;
+/* Keep a one-time copy of the pre-account character before any migration. */
+if(valorAccountHasLegacy()&&!localStorage.getItem(key+'-before-accounts-v1')){
+  localStorage.setItem(key+'-before-accounts-v1',JSON.stringify({state,stage:typeof stageRun!=='undefined'?stageRun:null}));
+}
+function valorAccountSnapshot(){return {state:JSON.parse(JSON.stringify(state)),stage:typeof stageRun!=='undefined'&&stageRun?JSON.parse(JSON.stringify(stageRun)):null}}
+function valorAccountPersist(){
+  if(!valorAccountActive)return;
+  localStorage.setItem(valorAccountStorageKey(valorAccountActive.id),JSON.stringify(valorAccountSnapshot()));
+}
+const valorAccountOldSave=save;
+save=function(){
+  if(valorAccountActive){valorAccountPersist();if(localStorage.getItem(VALOR_ACCOUNT_OWNER)===valorAccountActive.id)valorAccountOldSave();}
+  else if(!localStorage.getItem(VALOR_ACCOUNT_OWNER))valorAccountOldSave();
+};
+const valorAccountOldStageSave=stageRunSave;
+stageRunSave=function(){if(valorAccountActive){valorAccountPersist();if(localStorage.getItem(VALOR_ACCOUNT_OWNER)===valorAccountActive.id)valorAccountOldStageSave();}else if(!localStorage.getItem(VALOR_ACCOUNT_OWNER))valorAccountOldStageSave();};
+function valorAccountLegacySaved(){if(localStorage.getItem(key+'-legacy-linked'))return null;return valorAccountHasLegacy()?valorAccountSnapshot():valorAccountRead(key+'-before-accounts-v1');}
+function valorAccountContinueLegacy(){const saved=valorAccountLegacySaved();if(!saved?.state?.class)return;if(valorAccountActive)valorAccountPersist();localStorage.setItem(key,JSON.stringify(saved.state));if(saved.stage)localStorage.setItem(key+'-stage-run',JSON.stringify(saved.stage));else localStorage.removeItem(key+'-stage-run');localStorage.removeItem(VALOR_ACCOUNT_OWNER);sessionStorage.setItem(VALOR_ACCOUNT_SESSION,'guest');location.reload();}
+function valorAccountFreshState(){return {class:null,name:'',level:1,xp:0,gold:50000,diamonds:150,hp:100,statPoints:0,stats:{Saldırı:0,Sihir:0,Savunma:0,'Sihir Savunma':0,Can:0,Kritik:0,Bloke:0},inventory:[],equipped:{},stones:{1:3,2:1},shards:0,freeEntries:5,papers:2,stageWins:{},guild:null,questWins:0,logs:[]}}
+function valorAccountCanPlay(){return !valorAccountGate&&(!!valorAccountActive||sessionStorage.getItem(VALOR_ACCOUNT_SESSION)==='guest'&&valorAccountHasLegacy())}
+function valorAccountActivate(account,snapshot,preserveCurrent=true){
+  if(!snapshot||!snapshot.state||typeof snapshot.state!=='object'||Array.isArray(snapshot.state))throw Error('Hesap kaydı okunamadı. Mevcut kayıt korunuyor.');
+  if(preserveCurrent&&valorAccountActive){if(valorAccountActive.id===account.id)snapshot=valorAccountSnapshot();valorAccountPersist();}
+  localStorage.setItem(valorAccountStorageKey(account.id),JSON.stringify(snapshot));
+  localStorage.setItem(key,JSON.stringify(snapshot.state));
+  if(snapshot.stage)localStorage.setItem(key+'-stage-run',JSON.stringify(snapshot.stage));else localStorage.removeItem(key+'-stage-run');
+  localStorage.setItem(VALOR_ACCOUNT_OWNER,account.id);
+  sessionStorage.setItem(VALOR_ACCOUNT_SESSION,account.id);
+  location.reload();
+}
+async function valorAccountHash(password,salt,iterations=250000){
+  if(!globalThis.crypto?.subtle)throw Error('Şifreli giriş için güncel bir tarayıcı kullanmalısın.');
+  const bytes=Uint8Array.from(salt.match(/.{2}/g)||[],h=>parseInt(h,16));
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:bytes,iterations,hash:'SHA-256'},material,256);
+  return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
+}
+function valorAccountError(message){valorAccountMessage=message;const error=document.getElementById('valor-account-error');if(error)error.textContent=message;}
+function valorAccountSetBusy(busy){valorAccountBusy=busy;document.querySelectorAll('.vauth-form input,.vauth-form button,.vauth-tabs button,.vauth-account').forEach(el=>el.disabled=busy);const submit=document.getElementById('valor-account-submit');if(submit)submit.textContent=busy?'Lütfen bekle…':valorAccountTab==='register'?'Hesap Oluştur':'Giriş Yap';}
+function valorAccountSetTab(tab){if(valorAccountBusy)return;valorAccountTab=tab==='register'?'register':'login';valorAccountMessage='';render();}
+function valorAccountChoose(id){if(valorAccountBusy)return;const account=valorAccountRegistry().find(a=>a.id===id);if(!account)return;valorAccountSelected=account.username;valorAccountTab='login';valorAccountMessage='';render();document.getElementById('valor-account-password')?.focus();}
+async function valorAccountSubmit(event){
+  event?.preventDefault();if(valorAccountBusy)return;
+  const username=document.getElementById('valor-account-username')?.value.trim()||'',password=document.getElementById('valor-account-password')?.value||'',confirm=document.getElementById('valor-account-confirm')?.value||'',attach=!!document.getElementById('valor-account-attach')?.checked;
+  valorAccountSelected=username;valorAccountError('');
+  if(!/^[a-zA-Z0-9ğüşöçıİĞÜŞÖÇ_]{3,20}$/.test(username))return valorAccountError('Kullanıcı adı 3–20 harf, rakam veya alt çizgi içermeli.');
+  if(password.length<8||password.length>128)return valorAccountError('Şifren 8–128 karakter olmalı.');
+  const register=valorAccountTab==='register';if(register&&password!==confirm)return valorAccountError('Şifreler birbiriyle eşleşmiyor.');
+  valorAccountSetBusy(true);
+  try{
+    let registry=valorAccountRegistry(),account=registry.find(a=>valorAccountNormalize(a.username)===valorAccountNormalize(username));
+    if(register){
+      if(account)throw Error('Bu kullanıcı adı bu cihazda zaten kayıtlı.');
+      const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),hash=await valorAccountHash(password,salt);
+      registry=valorAccountRegistry();if(registry.some(a=>valorAccountNormalize(a.username)===valorAccountNormalize(username)))throw Error('Bu kullanıcı adı bu cihazda zaten kayıtlı.');
+      account={id:crypto.randomUUID(),username,salt,hash,iterations:250000,createdAt:Date.now()};
+      const previous=valorAccountLegacySaved(),snapshot=attach&&previous?previous:{state:valorAccountFreshState(),stage:null};
+      if(previous)localStorage.setItem(key+'-before-accounts-v1',JSON.stringify(previous));
+      localStorage.setItem(valorAccountStorageKey(account.id),JSON.stringify(snapshot));
+      localStorage.setItem(VALOR_ACCOUNTS_KEY,JSON.stringify([...registry,account]));
+      if(attach&&previous)localStorage.setItem(key+'-legacy-linked',account.id);
+      valorAccountActivate(account,snapshot);
+    }else{
+      if(!account)throw Error('Kullanıcı adı veya şifre hatalı.');
+      const hash=await valorAccountHash(password,account.salt,account.iterations);let diff=hash.length^account.hash.length;for(let i=0;i<hash.length;i++)diff|=hash.charCodeAt(i)^account.hash.charCodeAt(i);
+      if(diff)throw Error('Kullanıcı adı veya şifre hatalı.');
+      const snapshot=valorAccountRead(valorAccountStorageKey(account.id));if(!snapshot)throw Error('Bu hesabın kayıt dosyası bulunamadı.');
+      valorAccountActivate(account,snapshot);
+    }
+  }catch(error){valorAccountError(error?.message||'İşlem tamamlanamadı. Yeniden dene.');valorAccountSetBusy(false);}
+}
+function valorAccountOpen(){if(valorAccountBusy)return;if(typeof valorArenaCancelPending==='function')valorArenaCancelPending();if(valorAccountActive)valorAccountPersist();valorAccountGate=true;valorAccountSelected=valorAccountActive?.username||'';valorAccountTab='login';valorAccountMessage='';document.querySelectorAll('.valor-item-overlay').forEach(el=>el.remove());render();}
+function valorAccountReturn(){if(valorAccountActive||valorAccountHasLegacy()){valorAccountGate=false;if(!valorAccountActive)sessionStorage.setItem(VALOR_ACCOUNT_SESSION,'guest');render();}}
+function valorAccountLogout(){if(valorAccountBusy)return;valorAccountPersist();valorAccountActive=null;sessionStorage.removeItem(VALOR_ACCOUNT_SESSION);valorAccountGate=true;valorAccountSelected='';valorAccountMessage='';render();}
+function valorAccountPage(){
+  const accounts=valorAccountRegistry(),register=valorAccountTab==='register',legacySave=valorAccountLegacySaved(),legacy=!!legacySave?.state?.class,legacyState=legacySave?.state;
+  const cards=accounts.map(a=>{const snapshot=valorAccountRead(valorAccountStorageKey(a.id)),hero=snapshot?.state,cls=Math.max(0,classes.indexOf(hero?.class));return '<button type="button" class="vauth-account '+(valorAccountNormalize(a.username)===valorAccountNormalize(valorAccountSelected)?'is-selected':'')+'" onclick="valorAccountChoose(\''+a.id+'\')"><img src="'+heroImages[cls]+'" alt=""><span><b>'+valorAccountEscape(a.username)+'</b><small>'+ (hero?.class?valorAccountEscape(hero.name)+' · '+valorAccountEscape(hero.class)+' · Sv. '+hero.level:'Karakterini oluştur')+'</small></span><i aria-hidden="true">›</i></button>';}).join('');
+  return '<section class="vauth-portal"><div class="vauth-world"><div class="vauth-brand"><span>✦ KADİM KRALLIKLAR ✦</span><h1>VALOR<span>ONLINE</span></h1></div><img class="vauth-world-hero" src="assets/character/warrior-seraf.webp" alt=""><div class="vauth-world-copy"><span>YOLCULUĞUN BURADA BAŞLAR</span><h2>Bir karakter.<br> Sayısız efsane.</h2><p>Kılıcını kuşan. Yıldızların gücünü uyandır.<br>Kendi hikâyeni yaz.</p></div></div><div class="vauth-panel"><div class="vauth-panel-top"><span class="vauth-eyebrow">VALOR’A HOŞ GELDİN</span>'+(valorAccountActive?'<button type="button" class="vauth-text-button" onclick="valorAccountReturn()">‹ Oyuna Dön</button>':'')+'</div><h2>'+ (register?'Yeni bir başlangıç.':'Hikâyen seni bekliyor.')+'</h2><p class="vauth-subtitle">'+(register?'Hesabını oluştur, karakterini seç ve maceraya katıl.':'Hesabını seç veya giriş yapıp kaldığın yerden devam et.')+'</p>'+ (legacy?'<div class="vauth-legacy"><span class="vauth-legacy-mark">✦</span><div><b>'+valorAccountEscape(legacyState.name)+' · Sv. '+legacyState.level+'</b><small>Mevcut karakterin burada.</small></div><button type="button" onclick="valorAccountContinueLegacy()">Devam Et ›</button></div>':'')+'<div class="vauth-tabs" role="tablist" aria-label="Hesap işlemi"><button type="button" role="tab" aria-selected="'+!register+'" class="'+(!register?'is-active':'')+'" onclick="valorAccountSetTab(\'login\')">Giriş Yap</button><button type="button" role="tab" aria-selected="'+register+'" class="'+(register?'is-active':'')+'" onclick="valorAccountSetTab(\'register\')">Hesap Oluştur</button></div>'+(!register&&cards?'<div class="vauth-saved"><span class="vauth-eyebrow">BU CİHAZDAKİ HESAPLAR</span><div class="vauth-account-list">'+cards+'</div></div>':'')+'<form class="vauth-form" onsubmit="valorAccountSubmit(event)"><label for="valor-account-username">Kullanıcı adı</label><input id="valor-account-username" name="username" autocomplete="username" minlength="3" maxlength="20" required spellcheck="false" autocapitalize="none" placeholder="Kullanıcı adın" value="'+valorAccountEscape(valorAccountSelected)+'"><label for="valor-account-password">Şifre</label><input id="valor-account-password" name="password" type="password" autocomplete="'+(register?'new-password':'current-password')+'" minlength="8" maxlength="128" required placeholder="En az 8 karakter">'+(register?'<label for="valor-account-confirm">Şifre tekrar</label><input id="valor-account-confirm" name="confirm-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Şifreni yeniden yaz">'+(legacy?'<label class="vauth-check"><input id="valor-account-attach" type="checkbox" checked><span>Mevcut karakterimi bu hesaba bağla<small>'+valorAccountEscape(legacyState.name)+' · Eşyaların ve tüm ilerlemen korunur.</small></span></label>':''):'')+'<p id="valor-account-error" class="vauth-error" role="alert">'+valorAccountEscape(valorAccountMessage)+'</p><button id="valor-account-submit" type="submit" class="vauth-primary">'+(register?'Hesap Oluştur':'Giriş Yap')+'</button></form><div class="vauth-device-note"><span aria-hidden="true">◇</span><p>Hesapların ve ilerlemen bu tarayıcıda saklanır. Başka cihazlarla eşitlenmez. Tarayıcı verilerini silersen kayıtların da silinir.</p></div>'+(valorAccountActive?'<button type="button" class="vauth-text-button vauth-logout" onclick="valorAccountLogout()">Hesaptan Çıkış Yap</button>':'')+'</div></section>';
+}
+const valorCharacterDetails={
+ 'Savaşçı':{title:'Çeliğin iradesi.',desc:'Ön saflarda yerini al. Kılıcın ve zırhınla rakibinin karşısında dimdik dur.',type:'Yakın dövüş',weapon:'Kılıç',accent:'#d58b62'},
+ 'Büyücü':{title:'Gücün sınırlarını aş.',desc:'Kadim büyülerin özünü açığa çıkar. Gizemli enerjileri düşmanlarının üzerine sal.',type:'Sihirli saldırı',weapon:'Asa',accent:'#b69ae0'},
+ 'Okçu':{title:'Tek atış. Tek kader.',desc:'Hedefini gölgelerden izle. Yayını ger ve okunla savaşın akışını değiştir.',type:'Menzilli saldırı',weapon:'Yay',accent:'#9fbc82'}
+};
+function valorCharacterCreationPage(){const c=valorCharacterDetails[creationClass]||valorCharacterDetails.Savaşçı,idx=Math.max(0,classes.indexOf(creationClass));return '<section class="vcreate-page" style="--class-accent:'+c.accent+'"><header class="vcreate-header"><div><span class="vauth-eyebrow">VALOR ONLINE</span><h1>Kaderini seç.</h1></div><button type="button" class="vauth-text-button" onclick="valorAccountOpen()">‹ Hesaplar</button></header><div class="vcreate-tabs" role="tablist" aria-label="Karakter sınıfı">'+classes.map((cls,i)=>'<button type="button" role="tab" aria-selected="'+(cls===creationClass)+'" class="'+(cls===creationClass?'is-active':'')+'" onclick="pickClass(\''+cls+'\')"><img src="'+heroImages[i]+'" alt=""><span>'+cls+'</span><small>0'+(i+1)+'</small></button>').join('')+'</div><div class="vcreate-content"><div class="vcreate-art"><img src="'+heroImages[idx]+'" alt="'+creationClass+'"><span class="vcreate-art-label">'+creationClass.toLocaleUpperCase('tr-TR')+'</span></div><div class="vcreate-info"><span class="vauth-eyebrow">'+c.type.toLocaleUpperCase('tr-TR')+' · '+c.weapon.toLocaleUpperCase('tr-TR')+'</span><h2>'+creationClass+'</h2><h3>'+c.title+'</h3><p>'+c.desc+'</p><div class="vcreate-divider">✦</div><form class="vauth-form" onsubmit="event.preventDefault();createCharacter()"><label for="characterNick">Karakterinin adı</label><input id="characterNick" name="character-name" maxlength="20" minlength="3" required placeholder="Krallık seni nasıl tanısın?" autocomplete="off" spellcheck="false" value="'+valorAccountEscape(creationNick)+'" oninput="creationNick=this.value"><p class="vcreate-name-hint">3–20 karakter · Harf, rakam, boşluk ve alt çizgi</p><p id="createError" class="vauth-error" role="alert"></p><button class="vauth-primary" type="submit">Maceraya Başla <span>›</span></button></form><p class="vcreate-account-label">Hesap: '+valorAccountEscape(valorAccountActive?.username||'Misafir')+'</p></div></div></section>'}
+const valorAccountOldPickClass=pickClass;
+pickClass=function(cls){if(!classes.includes(cls))return;creationNick=document.getElementById('characterNick')?.value??creationNick;creationClass=cls;render();};
+const valorAccountOldProfile=profile;
+profile=function(){return valorAccountOldProfile()+'<div class="vauth-profile-link"><span>'+valorAccountEscape(valorAccountActive?.username||'Mevcut karakter')+'</span><button type="button" onclick="valorAccountOpen()">Hesaplar</button></div>'};
+const valorAccountOldRender=render;
+render=function(){
+  const playing=valorAccountCanPlay(),creating=playing&&!state.class;
+  document.body.classList.toggle('valor-account-screen',!playing||creating);
+  document.body.classList.toggle('character-selection',!playing||creating);
+  if(!playing||creating){document.body.classList.remove('valor-home','valor-profile-page','valor-market-page');const nav=document.getElementById('bottomNav');if(nav)nav.style.display='none';document.getElementById('main').innerHTML=creating?valorCharacterCreationPage():valorAccountPage();return;}
+  return valorAccountOldRender.apply(this,arguments);
+};
+/* Existing startup listeners must not replace the account gate with Home. */
+window.valorAccountsReady=true;window.valorAccountsCanPlay=valorAccountCanPlay;
+valorAccountGate=!valorAccountActive&&!(sessionStorage.getItem(VALOR_ACCOUNT_SESSION)==='guest'&&valorAccountHasLegacy());
+if(valorAccountActive&&localStorage.getItem(VALOR_ACCOUNT_OWNER)!==valorAccountActive.id){const saved=valorAccountRead(valorAccountStorageKey(valorAccountActive.id));if(saved)valorAccountActivate(valorAccountActive,saved,false);else{valorAccountActive=null;valorAccountGate=true;}}
+render();
