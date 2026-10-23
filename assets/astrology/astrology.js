@@ -55,8 +55,9 @@ profile=function(){
   html=html.replace('</div><div class="vp-exp">',passives+'</div><div class="vp-exp">');
   return html.replace(/<p class="vp-hint">[^<]*<\/p>/,'<p class="vp-hint">Ekipman, binek, teknoloji ve Astroloji bonusları toplam değerlere dahildir. Savaş gücü temel istatistiklerden hesaplanır. Pasif savaş etkileri ayrıca gösterilir. Yaşam Işığı etkinleştiğinde maksimum canının %5’ini yeniler.</p>');
 };
+const VALOR_ARENA_DAMAGE_MULTIPLIER=1.5;
 const valorAstrologyPreviousArenaHit=valorArenaHit;
-valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousArenaHit(a,b,rng);if(hit.critical)hit.damage+=Math.round(valorArenaDamage(a,b)*Math.max(0,Number(a.stats.astrologyCriticalDamage)||0));hit.damage=valorAstrologyTakenDamage(hit.damage,b.stats.astrologyDamageReduction||0);hit.resisted=!!b.stats.astrologyResistance&&rng()<b.stats.astrologyResistance;if(hit.resisted)hit.damage=1;return hit;};
+valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousArenaHit(a,b,rng);if(hit.critical)hit.damage+=Math.round(valorArenaDamage(a,b)*Math.max(0,Number(a.stats.astrologyCriticalDamage)||0));hit.damage=valorAstrologyTakenDamage(hit.damage*VALOR_ARENA_DAMAGE_MULTIPLIER,b.stats.astrologyDamageReduction||0);hit.resisted=!!b.stats.astrologyResistance&&rng()<b.stats.astrologyResistance;if(hit.resisted)hit.damage=1;return hit;};
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
 valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.random){
   const me=valorArenaUnit({...myStats},myClass),enemy=valorArenaUnit({...rivalStats},rivalClass),log=[];
