@@ -13,7 +13,7 @@ function valorPetCost(stage){return stage>=VALOR_PET_MAX_STAGE?0:15*(valorPetSta
 function valorPetInfo(stage){stage=valorPetStage(stage);return {stage,rarity:VALOR_PET_RARITIES[Math.floor(stage/5)],stars:stage%5+1,value:10+stage*5,cost:valorPetCost(stage)}}
 const VALOR_PET_EVOLUTION_FILES=['','-green','-blue','-purple','-gold'];
 const VALOR_PET_EVOLUTION_NAMES=['Yavru','Genç','Yetişkin','Kadim','Efsanevi'];
-function valorPetArt(id,stage){if(!VALOR_PETS.some(p=>p.id===id))return '';return 'assets/pets/'+id+VALOR_PET_EVOLUTION_FILES[Math.floor(valorPetStage(stage)/5)]+'.webp?v=20261025-evolutions'}
+function valorPetArt(id,stage){if(!VALOR_PETS.some(p=>p.id===id))return '';const tier=Math.floor(valorPetStage(stage)/5);return 'assets/pets/'+id+VALOR_PET_EVOLUTION_FILES[tier]+'.webp?v='+(tier===4?'20261025-gold-feral':'20261025-evolutions')}
 function valorPetPreviewStage(id,tier){
  const pet=VALOR_PETS.find(p=>p.id===id),dialog=document.getElementById('valor-pet-evolution');
  if(!pet||!dialog||!Number.isInteger(tier)||tier<0||tier>4)return;
