@@ -1,0 +1,50 @@
+/* Stable market categories: all five remain visible, with no horizontal scrolling. */
+#main .vm-market-categories{
+ position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:40;
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;
+ margin:0 0 20px;padding:11px;overflow:visible;overscroll-behavior:auto;
+ border:1px solid #8f7048;border-radius:10px;
+ background:linear-gradient(180deg,#30261fed,#151217f7 42%,#100e12fa);
+ box-shadow:inset 0 0 0 3px #120f12,inset 0 0 0 4px #a5834e32,0 7px 18px #0009;
+ isolation:isolate;
+}
+#main .vm-market-category{
+ position:relative;display:flex;align-items:center;justify-content:center;min-width:0;
+ height:62px;min-height:62px;padding:10px 9px;flex:initial;
+ border:1px solid #967447;border-radius:6px;
+ background:linear-gradient(125deg,#79603c22,transparent 32%),linear-gradient(180deg,#493927 0%,#261e1b 17%,#171318 53%,#21191a 100%);
+ color:#d5bc95;font:700 14px/1.35 Georgia,'Times New Roman',serif;
+ white-space:normal;text-align:center;overflow-wrap:normal;
+ text-shadow:0 2px 2px #000;box-shadow:inset 0 1px #efcc8a44,inset 0 -3px #09080bb3,0 2px 4px #0008;
+ transition:color .15s,border-color .15s,box-shadow .15s,background .15s;
+ -webkit-tap-highlight-color:transparent;
+}
+#main .vm-market-category::before{
+ content:'';position:absolute;inset:3px;border:1px solid #b9925a30;border-radius:3px;pointer-events:none;
+ background:linear-gradient(90deg,#d2ae6a88,transparent 17%,transparent 83%,#d2ae6a88) left top/100% 1px no-repeat;
+}
+#main .vm-market-category::after{
+ content:'';position:absolute;left:25%;right:25%;bottom:5px;height:2px;
+ background:linear-gradient(90deg,transparent,#eac580,transparent);opacity:0;pointer-events:none;
+}
+#main .vm-market-category.active,#main .vm-market-category[aria-pressed=true]{
+ color:#ffe1a1;border-color:#e1b76d;
+ background:radial-gradient(ellipse at 50% 100%,#9a672b44,transparent 80%),linear-gradient(180deg,#947045 0%,#594026 18%,#35251d 56%,#4a321f 100%);
+ box-shadow:inset 0 1px #ffe4a388,inset 0 0 0 1px #a77a3d77,inset 0 -3px #26170e,0 0 10px #d2a05026,0 2px 5px #0009;
+}
+#main .vm-market-category.active::before,#main .vm-market-category[aria-pressed=true]::before{border-color:#edc57b66}
+#main .vm-market-category.active::after,#main .vm-market-category[aria-pressed=true]::after{opacity:1}
+#main .vm-market-category:focus-visible{outline:2px solid #f7d99c;outline-offset:3px}
+#main .vm-market-content{min-width:0}
+@media(hover:hover){#main .vm-market-category:hover{border-color:#d2ac70;color:#f6d9a8;filter:none;box-shadow:inset 0 1px #efcc8a66,inset 0 -3px #09080bb3,0 0 9px #c8954633}}
+@media(max-width:600px){
+ #main .vm-market-categories{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:10px;margin-bottom:17px}
+ #main .vm-market-category{grid-column:span 2;height:58px;min-height:58px;padding:8px 6px;font-size:12px}
+ #main .vm-market-category:nth-child(4){grid-column:2/span 2}
+ #main .vm-market-category:nth-child(5){grid-column:4/span 2}
+}
+@media(max-width:350px){#main .vm-market-categories{padding:8px;gap:6px}#main .vm-market-category{font-size:11px;padding:8px 4px}}
+@media(prefers-reduced-motion:reduce){#main .vm-market-category{transition:none}}
+/* Reserve desktop scrollbar space so short/long categories cannot shift the buttons. */
+html:has(body.valor-market-page){scrollbar-gutter:stable}
+@supports not (scrollbar-gutter:stable){html:has(body.valor-market-page){overflow-y:scroll}}
