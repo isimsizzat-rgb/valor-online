@@ -1,16 +1,16 @@
 /* Fame ranks and seven-day equipment bought with the Castle War wallet. */
 const VALOR_MEDALLION_LIFETIME=7*24*60*60*1000;
 const VALOR_MEDALLIONS=[
- {id:'zalim',resistance:1000,health:1000,name:'Zalim',fame:0,price:200,color:'#bd987a'},
- {id:'karanlik',resistance:2000,health:2000,name:'Karanlık Lord',fame:500,price:250,color:'#b695ed'},
- {id:'kudretli',resistance:3000,health:3000,name:'Kudretli Lord',fame:1500,price:300,color:'#df8c63'},
- {id:'yenilmez',resistance:4500,health:4500,name:'Yenilmez Lord',fame:4000,price:350,color:'#86baff'},
- {id:'dokunulmaz',resistance:6000,health:6000,name:'Dokunulmaz Lord',fame:8000,price:400,color:'#70dbac'},
- {id:'kutsal',resistance:8000,health:8000,name:'Kutsal Lord',fame:15000,price:450,color:'#f1dfb3'},
- {id:'yuce',resistance:10000,health:10000,name:'Yüce Lord',fame:25000,price:500,color:'#ed8b9e'},
- {id:'ebedi',resistance:13000,health:13000,name:'Ebedî Lord',fame:40000,price:600,color:'#8ee9f2'},
- {id:'ilahi',resistance:16000,health:16000,name:'İlahi Lord',fame:65000,price:750,color:'#f7c2d8'},
- {id:'efendi',resistance:20000,health:20000,name:'Lordların Efendisi',fame:100000,price:1000,color:'#ffc16a'}
+ {id:'zalim',armorPierce:2,health:1000,name:'Zalim',fame:0,price:200,color:'#bd987a'},
+ {id:'karanlik',armorPierce:4,health:2000,name:'Karanlık Lord',fame:500,price:250,color:'#b695ed'},
+ {id:'kudretli',armorPierce:6,health:3000,name:'Kudretli Lord',fame:1500,price:300,color:'#df8c63'},
+ {id:'yenilmez',armorPierce:8,health:4500,name:'Yenilmez Lord',fame:4000,price:350,color:'#86baff'},
+ {id:'dokunulmaz',armorPierce:10,health:6000,name:'Dokunulmaz Lord',fame:8000,price:400,color:'#70dbac'},
+ {id:'kutsal',armorPierce:12,health:8000,name:'Kutsal Lord',fame:15000,price:450,color:'#f1dfb3'},
+ {id:'yuce',armorPierce:14,health:10000,name:'Yüce Lord',fame:25000,price:500,color:'#ed8b9e'},
+ {id:'ebedi',armorPierce:16,health:13000,name:'Ebedî Lord',fame:40000,price:600,color:'#8ee9f2'},
+ {id:'ilahi',armorPierce:18,health:16000,name:'İlahi Lord',fame:65000,price:750,color:'#f7c2d8'},
+ {id:'efendi',armorPierce:20,health:20000,name:'Lordların Efendisi',fame:100000,price:1000,color:'#ffc16a'}
 ];
 function valorMedallionProduct(id){return VALOR_MEDALLIONS.find(p=>p.id===id)}
 function valorMedallionRank(){const fame=Math.max(0,Number(state.fame)||0);return [...VALOR_MEDALLIONS].reverse().find(p=>fame>=p.fame)}
@@ -32,7 +32,7 @@ function valorMedallionPrune(now=Date.now()){
  if(worn){const canonical=next.find(it=>String(it.id)===String(worn.id)&&valorMedallionAlive(it,now));if(!canonical){delete state.equipped.Madalyon;changed=true}else if(worn!==canonical){state.equipped.Madalyon=canonical;changed=true}}
  return changed;
 }
-function valorMedallionStatsHtml(p){return '<div class="vmed-stat-list"><span>Direnç <b>+'+money(p.resistance)+'</b></span><span>Can <b>+'+money(p.health)+'</b></span></div>'}
+function valorMedallionStatsHtml(p){return '<div class="vmed-stat-list"><span>Zırh Delme <b>%'+p.armorPierce+'</b></span><span>Can <b>+'+money(p.health)+'</b></span></div>'}
 function valorMedallionArt(p){return VALOR_MEDALLION_ART[p.id]}
 function valorMedallionOpenMarket(){closeBagPopup();go('Market');window.valorMarketCategory='medallions';render()}
 function valorMedallionMarket(){
@@ -69,7 +69,7 @@ function valorMedallionConfirmBuy(){
 function valorMedallionShowItem(id){
  if(valorMedallionPrune())save();const it=valorMedallionFind(id);if(!it)return toast('Madalyonun süresi dolmuş');
  const p=valorMedallionProduct(it.medallionId),worn=String(state.equipped?.Madalyon?.id)===String(it.id);
- valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+it.name+'"><small class="vmed-kicker">RÜTBE MADALYONU · '+(worn?'TAKILI':'ÇANTADA')+'</small><h3>'+p.name+'</h3>'+valorMedallionStatsHtml(p)+'<p class="vmed-time" data-medallion-timer="'+escapeAttr(String(it.id))+'">Kalan süre: '+valorMedallionRemaining(it)+'</p><p>Bitiş: '+valorMedallionDate(it.expiresAt)+' · Türkiye saati</p><p>Tüm sınıflar kuşanabilir. Bonuslar yalnızca takılıyken geçerlidir. Direnç, Astrolojiden sonra kalan hasarın en fazla %30’unu ve kendi değeri kadarını karşılar.</p><div class="vmed-dialog-actions"><button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı</button><button type="button" onclick="'+(worn?'valorMedallionRemove()':"valorMedallionEquip('"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></div>');
+ valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+it.name+'"><small class="vmed-kicker">RÜTBE MADALYONU · '+(worn?'TAKILI':'ÇANTADA')+'</small><h3>'+p.name+'</h3>'+valorMedallionStatsHtml(p)+'<p class="vmed-time" data-medallion-timer="'+escapeAttr(String(it.id))+'">Kalan süre: '+valorMedallionRemaining(it)+'</p><p>Bitiş: '+valorMedallionDate(it.expiresAt)+' · Türkiye saati</p><p>Tüm sınıflar kuşanabilir. Bonuslar yalnızca takılıyken geçerlidir. Zırh Delme, saldırılarında rakibin savunmasının bu oranını yok sayar.</p><div class="vmed-dialog-actions"><button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı</button><button type="button" onclick="'+(worn?'valorMedallionRemove()':"valorMedallionEquip('"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></div>');
 }
 function valorMedallionEquip(id){
  if(!state.class||!valorAccountCanPlay())return;if(valorMedallionPrune())save();const it=valorMedallionFind(id);if(!it)return toast('Madalyon bulunamadı veya süresi dolmuş');
