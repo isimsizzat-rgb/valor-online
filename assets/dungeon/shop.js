@@ -78,7 +78,7 @@ const valorDungeonShopPreviousPage=vsDungeon;
 vsDungeon=function(){
  if(valorDungeonShopView)return valorDungeonShopPage();
  const html=valorDungeonShopPreviousPage();
- return html.replace('</header>','<button type="button" class="vds-entry" onclick="valorDungeonOpenShop()">Zindan Marketi ›<small>'+money(vsData().dungeon.coins)+' Zindan Parası</small></button></header>');
+ return html.replace('</header>','<button type="button" class="vds-entry" onclick="valorDungeonOpenShop()">Zindan Marketi ›</button></header>');
 };
 const valorDungeonShopPreviousGo=go;
 go=function(x){valorDungeonClosePurchase();valorDungeonShopView=false;return valorDungeonShopPreviousGo(x)};
