@@ -103,3 +103,14 @@ html body .valor-bag .bag-slot:has(.vg-icon) .bag-item-glyph{
 html body .valor-bag .bag-slot:has(.vg-icon) .slot-name{
  color:#f4dfb7;text-shadow:0 1px 3px #000;
 }
+/* Mosaic inventory tiles show the stone and quantity; details open on tap. */
+html body .valor-bag .bag-slot:has(.vg-icon) .slot-name{display:none!important}
+html body .valor-bag .bag-slot:has(.vg-icon) .bag-item-glyph{
+ display:grid!important;place-items:center!important;width:100%!important;height:100%!important;
+}
+html body .valor-bag .bag-slot:has(.vg-icon) .vg-icon{
+ transform:scale(1.4);transform-origin:center;
+}
+@media(max-width:350px){
+ html body .valor-bag .bag-slot:has(.vg-icon) .vg-icon{transform:scale(1.2)}
+}
