@@ -2,4 +2,4 @@
 
 .vmed-guild-link{display:flex;justify-content:flex-end;margin-bottom:10px}.vmed-guild-link button{min-height:40px;font-size:12px}
 
-.vmed-stat-list{display:grid;gap:6px;margin:0 0 13px}.vmed-stat-list span{display:flex;justify-content:space-between;gap:6px;font:12px system-ui;color:#c8baa7;padding:7px 8px;background:#0b0a0d80;border:1px solid #7a674237;border-radius:5px}.vmed-stat-list b{color:#f3d6a3}.vmed-dialog .vmed-stat-list{margin:15px 0}.vmed-resisted{color:#79d2cf;font-size:11px}.vmed-profile-note{font-size:11px;color:#b9b2a5;line-height:1.6}
+.vmed-stat-list{display:grid;gap:6px;margin:0 0 13px}.vmed-stat-list span{display:flex;justify-content:space-between;gap:6px;font:13px Georgia,"Times New Roman",serif;color:#c8baa7;padding:7px 8px;background:#0b0a0d80;border:1px solid #7a674237;border-radius:5px}.vmed-stat-list b{color:#f3d6a3}.vmed-dialog .vmed-stat-list{margin:15px 0}.vmed-resisted{color:#79d2cf;font-size:11px}.vmed-profile-note{font-size:11px;color:#b9b2a5;line-height:1.6}
