@@ -58,12 +58,16 @@ profile=function(){
 const VALOR_ARENA_DAMAGE_MULTIPLIER=1.5;
 const valorAstrologyPreviousArenaHit=valorArenaHit;
 valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousArenaHit(a,b,rng);if(hit.critical)hit.damage+=Math.round(valorArenaDamage(a,b)*Math.max(0,Number(a.stats.astrologyCriticalDamage)||0));hit.damageBeforeAstrology=hit.damage*VALOR_ARENA_DAMAGE_MULTIPLIER;hit.damage=valorAstrologyTakenDamage(hit.damage*VALOR_ARENA_DAMAGE_MULTIPLIER,b.stats.astrologyDamageReduction||0);hit.resisted=!!b.stats.astrologyResistance&&rng()<b.stats.astrologyResistance;if(hit.resisted)hit.damage=1;return hit;};
+/* Fury: after round 5, every hit deals +10% more damage per round (round 6 +10%, round 7 +20%, ...). HP is untouched. */
+const VALOR_ARENA_FURY_START=5,VALOR_ARENA_FURY_STEP=.10;
+function valorArenaFury(round){return Math.max(0,round-VALOR_ARENA_FURY_START)*VALOR_ARENA_FURY_STEP;}
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
 valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.random){
   const me=valorArenaUnit({...myStats},myClass),enemy=valorArenaUnit({...rivalStats},rivalClass),log=[];
   for(let round=1;me.hp>0&&enemy.hp>0&&round<=10000;round++){
     let mine=0,theirs=0,myHit=null,enemyHit=null;
-    const strike=(a,b)=>{const hit=valorArenaHit(a,b,rng),damage=Math.min(b.hp,hit.damage);b.hp-=damage;hit.healed=valorAstrologyHeal(b,b.stats.astrologyHealing,rng);return {hit,damage};};
+    const fury=valorArenaFury(round);
+    const strike=(a,b)=>{const hit=valorArenaHit(a,b,rng);if(fury>0&&!hit.resisted){hit.fury=fury;hit.damage=Math.max(1,Math.round(hit.damage*(1+fury)));}const damage=Math.min(b.hp,hit.damage);b.hp-=damage;hit.healed=valorAstrologyHeal(b,b.stats.astrologyHealing,rng);return {hit,damage};};
     const strikeMine=()=>{const s=strike(me,enemy);myHit=s.hit;mine=s.damage;},strikeEnemy=()=>{const s=strike(enemy,me);enemyHit=s.hit;theirs=s.damage;};
     const meFirst=me.attack===enemy.attack?rng()<.5:me.attack>enemy.attack;
     if(meFirst){strikeMine();if(enemy.hp>0)strikeEnemy();}else{strikeEnemy();if(me.hp>0)strikeMine();}
@@ -72,7 +76,7 @@ valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.rando
   const knockout=me.hp===0||enemy.hp===0,draw=!knockout,win=enemy.hp===0&&me.hp>0;return {win,draw,rounds:log.length,myHp:me.hp,enemyHp:enemy.hp,myMaxHp:me.maxHp,enemyMaxHp:enemy.maxHp,reason:knockout?'knockout':'stalemate',log};
 };
 const valorAstrologyPreviousHitLabel=valorArenaHitLabel;
-valorArenaHitLabel=function(hit){return valorAstrologyPreviousHitLabel(hit)+(hit?.resisted?' <strong class="arena-blocked">Sonsuz Direnç!</strong>':'')+(hit?.healed?' <strong class="arena-healed">Yaşam Işığı +'+money(hit.healed)+' can</strong>':'');};
+valorArenaHitLabel=function(hit){return valorAstrologyPreviousHitLabel(hit)+(hit?.fury?' <strong class="arena-critical">Öfke +%'+Math.round(hit.fury*100)+'</strong>':'')+(hit?.resisted?' <strong class="arena-blocked">Sonsuz Direnç!</strong>':'')+(hit?.healed?' <strong class="arena-healed">Yaşam Işığı +'+money(hit.healed)+' can</strong>':'');};
 const valorAstrologyPreviousDungeonEnemy=vsEnemy;
 vsEnemy=function(floor){return Math.max(1,Math.round(valorAstrologyEnemyThreat(valorAstrologyPreviousDungeonEnemy(floor))));};
 /* NPCs copy base stat strengths, never the player's passive chances. */
