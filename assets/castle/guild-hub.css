@@ -1,0 +1,35 @@
+/* Guild hub tabs: Members, Guild Ranking, Contributions, Castle War */
+.vgh-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}
+.vgh-tabs button{white-space:normal;line-height:1.25}
+@media(max-width:560px){.vgh-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.vgh-summary{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 16px}
+.vgh-summary h2{margin:6px 0 0;overflow-wrap:anywhere}
+.vgh-stats{display:flex;gap:8px}
+.vgh-stats>div{min-width:96px;padding:10px 12px;border:1px solid #86663c;border-radius:8px;background:linear-gradient(110deg,#2c211a,#16131a)}
+.vgh-stats span{display:block;font-size:9px;letter-spacing:.6px;color:#af9977;margin-bottom:5px}
+.vgh-stats b{font-size:18px;color:#ebcf99;font-variant-numeric:tabular-nums}
+
+.vgh-member,.vgh-guild>summary{display:grid;grid-template-columns:27px minmax(0,1fr) auto;gap:8px;align-items:center;padding:13px;border-top:1px solid #806b4433;font-size:12px}
+.vgh-member>strong,.vgh-guild>summary>strong{color:#e5bf77;font-variant-numeric:tabular-nums}
+.vgh-member-name{display:flex;flex-direction:column;gap:3px;min-width:0}
+.vgh-member-name>span{overflow-wrap:anywhere;color:#ecd7b4}
+.vgh-member-name small{font-size:10px;color:#a9967a}
+.vgh-member-name>span small{font-size:9px;color:#b8a486}
+
+.vgh-guild>summary{cursor:pointer;list-style:none}
+.vgh-guild>summary::-webkit-details-marker{display:none}
+.vgh-guild>summary>strong::after{content:' ▾';font-size:10px;color:#a78c62}
+.vgh-guild[open]>summary>strong::after{content:' ▴'}
+.vgh-guild-members{background:#140f14;border-top:1px solid #806b4433}
+.vgh-guild-members .vgh-member{padding:10px 13px 10px 22px;font-size:11px;border-top:0}
+
+.vgh-card{margin-top:16px;padding:16px;border:1px solid #86663c;border-radius:8px;background:linear-gradient(120deg,#2a2019,#17131a)}
+.vgh-card h3{margin:0 0 6px;font:400 20px Georgia,serif;color:#edcfa0}
+.vgh-card>p{font-size:12px;color:#baa98f;margin:0 0 10px}
+.vgh-donate{display:flex;gap:8px;margin-top:14px}
+.vgh-donate input{flex:1;min-width:0}
+.vgh-donate button{flex:0 0 auto}
+
+.vgh-castle-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.vgh-castle-links button{min-height:42px;font-size:12px;white-space:normal}
