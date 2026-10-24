@@ -15,4 +15,6 @@ html body #main .vp-wrap .vp-scene.vf-eight-slots .vf-slot-caption{position:abso
 
 .vf-confirm-pair{display:flex;justify-content:center;gap:12px;margin:12px 0}.vf-confirm-pair img{width:42%;height:120px;object-fit:contain}
 
-#main .bag-slot .vf-bag-wing-level{position:absolute;top:4px;left:4px;z-index:5;display:block;padding:3px 5px;border:1px solid #d8b575;border-radius:4px;background:rgba(13,10,19,.94);color:#ffe1a2;font:700 11px Georgia,serif;line-height:1.2;box-shadow:0 1px 4px #000;pointer-events:none}
+#main .bag-slot .vf-bag-wing-level{position:absolute;top:auto;left:auto;right:3px;bottom:3px;z-index:6;display:block;padding:2px 3px;border:1px solid #d8b575;border-radius:4px;background:rgba(13,10,19,.94);color:#ffe1a2;font:700 9px Georgia,serif;line-height:1.2;box-shadow:0 1px 4px #000;pointer-events:none}
+
+#main .bag-slot:has(.vf-bag-wing-level) .slot-name{padding-right:35px}
