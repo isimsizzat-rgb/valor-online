@@ -9,7 +9,9 @@ const VALOR_PET_RARITIES=[{name:'Beyaz',color:'#ece7dc'},{name:'Yeşil',color:'#
 const VALOR_PET_ATTRIBUTES=['Güç','Zeka','Zırh','Beden'];
 const VALOR_PET_MAX_STAGE=24;
 function valorPetStage(value){return Number.isFinite(Number(value))?Math.max(0,Math.min(24,Math.floor(Number(value)))):0}
-function valorPetCost(stage){return stage>=VALOR_PET_MAX_STAGE?0:15*(valorPetStage(stage)+1)}
+/* Food to finish each rarity (to the next rarity's 1 star; gold: 1 to 5 stars), split evenly across its star steps. */
+const VALOR_PET_RARITY_FOOD=[250,750,1500,3000,7500];
+function valorPetCost(stage){if(stage>=VALOR_PET_MAX_STAGE)return 0;const tier=Math.floor(valorPetStage(stage)/5);return VALOR_PET_RARITY_FOOD[tier]/(tier===4?4:5)}
 function valorPetInfo(stage){stage=valorPetStage(stage);return {stage,rarity:VALOR_PET_RARITIES[Math.floor(stage/5)],stars:stage%5+1,value:10+stage*5,cost:valorPetCost(stage)}}
 const VALOR_PET_EVOLUTION_FILES=['','-green','-blue','-purple','-gold'];
 const VALOR_PET_EVOLUTION_NAMES=['Yavru','Genç','Yetişkin','Kadim','Efsanevi'];
