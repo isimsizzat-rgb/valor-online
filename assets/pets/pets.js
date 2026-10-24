@@ -76,12 +76,12 @@ function valorPetNumber(value){return Number(value).toLocaleString('tr-TR',{maxi
 function valorPetStars(count){return '<span class="vpet-stars" aria-label="'+count+' yıldız">'+Array.from({length:5},(_,i)=>'<span'+(i<count?' class="filled"':'')+' aria-hidden="true">★</span>').join('')+'</span>'}
 function valorPetPage(){
  const d=valorPetData(),food=valorPetFoodCount(),totals=valorPetAttributeTotals(),bonus=valorPetCharacterAttributes();
- return '<section class="vpet-page"><header class="vpet-heading"><div><small>YOL ARKADAŞLARIN</small><h1>Pet Koleksiyonu</h1><p>Dört dost. Ortak güç. Kalıcı bağ.</p></div><button type="button" onclick="go(\'Anasayfa\')">‹ Anasayfa</button></header><div class="vpet-summary"><div><span>Pet Yemi</span><strong>'+money(food)+'</strong><small>Günlük market: 25 elmas · 15 adet</small></div><button type="button" onclick="valorPetOpenMarket()">Yem Satın Al</button></div><div class="vpet-bonus"><div><small>KARAKTERİNE AKTARILAN · %50</small><p>Dört petin özellikleri birlikte birikir.</p></div><div class="vpet-bonus-grid">'+VALOR_PET_ATTRIBUTES.map(key=>'<div><span>'+key+'</span><strong>+'+valorPetNumber(bonus[key])+'</strong><small>Pet toplamı '+money(totals[key])+'</small></div>').join('')+'</div></div><div class="vpet-grid">'+VALOR_PETS.map(pet=>{
+ return '<section class="vpet-page"><header class="vpet-heading"><div><small>YOL ARKADAŞLARIN</small><h1>Pet Koleksiyonu</h1><p>Dört dost. Ortak güç. Kalıcı bağ.</p></div><button type="button" onclick="go(\'Anasayfa\')">‹ Anasayfa</button></header><div class="vpet-summary"><img class="vpet-food-stock-art" src="assets/pets/pet-food-bag.webp?v=20261025-food" alt="Yem Çantası" width="80" height="80"><div><span>Pet Yemi</span><strong>'+money(food)+'</strong><small>Günlük market: 25 elmas · 15 adet</small></div><button type="button" onclick="valorPetOpenMarket()">Yem Satın Al</button></div><div class="vpet-bonus"><div><small>KARAKTERİNE AKTARILAN · %50</small><p>Dört petin özellikleri birlikte birikir.</p></div><div class="vpet-bonus-grid">'+VALOR_PET_ATTRIBUTES.map(key=>'<div><span>'+key+'</span><strong>+'+valorPetNumber(bonus[key])+'</strong><small>Pet toplamı '+money(totals[key])+'</small></div>').join('')+'</div></div><div class="vpet-grid">'+VALOR_PETS.map(pet=>{
   const p=d[pet.id],info=valorPetInfo(p.stage),next=valorPetInfo(p.stage+1),maxed=!info.cost,remaining=info.cost-p.progress;
   return '<article class="vpet-card '+(pet.movement==='Uçan'?'vpet-flying':'')+'" style="--pet-color:'+info.rarity.color+'"><button type="button" class="vpet-art vpet-art-button" onclick="valorPetPreview(\''+pet.id+'\')" aria-label="'+pet.name+' evrimlerini incele"><img src="'+valorPetArt(pet.id,p.stage)+'" alt="'+pet.name+' · '+pet.kind+'" width="512" height="512" decoding="async"><span class="vpet-kind">'+pet.movement+'</span><span class="vpet-rarity">'+info.rarity.name+'</span></button><div class="vpet-copy"><div class="vpet-title"><h2>'+pet.name+'</h2><span>'+pet.kind+'</span></div>'+valorPetStars(info.stars)+'<p class="vpet-description">'+pet.description+'</p><div class="vpet-stats">'+VALOR_PET_ATTRIBUTES.map(key=>'<div><span>'+key+'</span><b>'+info.value+'</b><small>Karaktere +'+valorPetNumber(info.value*.5)+'</small></div>').join('')+'</div><div class="vpet-growth"><div><strong>'+(maxed?'En yüksek aşama':next.rarity.name+' '+next.stars+' yıldıza')+'</strong><span>'+(maxed?'25 / 25':money(p.progress)+' / '+money(info.cost)+' yem')+'</span></div><div class="vpet-track" role="progressbar" aria-label="'+pet.name+' gelişimi" aria-valuemin="0" aria-valuemax="'+(info.cost||1)+'" aria-valuenow="'+(maxed?1:p.progress)+'"><i style="width:'+(maxed?100:p.progress/info.cost*100)+'%"></i></div><small>'+(maxed?'Dört özellik de 130 · karakterine +65.':'Sonraki aşamada dört özellik +5 · karakterine +2,5.')+'</small></div><div class="vpet-actions"><button type="button" '+(maxed||!food||!p.owned?'disabled':'')+' onclick="valorPetFeed(\''+pet.id+'\',true)">1 Yem Ver</button><button type="button" '+(maxed||!food||!p.owned?'disabled':'')+' onclick="valorPetFeed(\''+pet.id+'\')">'+(maxed?'Tamamlandı':'Besle · '+Math.min(food,remaining)+' Yem')+'</button></div></div></article>';
  }).join('')+'</div><footer class="vpet-guide"><h2>Gelişim Yolu</h2><div>'+VALOR_PET_RARITIES.map(r=>'<span style="color:'+r.color+'">'+r.name+' <small>1–5 ★</small></span>').join('<i aria-hidden="true">›</i>')+'</div><p>Her aşamada yem ihtiyacı 15 artar. Beyaz 5 yıldızdan yeşil 1 yıldıza geçiş 75 yemdir. Verdiğin yemler birikir; sayfayı kapatsan da ilerlemen korunur.</p></footer></section>';
 }
-const valorPetFoodIcon='<svg class="vpet-food-icon" viewBox="0 0 100 100" role="img" aria-label="Pet yemi"><defs><linearGradient id="vpet-bowl" x2="0" y2="1"><stop stop-color="#c7984c"/><stop offset="1" stop-color="#47301a"/></linearGradient></defs><ellipse cx="50" cy="43" rx="32" ry="11" fill="#372a1b" stroke="#d8b574" stroke-width="2"/><g fill="#ac7a43" stroke="#e4bd78"><path d="m24 40 7-8 9 4-1 10-10 1zM42 36l8-9 9 5-1 11-10 1zM61 39l9-7 8 7-4 9-10-1zM36 44l9-7 9 6-3 9-11 1zM56 46l8-7 9 7-4 9-10-1z"/></g><path d="M17 44h66L74 71Q50 84 26 71Z" fill="url(#vpet-bowl)" stroke="#e0bb76" stroke-width="2"/><path d="M22 52h56" stroke="#f5d59b" opacity=".5"/><circle cx="50" cy="66" r="7" fill="#d6b073"/><path d="M48 66l2-3 2 3-2 2z" fill="#4c321b"/></svg>';
+const valorPetFoodIcon='<img class="vpet-food-icon" src="assets/pets/pet-food.webp?v=20261025-food" alt="Pet Yemi" width="512" height="512">';
 if(!marketProducts.some(p=>p.id==='petFood'))marketProducts.push({id:'petFood',name:'Pet Yemi',price:25,limit:15,icon:valorPetFoodIcon,description:'Pet ekranında dostlarını beslemek için kullanılır. Dört pet için ortak yem stoğudur.'});
 const valorPetPreviousMaterial=isDirectStoneMaterial;
 isDirectStoneMaterial=function(id){return id==='petFood'||valorPetPreviousMaterial(id)};
@@ -92,12 +92,44 @@ vmDerived=function(){const out={...valorPetPreviousDerived()},bonus=valorPetDeri
 const valorPetPreviousHome=home;
 home=function(){return valorPetPreviousHome().replace('</div>','<button type="button" class="mmorpg-home-tile valor-vertical-tile vpet-home-tile" onclick="go(\'Pet\')" aria-label="Pet" title="Pet"><img src="assets/pets/kozpence.webp?v=20261025-alpha" alt="Pet" decoding="async" draggable="false"><span>Pet</span></button></div>')};
 const valorPetPreviousRender=render;
+/* A single existing active character on this browser receives the requested test food. */
+const VALOR_PET_FOOD_GIFT={amount:99999,cutoff:1792881752810,flag:'valorPetFoodGift20261025',receipt:'valor-pet-food-gift-20261025'};
+let valorPetFoodGiftCreating=false,valorPetFoodGiftMessage=false;
+const valorPetFoodGiftPreviousSave=save;
+function valorPetFoodGiftGrant(character,account,persist,storage=localStorage){
+ if(!['Savaşçı','Büyücü','Okçu'].includes(character?.class))return false;
+ const gift=VALOR_PET_FOOD_GIFT,created=Number(account?.createdAt??character.valorCharacterCreatedAt??0);
+ if(!Number.isFinite(created)||created>gift.cutoff)return false;
+ const owner=account?.id||'legacy-guest';
+ if(character[gift.flag]){if(!storage.getItem(gift.receipt))storage.setItem(gift.receipt,owner);return false}
+ if(storage.getItem(gift.receipt))return false;
+ const before=character.inventory;
+ character.inventory=(Array.isArray(before)?before:[]).map(it=>({...it}));
+ const stack=character.inventory.find(it=>it.marketItemId==='petFood');
+ if(stack)stack.count=Math.max(0,Math.floor(Number(stack.count)||0))+gift.amount;
+ else character.inventory.push({id:valorUniqueItemId(),slot:'Eşya',marketItemId:'petFood',name:'Pet Yemi',count:gift.amount,description:'Pet ekranında dostlarını beslemek için kullanılır.'});
+ character[gift.flag]=true;
+ try{persist();storage.setItem(gift.receipt,owner)}catch(error){character.inventory=before;delete character[gift.flag];throw error}
+ return true;
+}
+function valorPetFoodGiftApplyActive(){
+ if(valorPetFoodGiftCreating||!state.class||typeof valorAccountCanPlay!=='function'||!valorAccountCanPlay())return false;
+ const granted=valorPetFoodGiftGrant(state,valorAccountActive,()=>valorPetFoodGiftPreviousSave());
+ if(granted)valorPetFoodGiftMessage=true;return granted;
+}
+const valorPetFoodGiftPreviousInit=initClass;
+initClass=function(){
+ const creating=!state.class,previous=valorPetFoodGiftCreating;if(creating)valorPetFoodGiftCreating=true;
+ try{return valorPetFoodGiftPreviousInit.apply(this,arguments)}finally{valorPetFoodGiftCreating=previous}
+};
 render=function(){
  const ready=state.class&&(typeof valorAccountCanPlay!=='function'||valorAccountCanPlay());
  if(ready&&!state.petsV1){valorPetData();save()}
+ if(ready)valorPetFoodGiftApplyActive();
  const result=valorPetPreviousRender.apply(this,arguments);
  document.body.classList.toggle('valor-pet-page',!!ready&&page==='Pet');
  if(ready&&page==='Pet')document.getElementById('main').innerHTML=valorPetPage();
+ if(ready&&valorPetFoodGiftMessage){valorPetFoodGiftMessage=false;toast('+99.999 pet yemi karakterine eklendi!')}
  return result;
 };
 render();
