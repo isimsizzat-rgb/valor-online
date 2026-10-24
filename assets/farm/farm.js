@@ -1,9 +1,9 @@
 /* Farm progression belongs to each character's valorSystems save. */
 const valorFarmRequirements=[10,40,75,115,160,210,265,325,390,460,535,615,700,790,885];
 const valorFarmSeeds={
- quick:{name:'Filiz Tohumu',hours:1,yield:1},
- fertile:{name:'Bereket Tohumu',hours:3,yield:3},
- abundant:{name:'Bolluk Tohumu',hours:6,yield:6}
+ quick:{name:'Filiz Tohumu',hours:1,crystals:2500,gold:15000},
+ fertile:{name:'Bereket Tohumu',hours:3,crystals:6500,gold:37500},
+ abundant:{name:'Bolluk Tohumu',hours:6,crystals:11000,gold:70000}
 };
 function valorFarmProgress(){
  const d=vsData();let changed=false;
@@ -22,13 +22,13 @@ function valorFarmCrop(i){
  const d=vsData(),crop=d.plotCrops?.[i],seed=crop&&valorFarmSeeds[crop.seed];
  if(seed&&['gold','crystal'].includes(crop.resource))return {...seed,resource:crop.resource,duration:seed.hours*3600000};
  // Existing planted crops retain their original ten-minute timer and reward.
- return {name:'Önceki Ekim',hours:1/6,yield:1,resource:d.plotSeeds?.[i]==='gold'?'gold':'crystal',duration:600000};
+ return {name:'Önceki Ekim',hours:1/6,crystals:1,gold:1000,resource:d.plotSeeds?.[i]==='gold'?'gold':'crystal',duration:600000};
 }
 function valorFarmCanAccess(i,p){return Number.isInteger(i)&&i>=0&&i<15&&(i<p.open||!!p.d.plots[i])}
 valorFarmSeedType=function(i){return valorFarmCrop(i).resource};
 valorFarmTime=function(ms){const seconds=Math.ceil(Math.max(0,ms)/1000),h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
 function valorFarmStatus(g){return !g.stage?'Ekim bekliyor':g.ready?'Hasada hazır':valorFarmTime(g.remaining)+' kaldı'}
-function valorFarmReward(c){return c.resource==='gold'?money(c.yield*1000)+' Altın':c.yield+' Kristal'}
+function valorFarmReward(c){return c.resource==='gold'?money(c.gold)+' Altın':money(c.crystals)+' Kristal'}
 valorFarmUpdate=function(){
  if(!state.class||page!=='Çiftlik'||document.hidden)return;
  const p=valorFarmProgress(),now=Date.now();
@@ -45,10 +45,10 @@ valorFarmUpdate=function(){
 valorOpenSeedPicker=function(i){
  const p=valorFarmProgress();if(!valorFarmCanAccess(i,p)||i>=p.open||p.d.plots[i])return;
  valorCloseSeedPicker();const overlay=document.createElement('div');overlay.id='valor-farm-seed-picker';overlay.className='valor-item-overlay';
- overlay.innerHTML=`<section class="valor-item-dialog farm-seed-dialog vf-seed-dialog" role="dialog" aria-modal="true" aria-labelledby="farm-seed-title"><h3 id="farm-seed-title">Tohumunu seç</h3><p>Arazi ${i+1} · Ücretsiz ekim · Her hasat +1 çiftlik deneyimi</p><label class="vf-resource">Yetiştirilecek ürün <select id="vf-resource" onchange="valorFarmPickerRewards()"><option value="crystal">Kristal</option><option value="gold">Altın</option></select></label><div class="farm-seed-choices">${Object.entries(valorFarmSeeds).map(([id,c])=>`<button type="button" onclick="valorPlantSeed(${i},'${id}',document.getElementById('vf-resource').value)"><img src="${valorFarmGrowthArt[1]}" alt=""><b>${c.name}</b><span>${c.hours} saat</span><strong data-yield="${c.yield}">${c.yield} Kristal</strong></button>`).join('')}</div><p>Uzun süreli tohumlar süreleriyle orantılı ürün verir. Seviye için her arazi 1 hasat sayılır.</p><button type="button" class="farm-seed-cancel" onclick="valorCloseSeedPicker()">Vazgeç</button></section>`;
+ overlay.innerHTML=`<section class="valor-item-dialog farm-seed-dialog vf-seed-dialog" role="dialog" aria-modal="true" aria-labelledby="farm-seed-title"><h3 id="farm-seed-title">Tohumunu seç</h3><p>Arazi ${i+1} · Ücretsiz ekim · Her hasat +1 çiftlik deneyimi</p><label class="vf-resource">Yetiştirilecek ürün <select id="vf-resource" onchange="valorFarmPickerRewards()"><option value="crystal">Kristal</option><option value="gold">Altın</option></select></label><div class="farm-seed-choices">${Object.entries(valorFarmSeeds).map(([id,c])=>`<button type="button" onclick="valorPlantSeed(${i},'${id}',document.getElementById('vf-resource').value)"><img src="${valorFarmGrowthArt[1]}" alt=""><b>${c.name}</b><span>${c.hours} saat</span><strong data-seed="${id}">${money(c.crystals)} Kristal</strong></button>`).join('')}</div><p>Her arazi yalnızca seçtiğin ürünü verir. Seviye için her arazi 1 hasat sayılır.</p><button type="button" class="farm-seed-cancel" onclick="valorCloseSeedPicker()">Vazgeç</button></section>`;
  overlay.addEventListener('click',e=>{if(e.target===overlay)valorCloseSeedPicker()});document.body.appendChild(overlay);
 };
-function valorFarmPickerRewards(){const gold=document.getElementById('vf-resource').value==='gold';document.querySelectorAll('#valor-farm-seed-picker [data-yield]').forEach(el=>el.textContent=gold?money(Number(el.dataset.yield)*1000)+' Altın':el.dataset.yield+' Kristal');document.querySelectorAll('#valor-farm-seed-picker img').forEach(img=>img.src=(gold?valorFarmGoldArt:valorFarmGrowthArt)[1])}
+function valorFarmPickerRewards(){const resource=document.getElementById('vf-resource').value;document.querySelectorAll('#valor-farm-seed-picker [data-seed]').forEach(el=>el.textContent=valorFarmReward({...valorFarmSeeds[el.dataset.seed],resource}));document.querySelectorAll('#valor-farm-seed-picker img').forEach(img=>img.src=(resource==='gold'?valorFarmGoldArt:valorFarmGrowthArt)[1])}
 valorPlantSeed=function(i,seed,resource='crystal'){
  const p=valorFarmProgress();if(!valorFarmSeeds[seed]||!['gold','crystal'].includes(resource)||!valorFarmCanAccess(i,p)||i>=p.open||p.d.plots[i])return;
  p.d.plotCrops[i]={seed,resource};p.d.plotSeeds[i]=resource;p.d.plots[i]=Date.now();valorCloseSeedPicker();save();render();toast(valorFarmSeeds[seed].name+' ekildi');
@@ -58,7 +58,7 @@ vsHarvest=function(i){
  const t=p.d.plots[i];if(!t)return valorOpenSeedPicker(i);
  const crop=valorFarmCrop(i);if(!valorFarmGrowth(t,Date.now(),crop.duration).ready)return;
  p.d.plots[i]=0;p.d.plotSeeds[i]=null;p.d.plotCrops[i]=null;
- if(crop.resource==='gold')state.gold=(Number(state.gold)||0)+crop.yield*1000;else p.d.crystals=(Number(p.d.crystals)||0)+crop.yield;
+ if(crop.resource==='gold')state.gold=(Number(state.gold)||0)+crop.gold;else p.d.crystals=(Number(p.d.crystals)||0)+crop.crystals;
  p.d.farmV2.harvests=p.total+1;
  if(typeof valorQuestRecord==='function')valorQuestRecord('harvest');
  save();const next=valorFarmProgress();render();toast('+'+valorFarmReward(crop)+' · '+(next.level>p.level?'Çiftlik Sv. '+next.level+(next.open>p.open?' · Yeni arazi açıldı!':''):'+1 hasat'));
