@@ -114,3 +114,11 @@ html body .valor-bag .bag-slot:has(.vg-icon) .vg-icon{
 @media(max-width:350px){
  html body .valor-bag .bag-slot:has(.vg-icon) .vg-icon{transform:scale(1.2)}
 }
+
+/* Modern world-boss encounter art, with a face-safe mobile crop. */
+html body .wb-art{min-height:0!important}
+html body .wb-art .wb-demon{
+ content:url('../boss/world-boss-v2.webp');
+ height:clamp(240px,52vw,350px)!important;
+ object-fit:cover;object-position:50% 28%;
+}
