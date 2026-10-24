@@ -122,3 +122,5 @@ html body .wb-art .wb-demon{
  height:clamp(240px,52vw,350px)!important;
  object-fit:cover;object-position:50% 28%;
 }
+/* Keep the encounter artwork and boss name without the health caption. */
+html body .wb-art>p{display:none!important}
