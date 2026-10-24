@@ -1,14 +1,14 @@
 /* Permanent, independently upgraded astrology talents. */
 const VALOR_ASTROLOGY_MAX = 20;
 const VALOR_ASTROLOGY_TALENTS = [
-  {id:'crimsonFury',name:'Kızıl Hiddet',stat:'Saldırı',step:1,label:'Saldırı',icon:'✶',color:'#d17676'},
-  {id:'ironWill',name:'Demir İrade',stat:'Savunma',step:1,label:'Defans',icon:'⬡',color:'#aebcd1'},
-  {id:'astralFlame',name:'Astral Alev',stat:'Sihir',step:1,label:'Sihirli saldırı',icon:'✧',color:'#b291eb'},
-  {id:'starVeil',name:'Yıldız Örtüsü',stat:'Sihir Savunma',step:1,label:'Sihirli defans',icon:'✦',color:'#8caee9'},
-  {id:'fateBreaker',name:'Kader Kıran',step:2,label:'Kritik hasar',icon:'ϟ',color:'#e3bc76'},
-  {id:'nightVeil',name:'Gece Perdesi',step:2,label:'Hasar azaltma',icon:'☾',color:'#9c91dd'},
-  {id:'endlessResistance',name:'Sonsuz Direnç',step:1,label:'Etkinleşme ihtimali',icon:'◇',color:'#88c9d0',description:'Rakibin vuruşundan yalnızca 1 hasar alırsın.'},
-  {id:'lifeLight',name:'Yaşam Işığı',step:1,label:'Etkinleşme ihtimali',icon:'❋',color:'#90c99c',description:'Gelen vuruştan sağ çıkarsan maksimum canının %5’i yenilenir.'}
+  {id:'crimsonFury',name:'Kızıl Hiddet',stat:'Saldırı',step:0.5,label:'Saldırı',icon:'✶',color:'#d17676'},
+  {id:'ironWill',name:'Demir İrade',stat:'Savunma',step:0.5,label:'Defans',icon:'⬡',color:'#aebcd1'},
+  {id:'astralFlame',name:'Astral Alev',stat:'Sihir',step:0.5,label:'Sihirli saldırı',icon:'✧',color:'#b291eb'},
+  {id:'starVeil',name:'Yıldız Örtüsü',stat:'Sihir Savunma',step:0.5,label:'Sihirli defans',icon:'✦',color:'#8caee9'},
+  {id:'fateBreaker',name:'Kader Kıran',step:1,label:'Kritik hasar',icon:'ϟ',color:'#e3bc76'},
+  {id:'nightVeil',name:'Gece Perdesi',step:1,label:'Hasar azaltma',icon:'☾',color:'#9c91dd'},
+  {id:'endlessResistance',name:'Sonsuz Direnç',step:0.5,label:'Etkinleşme ihtimali',icon:'◇',color:'#88c9d0',description:'Rakibin vuruşundan yalnızca 1 hasar alırsın.'},
+  {id:'lifeLight',name:'Yaşam Işığı',step:0.5,label:'Etkinleşme ihtimali',icon:'❋',color:'#90c99c',description:'Gelen vuruştan sağ çıkarsan maksimum canının %5’i yenilenir.'}
 ];
 function valorAstrologyData() {
   let d=state.astrologyV1,changed=false;
@@ -18,9 +18,9 @@ function valorAstrologyData() {
   for(const t of VALOR_ASTROLOGY_TALENTS){const n=Math.max(0,Math.min(VALOR_ASTROLOGY_MAX,Math.floor(Number(d[t.id])||0)));if(d[t.id]!==n){d[t.id]=n;changed=true;}}
   if(changed)save();return d;
 }
-function valorAstrologyReduction(){return valorAstrologyData().nightVeil*.02;}
+function valorAstrologyReduction(){return valorAstrologyData().nightVeil*.01;}
 function valorAstrologyTakenDamage(damage,reduction=valorAstrologyReduction()){
-  return Math.max(1,Math.round(Math.max(1,Number(damage)||1)*(1-Math.max(0,Math.min(.40,Number(reduction)||0)))));
+  return Math.max(1,Math.round(Math.max(1,Number(damage)||1)*(1-Math.max(0,Math.min(.20,Number(reduction)||0)))));
 }
 function valorAstrologyEnemyThreat(power){return Math.max(1,Number(power)*(1-valorAstrologyReduction()));}
 function valorAstrologyCost(level){return 5000*(level+1)*(level+1);}
@@ -36,12 +36,12 @@ function valorAstrologyPage(){
   const d=valorAstrologyData();
   return '<section class="astrology-page"><header class="astrology-header"><div><small>YILDIZLARIN KUDRETİ</small><h1>Astroloji</h1><p>Göksel güçlerini altınla geliştir. Her özellik kalıcıdır.</p></div><button type="button" class="astrology-back" onclick="go(\'Anasayfa\')">‹ Anasayfa</button></header><div class="astrology-gold">Altının <b>'+money(state.gold)+'</b></div><div class="astrology-grid">'+VALOR_ASTROLOGY_TALENTS.map(t=>{
     const level=d[t.id],maxed=level>=VALOR_ASTROLOGY_MAX,cost=valorAstrologyCost(level);
-    return '<article class="astrology-talent" style="--talent-color:'+t.color+'"><figure class="astrology-visual"><img src="'+VALOR_ASTROLOGY_ART[t.id]+'" alt="'+t.name+' kozmik enerji görseli" width="480" height="480" loading="lazy" decoding="async"></figure><div class="astrology-card-heading"><div><span class="astrology-passive">PASİF ÖZELLİK · KALICI</span><h2>'+t.name+'</h2></div></div><div class="astrology-talent-copy"><p>Her seviye '+(t.id==='nightVeil'?'alınan hasarı %2 azaltır.':t.description?'%'+t.step+' etkinleşme ihtimali kazandırır. '+t.description:t.label.toLocaleLowerCase('tr-TR')+' değerini %'+t.step+' artırır.')+'</p><div class="astrology-level"><b>Sv. '+level+'<small> / '+VALOR_ASTROLOGY_MAX+'</small></b><span>%'+level*t.step+' '+t.label+'</span></div><div class="astrology-progress"><i style="width:'+level/VALOR_ASTROLOGY_MAX*100+'%"></i></div><div class="astrology-stats"><div><small>ŞU ANDA</small><strong>%'+level*t.step+'</strong><span>'+t.label+'</span></div><div><small>'+(maxed?'MAKSİMUM':'SONRAKİ')+'</small><strong>%'+Math.min(VALOR_ASTROLOGY_MAX,level+1)*t.step+'</strong><span>'+t.label+'</span></div></div><button type="button" class="astrology-upgrade" '+(maxed||state.gold<cost?'disabled':'')+' onclick="valorAstrologyUpgrade(\''+t.id+'\')">'+(maxed?'En Yüksek Seviye':'Geliştir <span>'+money(cost)+' Altın</span>')+'</button></div></article>';
+    return '<article class="astrology-talent" style="--talent-color:'+t.color+'"><figure class="astrology-visual"><img src="'+VALOR_ASTROLOGY_ART[t.id]+'" alt="'+t.name+' kozmik enerji görseli" width="480" height="480" loading="lazy" decoding="async"></figure><div class="astrology-card-heading"><div><span class="astrology-passive">PASİF ÖZELLİK · KALICI</span><h2>'+t.name+'</h2></div></div><div class="astrology-talent-copy"><p>Her seviye '+(t.id==='nightVeil'?'alınan hasarı %'+t.step+' azaltır.':t.description?'%'+t.step+' etkinleşme ihtimali kazandırır. '+t.description:t.label.toLocaleLowerCase('tr-TR')+' değerini %'+t.step+' artırır.')+'</p><div class="astrology-level"><b>Sv. '+level+'<small> / '+VALOR_ASTROLOGY_MAX+'</small></b><span>%'+level*t.step+' '+t.label+'</span></div><div class="astrology-progress"><i style="width:'+level/VALOR_ASTROLOGY_MAX*100+'%"></i></div><div class="astrology-stats"><div><small>ŞU ANDA</small><strong>%'+level*t.step+'</strong><span>'+t.label+'</span></div><div><small>'+(maxed?'MAKSİMUM':'SONRAKİ')+'</small><strong>%'+Math.min(VALOR_ASTROLOGY_MAX,level+1)*t.step+'</strong><span>'+t.label+'</span></div></div><button type="button" class="astrology-upgrade" '+(maxed||state.gold<cost?'disabled':'')+' onclick="valorAstrologyUpgrade(\''+t.id+'\')">'+(maxed?'En Yüksek Seviye':'Geliştir <span>'+money(cost)+' Altın</span>')+'</button></div></article>';
   }).join('')+'</div><p class="astrology-note">Arena, Sahne ve Zindan savaşlarında tüm etkiler aktiftir. Macera’da temel özellikler ve hasar azaltma savaş gücüne yansır. Şifa ve Sonsuz Direnç her gelen vuruşta ayrı değerlendirilir.</p></section>';
 }
-function valorAstrologyBoostStats(stats){const out={...stats},d=valorAstrologyData();for(const t of VALOR_ASTROLOGY_TALENTS)if(t.stat)out[t.stat]=(Number(out[t.stat])||0)*(1+d[t.id]/100);return out;}
+function valorAstrologyBoostStats(stats){const out={...stats},d=valorAstrologyData();for(const t of VALOR_ASTROLOGY_TALENTS)if(t.stat)out[t.stat]=(Number(out[t.stat])||0)*(1+d[t.id]*t.step/100);return out;}
 const valorAstrologyPreviousArenaStats=valorArenaStats;
-valorArenaStats=function(){const d=valorAstrologyData();return {...valorAstrologyBoostStats(valorAstrologyPreviousArenaStats()),astrologyDamageReduction:valorAstrologyReduction(),astrologyCriticalDamage:d.fateBreaker*.02,astrologyResistance:d.endlessResistance*.01,astrologyHealing:d.lifeLight*.01};};
+valorArenaStats=function(){const d=valorAstrologyData();return {...valorAstrologyBoostStats(valorAstrologyPreviousArenaStats()),astrologyDamageReduction:valorAstrologyReduction(),astrologyCriticalDamage:d.fateBreaker*.01,astrologyResistance:d.endlessResistance*.005,astrologyHealing:d.lifeLight*.005};};
 /* Profile, Arena and power use the same complete stat totals. */
 combatPower=function(){
   const stats=valorArenaStats(),mage=state.class==='Büyücü',weights={'Saldırı':mage?3:10,'Sihir':mage?10:3,'Savunma':10,'Sihir Savunma':10,'Can':3,'Kritik':4,'Bloke':4};
@@ -51,7 +51,7 @@ const valorAstrologyPreviousProfile=profile;
 profile=function(){
   const stats=valorArenaStats(),data=valorAstrologyData();
   let html=valorAstrologyPreviousProfile().replace(/(<div class="vp-stat"><span>)(Saldırı|Sihir|Savunma|Sihir Savunma|Kritik|Bloke|Can)(<\/span><b>)([0-9]+(?:\.[0-9]+)?)(<\/b><\/div>)/g,(all,a,k,b,n,c)=>a+k+b+(Math.round(stats[k]*100)/100)+c);
-  const passives=[['Kritik Hasar Artışı',stats.astrologyCriticalDamage],['Hasar Azaltma',stats.astrologyDamageReduction],['Sonsuz Direnç İhtimali',stats.astrologyResistance],['Yaşam Işığı İhtimali',stats.astrologyHealing]].map(([label,value])=>'<div class="vp-stat"><span>'+label+'</span><b>%'+Math.round(value*100)+'</b></div>').join('');
+  const passives=[['Kritik Hasar Artışı',stats.astrologyCriticalDamage],['Hasar Azaltma',stats.astrologyDamageReduction],['Sonsuz Direnç İhtimali',stats.astrologyResistance],['Yaşam Işığı İhtimali',stats.astrologyHealing]].map(([label,value])=>'<div class="vp-stat"><span>'+label+'</span><b>%'+(Math.round(value*10000)/100)+'</b></div>').join('');
   html=html.replace('</div><div class="vp-exp">',passives+'</div><div class="vp-exp">');
   return html.replace(/<p class="vp-hint">[^<]*<\/p>/,'<p class="vp-hint">Ekipman, binek, teknoloji ve Astroloji bonusları toplam değerlere dahildir. Savaş gücü temel istatistiklerden hesaplanır. Pasif savaş etkileri ayrıca gösterilir. Yaşam Işığı etkinleştiğinde maksimum canının %5’ini yeniler.</p>');
 };
