@@ -1,10 +1,10 @@
 /* Permanent, independently upgraded astrology talents. */
 const VALOR_ASTROLOGY_MAX = 20;
 const VALOR_ASTROLOGY_TALENTS = [
-  {id:'crimsonFury',name:'Kızıl Hiddet',stat:'Saldırı',step:0.5,label:'Saldırı',icon:'✶',color:'#d17676'},
-  {id:'ironWill',name:'Demir İrade',stat:'Savunma',step:0.5,label:'Defans',icon:'⬡',color:'#aebcd1'},
-  {id:'astralFlame',name:'Astral Alev',stat:'Sihir',step:0.5,label:'Sihirli saldırı',icon:'✧',color:'#b291eb'},
-  {id:'starVeil',name:'Yıldız Örtüsü',stat:'Sihir Savunma',step:0.5,label:'Sihirli defans',icon:'✦',color:'#8caee9'},
+  {id:'crimsonFury',name:'Kızıl Hiddet',stat:'Saldırı',step:1,label:'Saldırı',icon:'✶',color:'#d17676'},
+  {id:'ironWill',name:'Demir İrade',stat:'Savunma',step:1,label:'Defans',icon:'⬡',color:'#aebcd1'},
+  {id:'astralFlame',name:'Astral Alev',stat:'Sihir',step:1,label:'Sihirli saldırı',icon:'✧',color:'#b291eb'},
+  {id:'starVeil',name:'Yıldız Örtüsü',stat:'Sihir Savunma',step:1,label:'Sihirli defans',icon:'✦',color:'#8caee9'},
   {id:'fateBreaker',name:'Kader Kıran',step:1,label:'Kritik hasar',icon:'ϟ',color:'#e3bc76'},
   {id:'nightVeil',name:'Gece Perdesi',step:1,label:'Hasar azaltma',icon:'☾',color:'#9c91dd'},
   {id:'endlessResistance',name:'Sonsuz Direnç',step:0.5,label:'Etkinleşme ihtimali',icon:'◇',color:'#88c9d0',description:'Rakibin vuruşundan yalnızca 1 hasar alırsın.'},
