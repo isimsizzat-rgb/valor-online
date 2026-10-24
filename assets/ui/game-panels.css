@@ -92,3 +92,14 @@ html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Saldırı "])>b::after{
 html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Defans "])>b::after{
  content:'S. Defans';font-size:clamp(10px,2.9vw,12px);
 }
+/* Neutral, readable mosaic inventory tiles without the old green/brown layers. */
+html body .valor-bag .bag-slot:has(.vg-icon){
+ background:rgba(0,0,0,.68)!important;
+ box-shadow:inset 0 0 0 1px #b18a421a,0 3px 8px #0006;
+}
+html body .valor-bag .bag-slot:has(.vg-icon) .bag-item-glyph{
+ background:transparent!important;
+}
+html body .valor-bag .bag-slot:has(.vg-icon) .slot-name{
+ color:#f4dfb7;text-shadow:0 1px 3px #000;
+}
