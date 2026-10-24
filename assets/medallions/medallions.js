@@ -1,16 +1,16 @@
 /* Fame ranks and seven-day equipment bought with the Castle War wallet. */
 const VALOR_MEDALLION_LIFETIME=7*24*60*60*1000;
 const VALOR_MEDALLIONS=[
- {id:'zalim',name:'Zalim',fame:0,price:200,color:'#bd987a'},
- {id:'karanlik',name:'Karanlık Lord',fame:500,price:250,color:'#b695ed'},
- {id:'kudretli',name:'Kudretli Lord',fame:1500,price:300,color:'#df8c63'},
- {id:'yenilmez',name:'Yenilmez Lord',fame:4000,price:350,color:'#86baff'},
- {id:'dokunulmaz',name:'Dokunulmaz Lord',fame:8000,price:400,color:'#70dbac'},
- {id:'kutsal',name:'Kutsal Lord',fame:15000,price:450,color:'#f1dfb3'},
- {id:'yuce',name:'Yüce Lord',fame:25000,price:500,color:'#ed8b9e'},
- {id:'ebedi',name:'Ebedî Lord',fame:40000,price:600,color:'#8ee9f2'},
- {id:'ilahi',name:'İlahi Lord',fame:65000,price:750,color:'#f7c2d8'},
- {id:'efendi',name:'Lordların Efendisi',fame:100000,price:1000,color:'#ffc16a'}
+ {id:'zalim',resistance:1000,health:1000,name:'Zalim',fame:0,price:200,color:'#bd987a'},
+ {id:'karanlik',resistance:2000,health:2000,name:'Karanlık Lord',fame:500,price:250,color:'#b695ed'},
+ {id:'kudretli',resistance:3000,health:3000,name:'Kudretli Lord',fame:1500,price:300,color:'#df8c63'},
+ {id:'yenilmez',resistance:4500,health:4500,name:'Yenilmez Lord',fame:4000,price:350,color:'#86baff'},
+ {id:'dokunulmaz',resistance:6000,health:6000,name:'Dokunulmaz Lord',fame:8000,price:400,color:'#70dbac'},
+ {id:'kutsal',resistance:8000,health:8000,name:'Kutsal Lord',fame:15000,price:450,color:'#f1dfb3'},
+ {id:'yuce',resistance:10000,health:10000,name:'Yüce Lord',fame:25000,price:500,color:'#ed8b9e'},
+ {id:'ebedi',resistance:13000,health:13000,name:'Ebedî Lord',fame:40000,price:600,color:'#8ee9f2'},
+ {id:'ilahi',resistance:16000,health:16000,name:'İlahi Lord',fame:65000,price:750,color:'#f7c2d8'},
+ {id:'efendi',resistance:20000,health:20000,name:'Lordların Efendisi',fame:100000,price:1000,color:'#ffc16a'}
 ];
 function valorMedallionProduct(id){return VALOR_MEDALLIONS.find(p=>p.id===id)}
 function valorMedallionRank(){const fame=Math.max(0,Number(state.fame)||0);return [...VALOR_MEDALLIONS].reverse().find(p=>fame>=p.fame)}
@@ -32,13 +32,14 @@ function valorMedallionPrune(now=Date.now()){
  if(worn){const canonical=next.find(it=>String(it.id)===String(worn.id)&&valorMedallionAlive(it,now));if(!canonical){delete state.equipped.Madalyon;changed=true}else if(worn!==canonical){state.equipped.Madalyon=canonical;changed=true}}
  return changed;
 }
+function valorMedallionStatsHtml(p){return '<div class="vmed-stat-list"><span>Direnç <b>+'+money(p.resistance)+'</b></span><span>Can <b>+'+money(p.health)+'</b></span></div>'}
 function valorMedallionArt(p){return VALOR_MEDALLION_ART[p.id]}
 function valorMedallionOpenMarket(){closeBagPopup();go('Market');window.valorMarketCategory='medallions';render()}
 function valorMedallionMarket(){
  if(valorCastleSettle())save();const rank=valorMedallionRank(),fame=Math.max(0,Number(state.fame)||0),balance=Number(valorCastleData().medallions)||0,next=VALOR_MEDALLIONS[VALOR_MEDALLIONS.indexOf(rank)+1];
  return '<section class="vmed-page"><header class="vmed-heading"><small>KALE SAVAŞI · ŞÖHRET RÜTBELERİ</small><h2>Hükmünün Nişanı</h2><p>Şöhretinle açılan madalyonunu seç. Kale Savaşı ödüllerinle satın al ve profilinde kuşan.</p></header><div class="vmed-summary"><div><small>Ünvanın</small><b style="color:'+rank.color+'">'+rank.name+'</b><span>'+money(fame)+' Şöhret</span></div><div><small>Kale Madalyonun</small><b>'+money(balance)+'</b><span>Birlik savaşından kazanılır</span></div></div>'+(next?'<p class="vmed-next">Sonraki ünvan: <b>'+next.name+'</b> · '+money(Math.max(0,next.fame-fame))+' şöhret kaldı</p>':'<p class="vmed-next">En yüksek şöhret rütbesine ulaştın.</p>')+'<p class="vmed-notice">Her madalyon satın alındığı andan itibaren <b>7 gün</b> geçerlidir. Süresi dolunca çantadan ve takılı yuvadan kaldırılır.</p><div class="vmed-grid">'+VALOR_MEDALLIONS.map((p,i)=>{
  const owned=valorMedallionOwned(p.id),locked=fame<p.fame,poor=balance<p.price;
- return '<article class="vmed-card '+(locked?'vmed-locked':'')+'" style="--medal-color:'+p.color+'"><button type="button" class="vmed-art" onclick="valorMedallionPreview(\''+p.id+'\')" aria-label="'+p.name+' madalyonunu incele"><img src="'+valorMedallionArt(p)+'" alt="'+p.name+' madalyonu" width="320" height="320" loading="lazy"></button><div class="vmed-copy"><small>RÜTBE '+(i+1)+' · 7 GÜN</small><h3>'+p.name+'</h3><p>'+money(p.fame)+'+ Şöhret</p><div class="vmed-price"><b>'+money(p.price)+'</b> Kale Madalyonu</div><button type="button" '+(!owned&&(locked||poor)?'disabled':'')+' onclick="'+(owned?"valorMedallionShowItem('"+escapeAttr(String(owned.id))+"')":"valorMedallionPreview('"+p.id+"')")+'">'+(owned?'Çantanda · '+valorMedallionRemaining(owned):locked?'Şöhretin Yetersiz':poor?'Madalyonun Yetersiz':'Satın Al')+'</button></div></article>';
+ return '<article class="vmed-card '+(locked?'vmed-locked':'')+'" style="--medal-color:'+p.color+'"><button type="button" class="vmed-art" onclick="valorMedallionPreview(\''+p.id+'\')" aria-label="'+p.name+' madalyonunu incele"><img src="'+valorMedallionArt(p)+'" alt="'+p.name+' madalyonu" width="320" height="320" loading="lazy"></button><div class="vmed-copy"><small>RÜTBE '+(i+1)+' · 7 GÜN</small><h3>'+p.name+'</h3><p>'+money(p.fame)+'+ Şöhret</p>'+valorMedallionStatsHtml(p)+'<div class="vmed-price"><b>'+money(p.price)+'</b> Kale Madalyonu</div><button type="button" '+(!owned&&(locked||poor)?'disabled':'')+' onclick="'+(owned?"valorMedallionShowItem('"+escapeAttr(String(owned.id))+"')":"valorMedallionPreview('"+p.id+"')")+'">'+(owned?'Çantanda · '+valorMedallionRemaining(owned):locked?'Şöhretin Yetersiz':poor?'Madalyonun Yetersiz':'Satın Al')+'</button></div></article>';
  }).join('')+'</div></section>';
 }
 function valorMedallionDialog(html){closeBagPopup();const overlay=document.createElement('div');overlay.id='valor-bag-popup';overlay.className='valor-item-overlay';overlay.innerHTML='<section class="valor-item-dialog vmed-dialog" role="dialog" aria-modal="true" aria-label="Madalyon bilgileri"><button type="button" class="valor-item-close" onclick="closeBagPopup()" aria-label="Kapat">×</button>'+html+'</section>';overlay.addEventListener('click',e=>{if(e.target===overlay)closeBagPopup()});document.body.appendChild(overlay)}
@@ -49,7 +50,7 @@ function valorMedallionPreview(id){
  const p=valorMedallionProduct(id);if(!p||!state.class||!valorAccountCanPlay())return;
  if(valorCastleSettle())save();const owned=valorMedallionOwned(id);if(owned)return valorMedallionShowItem(owned.id);
  const fame=Number(state.fame)||0,balance=Number(valorCastleData().medallions)||0,can=fame>=p.fame&&balance>=p.price;
- valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+p.name+' madalyonu"><small class="vmed-kicker">7 GÜNLÜK RÜTBE MADALYONU</small><h3>'+p.name+'</h3><p>Gereken şöhret: <b>'+money(p.fame)+'</b><br>Şöhretin: '+money(fame)+'</p><p>Fiyat: <b>'+money(p.price)+' Kale Madalyonu</b><br>Bakiyen: '+money(balance)+'</p><p class="vmed-notice">Süre satın aldığın anda başlar. Çantada beklerken de işler. Kuşanıp çıkarmak süreyi yenilemez.</p><div class="vmed-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" '+(!can?'disabled':'')+' onclick="valorMedallionConfirmBuy()">'+(fame<p.fame?'Şöhretin Yetersiz':balance<p.price?'Madalyonun Yetersiz':'Satın Al · '+money(p.price))+'</button></div>');
+ valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+p.name+' madalyonu"><small class="vmed-kicker">7 GÜNLÜK RÜTBE MADALYONU</small><h3>'+p.name+'</h3>'+valorMedallionStatsHtml(p)+'<p>Gereken şöhret: <b>'+money(p.fame)+'</b><br>Şöhretin: '+money(fame)+'</p><p>Fiyat: <b>'+money(p.price)+' Kale Madalyonu</b><br>Bakiyen: '+money(balance)+'</p><p class="vmed-notice">Süre satın aldığın anda başlar. Çantada beklerken de işler. Kuşanıp çıkarmak süreyi yenilemez.</p><div class="vmed-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" '+(!can?'disabled':'')+' onclick="valorMedallionConfirmBuy()">'+(fame<p.fame?'Şöhretin Yetersiz':balance<p.price?'Madalyonun Yetersiz':'Satın Al · '+money(p.price))+'</button></div>');
  valorMedallionPending={owner:state,accountId:valorAccountActive?.id||null,id};
 }
 function valorMedallionConfirmBuy(){
@@ -68,7 +69,7 @@ function valorMedallionConfirmBuy(){
 function valorMedallionShowItem(id){
  if(valorMedallionPrune())save();const it=valorMedallionFind(id);if(!it)return toast('Madalyonun süresi dolmuş');
  const p=valorMedallionProduct(it.medallionId),worn=String(state.equipped?.Madalyon?.id)===String(it.id);
- valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+it.name+'"><small class="vmed-kicker">RÜTBE MADALYONU · '+(worn?'TAKILI':'ÇANTADA')+'</small><h3>'+p.name+'</h3><p class="vmed-time" data-medallion-timer="'+escapeAttr(String(it.id))+'">Kalan süre: '+valorMedallionRemaining(it)+'</p><p>Bitiş: '+valorMedallionDate(it.expiresAt)+' · Türkiye saati</p><p>Tüm sınıflar kuşanabilir. Tek madalyon takılabilir.</p><div class="vmed-dialog-actions"><button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı</button><button type="button" onclick="'+(worn?'valorMedallionRemove()':"valorMedallionEquip('"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></div>');
+ valorMedallionDialog('<img class="vmed-preview" src="'+valorMedallionArt(p)+'" alt="'+it.name+'"><small class="vmed-kicker">RÜTBE MADALYONU · '+(worn?'TAKILI':'ÇANTADA')+'</small><h3>'+p.name+'</h3>'+valorMedallionStatsHtml(p)+'<p class="vmed-time" data-medallion-timer="'+escapeAttr(String(it.id))+'">Kalan süre: '+valorMedallionRemaining(it)+'</p><p>Bitiş: '+valorMedallionDate(it.expiresAt)+' · Türkiye saati</p><p>Tüm sınıflar kuşanabilir. Bonuslar yalnızca takılıyken geçerlidir. Direnç her vuruşta gelen hasarın en fazla %30’unu karşılar. Astrolojiyle toplanmaz; güçlü olan koruma uygulanır.</p><div class="vmed-dialog-actions"><button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı</button><button type="button" onclick="'+(worn?'valorMedallionRemove()':"valorMedallionEquip('"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></div>');
 }
 function valorMedallionEquip(id){
  if(!state.class||!valorAccountCanPlay())return;if(valorMedallionPrune())save();const it=valorMedallionFind(id);if(!it)return toast('Madalyon bulunamadı veya süresi dolmuş');
