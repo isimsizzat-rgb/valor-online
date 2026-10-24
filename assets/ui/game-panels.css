@@ -72,3 +72,23 @@ html body .vg-icon .vg-sprite{
  box-shadow:none!important;
  filter:none!important;
 }
+/* Compact magical gem names and a shared baseline for equipment sockets. */
+html body .ve-gem-slot{
+ justify-content:flex-start!important;
+ align-items:center!important;
+}
+html body .ve-gem-slot>b{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;min-height:22px;white-space:nowrap;
+ font-size:clamp(10px,2.9vw,12px)!important;
+}
+html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Saldırı "])>b,
+html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Defans "])>b{
+ font-size:0!important;
+}
+html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Saldırı "])>b::after{
+ content:'S. Saldırı';font-size:clamp(10px,2.9vw,12px);
+}
+html body .ve-gem-slot:has(.vg-icon[aria-label^="Sihirli Defans "])>b::after{
+ content:'S. Defans';font-size:clamp(10px,2.9vw,12px);
+}
