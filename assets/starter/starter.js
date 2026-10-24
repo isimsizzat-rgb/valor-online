@@ -16,8 +16,6 @@ const valorStarterPreviousAffixes=vaEnsureAffixes;
 vaEnsureAffixes=function(it){return it?.starterSet==='starter-v1'&&(!Array.isArray(it.affixes)||it.affixes.length===0)?[]:valorStarterPreviousAffixes(it);};
 const valorStarterPreviousAffixMarkup=vaAffixMarkup;
 vaAffixMarkup=function(it){return it?.starterSet==='starter-v1'&&vaEnsureAffixes(it).length===0?'<p class="small">Sade başlangıç ekipmanı · Efsun yok</p>':valorStarterPreviousAffixMarkup(it);};
-const valorStarterPreviousCreation=valorCharacterCreationPage;
-valorCharacterCreationPage=function(){let html=valorStarterPreviousCreation();classes.forEach((cls,i)=>{const art=VALOR_STARTER_ART[VALOR_STARTER_CLASS_IDS[cls]];if(art)html=html.split(heroImages[i]).join(art.hero);});return html;};
 const valorStarterPreviousProfile=profile;
 profile=function(){const html=valorStarterPreviousProfile(),hero=valorStarterHero();return hero?html.replace(/<div class="vp-hero"><img[^>]*><\/div>/,'<div class="vp-hero valor-starter-hero" style="inset:2% 20% 0!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important"><img src="'+hero+'" alt="'+state.class+' başlangıç seti" style="width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important"></div>'):html;};
 initClass=function(cls,nick){
