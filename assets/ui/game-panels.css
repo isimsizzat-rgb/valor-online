@@ -55,3 +55,10 @@ html body .valor-fantasy-home .mmorpg-home-tile.valor-vertical-tile:last-child{
 @media(max-width:700px){
  html body .valor-fantasy-home .mmorpg-home-tile.valor-vertical-tile:last-child{width:calc((100% - 7px)/2)!important}
 }
+
+/* High resolution castle scene; keep the home screen free of a backdrop panel. */
+html body:not(.character-selection):not(.valor-account-screen){
+ background-image:linear-gradient(#090c1066,#090c1055),url('../home-fantasy/castle-hd.webp')!important;
+ background-position:center center!important;
+ background-size:cover!important;
+}
