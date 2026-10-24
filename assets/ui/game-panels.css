@@ -62,3 +62,13 @@ html body:not(.character-selection):not(.valor-account-screen){
  background-position:center center!important;
  background-size:cover!important;
 }
+
+/* Approved compact mosaic family: 10 levels x 7 types, high-resolution alpha atlas. */
+html body .vg-icon .vg-sprite{
+ background-image:url('../mosaic/gems-v2.webp')!important;
+ background-size:480px 336px!important;
+ background-repeat:no-repeat!important;
+ background-color:transparent!important;
+ box-shadow:none!important;
+ filter:none!important;
+}
