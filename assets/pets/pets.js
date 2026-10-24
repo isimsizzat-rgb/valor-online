@@ -11,6 +11,7 @@ const VALOR_PET_MAX_STAGE=24;
 function valorPetStage(value){return Number.isFinite(Number(value))?Math.max(0,Math.min(24,Math.floor(Number(value)))):0}
 /* Food to finish each rarity (to the next rarity's 1 star; gold: 1 to 5 stars), split evenly across its star steps. */
 const VALOR_PET_RARITY_FOOD=[250,750,1500,3000,7500];
+const VALOR_PET_LUCKY_FOOD_CHANCE=.10,VALOR_PET_LUCKY_FOOD_XP=5;
 function valorPetCost(stage){if(stage>=VALOR_PET_MAX_STAGE)return 0;const tier=Math.floor(valorPetStage(stage)/5);return VALOR_PET_RARITY_FOOD[tier]/(tier===4?4:5)}
 function valorPetInfo(stage){stage=valorPetStage(stage);return {stage,rarity:VALOR_PET_RARITIES[Math.floor(stage/5)],stars:stage%5+1,value:10+stage*5,cost:valorPetCost(stage)}}
 const VALOR_PET_EVOLUTION_FILES=['','-green','-blue','-purple','-gold'];
@@ -64,14 +65,17 @@ function valorPetGrant(id){if(!state.class||!VALOR_PETS.some(p=>p.id===id))retur
 function valorPetFeed(id,single=false){
  if(page!=='Pet'||!state.class||!VALOR_PETS.some(p=>p.id===id))return;
  const p=valorPetData()[id],info=valorPetInfo(p.stage);if(!p.owned||!info.cost)return;
- const amount=Math.min(single?1:info.cost-p.progress,valorPetFoodCount());
- if(!amount)return toast('Pet yemin yok. Sınırlı Mağaza’dan alabilirsin.');
- if(!valorPetSpendFood(amount))return;
- p.progress+=amount;let advanced=false;
- if(p.progress>=info.cost){p.stage++;p.progress=0;advanced=true}
+ const available=valorPetFoodCount();
+ if(!available)return toast('Pet yemin yok. Sınırlı Mağaza’dan alabilirsin.');
+ // Each food gives 1 EXP, or 5 EXP with a 10% chance; feeding stops once this star is full.
+ let amount=0,lucky=0,gained=0;
+ while(amount<available&&p.progress+gained<info.cost&&(!single||amount<1)){amount++;if(Math.random()<VALOR_PET_LUCKY_FOOD_CHANCE){lucky++;gained+=VALOR_PET_LUCKY_FOOD_XP}else gained++}
+ if(!amount||!valorPetSpendFood(amount))return;
+ p.progress+=gained;let advanced=false;
+ if(p.progress>=info.cost){const extra=p.progress-info.cost;p.stage++;p.progress=Math.max(0,Math.min(extra,valorPetCost(p.stage)-1));advanced=true}
  save();render();
- const next=valorPetInfo(p.stage),name=VALOR_PETS.find(p=>p.id===id).name;
- toast(advanced?name+' · '+next.rarity.name+' '+next.stars+' yıldız! Dört özellik +5.':name+' · '+amount+' yem verildi.');
+ const next=valorPetInfo(p.stage),name=VALOR_PETS.find(p=>p.id===id).name,luckText=lucky?' · '+lucky+' şanslı yem (5 EXP)!':'';
+ toast(advanced?name+' · '+next.rarity.name+' '+next.stars+' yıldız! Dört özellik +5.'+luckText:name+' · '+amount+' yem verildi: +'+gained+' EXP'+luckText);
 }
 function valorPetOpenMarket(){closeBagPopup();go('Market');selectMarketCategory('limited');openMarketPurchase('petFood')}
 function valorPetNumber(value){return Number(value).toLocaleString('tr-TR',{maximumFractionDigits:1})}
