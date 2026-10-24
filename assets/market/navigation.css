@@ -48,3 +48,13 @@
 /* Reserve desktop scrollbar space so short/long categories cannot shift the buttons. */
 html:has(body.valor-market-page){scrollbar-gutter:stable}
 @supports not (scrollbar-gutter:stable){html:has(body.valor-market-page){overflow-y:scroll}}
+/* A translucent dark veil keeps the scenery visible and makes shop text readable. */
+body.valor-market-page #main.panel:has(.vm-market-page){
+ background:rgba(4,4,7,.66);
+ border-color:rgba(174,137,81,.36);
+ box-shadow:inset 0 0 0 1px #d4ad6320,0 10px 28px #0006;
+}
+#main .vm-market-content{color:#ede1cf}
+#main .vm-market-content .vm-lead{color:#ddcfba;text-shadow:0 1px 2px #000;line-height:1.7}
+#main .vm-market-content .vm-eyebrow{color:#d2b17b;text-shadow:0 1px 2px #000}
+#main .vm-market-content .vm-limited-product>strong{color:#f4d6a1;text-shadow:0 2px 3px #000}
