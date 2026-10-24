@@ -60,7 +60,10 @@ const valorAstrologyPreviousArenaHit=valorArenaHit;
 valorArenaHit=function(a,b,rng=Math.random){const hit=valorAstrologyPreviousArenaHit(a,b,rng);if(hit.critical)hit.damage+=Math.round(valorArenaDamage(a,b)*Math.max(0,Number(a.stats.astrologyCriticalDamage)||0));hit.damageBeforeAstrology=hit.damage*VALOR_ARENA_DAMAGE_MULTIPLIER;hit.damage=valorAstrologyTakenDamage(hit.damage*VALOR_ARENA_DAMAGE_MULTIPLIER,b.stats.astrologyDamageReduction||0);hit.resisted=!!b.stats.astrologyResistance&&rng()<b.stats.astrologyResistance;if(hit.resisted)hit.damage=1;return hit;};
 /* Fury: after round 5, every hit deals +10% more damage per round (round 6 +10%, round 7 +20%, ...). HP is untouched. */
 const VALOR_ARENA_FURY_START=5,VALOR_ARENA_FURY_STEP=.10;
-function valorArenaFury(round){return Math.max(0,round-VALOR_ARENA_FURY_START)*VALOR_ARENA_FURY_STEP;}
+/* Fury is Arena-only: the Dungeon uses the same engine without it. */
+let valorArenaFuryActive=false;
+function valorArenaWithFury(run){valorArenaFuryActive=true;try{return run();}finally{valorArenaFuryActive=false;}}
+function valorArenaFury(round){return valorArenaFuryActive?Math.max(0,round-VALOR_ARENA_FURY_START)*VALOR_ARENA_FURY_STEP:0;}
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
 valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.random){
   const me=valorArenaUnit({...myStats},myClass),enemy=valorArenaUnit({...rivalStats},rivalClass),log=[];
@@ -105,12 +108,12 @@ valorArenaFight=function(id){
   if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
   if(valorArenaData().used>=10)return toast('Bugünkü 10 savaş hakkını kullandın');
   if(!valorArenaCandidates().some(p=>p.id===id))return;
-  valorArenaBeginWait(()=>valorArenaImmediateFight(id));
+  valorArenaBeginWait(()=>valorArenaWithFury(()=>valorArenaImmediateFight(id)));
 };
 const valorArenaImmediateTraining=valorArenaTraining;
 valorArenaTraining=function(){
   if(page!=='Savaş'||!state.class)return;
-  valorArenaBeginWait(()=>valorArenaImmediateTraining());
+  valorArenaBeginWait(()=>valorArenaWithFury(()=>valorArenaImmediateTraining()));
 };
 const valorArenaBeforeBattleNavigation=go;
 go=function(destination){valorArenaCancelPending();return valorArenaBeforeBattleNavigation(destination);};
