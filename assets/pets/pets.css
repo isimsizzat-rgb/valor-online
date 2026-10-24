@@ -43,3 +43,15 @@ html body .valor-fantasy-home .vpet-home-tile img{object-fit:cover!important;hei
  .vpet-page .vpet-heading h1{font-size:22px}
 }
 @media(max-width:360px){.vpet-copy{padding:9px 6px}.vpet-title h2{font-size:16px}.vpet-stats>div{padding:5px 3px}.vpet-stats small{font-size:8px}}
+/* Inspect every physical evolution without changing the pet's saved progress. */
+.vpet-art-button{display:block;width:100%;padding:0;border:0;border-bottom:1px solid #a68c5433;border-radius:0;box-shadow:none;text-shadow:none;color:inherit}
+.vpet-art-button:hover:not(:disabled){filter:brightness(1.06)}
+.vpet-art-button:focus-visible{outline:2px solid var(--pet-color);outline-offset:-3px}
+.vpet-evolution-dialog{width:min(94vw,540px);max-height:90dvh;overflow:auto;padding:20px;border:1px solid #b59760;border-radius:12px;background:linear-gradient(145deg,#202026,#0a0c10);color:#e9d9bc;box-shadow:0 20px 70px #000c}
+.vpet-evolution-dialog::backdrop{background:#000b;backdrop-filter:blur(4px)}
+.vpet-evolution-header{display:flex;align-items:center;justify-content:space-between;gap:12px}.vpet-evolution-header small{font:10px system-ui;letter-spacing:2px;color:#b29b75}.vpet-evolution-header h2{margin:6px 0 0;font-size:25px}.vpet-evolution-header>button{padding:4px 12px;font-size:24px;background:#171719;border:1px solid #7f6847;box-shadow:none}
+.vpet-evolution-art{height:clamp(200px,52vw,340px);display:flex;align-items:center;justify-content:center}.vpet-evolution-art img{display:block;width:100%;height:100%;object-fit:contain;padding:12px}
+.vpet-evolution-caption{text-align:center;color:var(--pet-color);font:17px Georgia,serif;margin:6px 0 18px}
+.vpet-evolution-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.vpet-evolution-tabs button{min-width:0;padding:10px 3px;font-size:12px;background:#171719;border:1px solid #65583f;box-shadow:none;border-radius:5px}.vpet-evolution-tabs button[aria-pressed=true]{color:var(--pet-color);border-color:var(--pet-color);background:#393022}
+.vpet-evolution-note{text-align:center;font:11px/1.5 system-ui;color:#af9e83;margin:14px 0 0}
+@media(max-width:420px){.vpet-evolution-dialog{padding:15px}.vpet-evolution-tabs{gap:4px}.vpet-evolution-tabs button{font-size:11px;padding:11px 2px}}
