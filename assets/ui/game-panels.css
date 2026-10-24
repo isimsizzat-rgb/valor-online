@@ -45,3 +45,13 @@ html body header.top.valor-resource-bar .valor-portrait-level{min-width:29px;hei
  html body header.top.valor-resource-bar .valor-diamonds{font-size:15px;gap:4px}
  html body header.top.valor-resource-bar .valor-hud-energy{font-size:10px}
 }
+/* Center the final card while matching a single grid column exactly. */
+html body .valor-fantasy-home .mmorpg-home-tile.valor-vertical-tile:last-child{
+ grid-column:2/4;
+ width:calc((100% - 16px)/2)!important;
+ aspect-ratio:234/293!important;
+ justify-self:center;
+}
+@media(max-width:700px){
+ html body .valor-fantasy-home .mmorpg-home-tile.valor-vertical-tile:last-child{width:calc((100% - 7px)/2)!important}
+}
