@@ -29,7 +29,7 @@ for(const account of valorAccountRegistry()){
 const valorMedalTestPreviousRender=render;
 render=function(){
  valorMedalTestApplyActive();const result=valorMedalTestPreviousRender.apply(this,arguments);
- if(valorMedalTestMessage&&valorAccountCanPlay()){valorMedalTestMessage=false;toast('Test desteği: +100.000 Şöhret · +99.999 Kale Madalyonu')}
+ if(valorMedalTestMessage&&valorAccountCanPlay()){valorMedalTestMessage=false;toast('Test desteği: +100.000 Şöhret · +99.999 Dukat')}
  return result;
 };
 save=function(){valorMedalTestApplyActive();return valorMedalTestPreviousSave.apply(this,arguments)};
