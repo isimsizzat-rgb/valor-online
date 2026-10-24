@@ -86,7 +86,7 @@ function valorCastleTestBoard(run){
 function valorCastleTestResult(run){
  if(!run?.result)return '';
  const result=run.result,mine=result.mine;
- return '<section class="vct-result"><span>DENEME TAMAMLANDI</span><h2>'+escapeAttr(result.winner||'Katılan birlik yok')+'</h2><p>'+(result.winner?'Test kalesinin hakimi':'Sonuç oluşmadı')+'</p><div class="vct-result-grid"><div><small>Senin sıran</small><b>'+(mine?mine.rank+'.':'Katılmadın')+'</b></div><div><small>Madalyon önizlemesi</small><b>'+money(mine?.amount||0)+'</b></div><div><small>Şöhret önizlemesi</small><b>+'+money(mine?.fame||0)+'</b></div></div><p>'+(result.goldBonus?'Senin birliğin kazandı: +%25 altın üretimi bonusu önizlemesi.':'Kazanan birlik: +%25 altın üretimi bonusu önizlemesi.')+'</p><small>Deneme ödülleri ve kale hakimiyeti gerçek bakiyene uygulanmaz.</small></section>';
+ return '<section class="vct-result"><span>DENEME TAMAMLANDI</span><h2>'+escapeAttr(result.winner||'Katılan birlik yok')+'</h2><p>'+(result.winner?'Test kalesinin hakimi':'Sonuç oluşmadı')+'</p><div class="vct-result-grid"><div><small>Senin sıran</small><b>'+(mine?mine.rank+'.':'Katılmadın')+'</b></div><div><small>Madalyon önizlemesi</small><b>'+valorCastleCurrency(mine?.amount||0)+'</b></div><div><small>Şöhret önizlemesi</small><b>+'+money(mine?.fame||0)+'</b></div></div><p>'+(result.goldBonus?'Senin birliğin kazandı: +%25 altın üretimi bonusu önizlemesi.':'Kazanan birlik: +%25 altın üretimi bonusu önizlemesi.')+'</p><small>Deneme ödülleri ve kale hakimiyeti gerçek bakiyene uygulanmaz.</small></section>';
 }
 function valorCastleTestLive(run){
  const running=run?.phase==='running',finished=run?.phase==='finished',left=VALOR_CASTLE_TEST_DURATION-(run?.elapsed||0),my=run?.rows[0];
