@@ -124,3 +124,9 @@ html body .wb-art .wb-demon{
 }
 /* Keep the encounter artwork and boss name without the health caption. */
 html body .wb-art>p{display:none!important}
+
+html body .wb-art .wb-demon{content:normal!important}
+.wb-countdown{display:flex;flex-direction:column;gap:8px;padding:17px 10px;border:1px solid #a8824b;border-radius:9px;background:#050609b8;color:#e9cca0;margin:12px 0;font-variant-numeric:tabular-nums}
+.wb-countdown span{font:700 11px/1.5 Georgia,serif;letter-spacing:.6px}
+.wb-countdown strong{font:700 32px/1.2 Georgia,serif;color:#f7d797}
+.wb-countdown small{font:10px/1.4 system-ui,sans-serif;color:#c1b39a}
