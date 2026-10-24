@@ -9,7 +9,10 @@
  go=function(destination){const result=previousGo.apply(this,arguments);reset();return result;};
  function start(){
   if(typeof valorAccountCanPlay==='function'&&valorAccountCanPlay()&&state.class){
-   const castleTest=new URLSearchParams(location.search).get('castleTest')==='1';
+   const url=new URL(location.href);
+   const navigation=performance.getEntriesByType('navigation')[0];
+   const castleTest=url.searchParams.get('castleTest')==='1'&&navigation?.type==='navigate';
+   if(url.searchParams.has('castleTest')){url.searchParams.delete('castleTest');history.replaceState(history.state,'',url.pathname+url.search+url.hash);}
    page=castleTest?'Kale Testi':'Anasayfa';selected=null;
   }
   render();reset();
