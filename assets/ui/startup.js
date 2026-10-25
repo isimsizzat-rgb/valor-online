@@ -62,3 +62,38 @@ function valorBossTiming(now=Date.now()){
   return html.replace('<div class="wb-card wb-ranking">',timer+'<div class="wb-card wb-ranking">');
  };
 })();
+
+/* Workshop presentation: keep the existing crafting actions and selections. */
+(function(){
+ const previousWorkshop=workshop;
+ const groups=[
+  ['Ekipman',[['enhance','Güçlendirme','Yükseltme seviyesini artır'],['refine','Arıtma','Efsunları yeniden belirle'],['epic','Epik','Ekipmanını epik yap']]],
+  ['Mozaik',[['mosaic','Taş Tak / Çıkar','Ekipman yuvalarını düzenle'],['gemcombine','Taş Birleştir','Üst seviye mozaik üret'],['gemswap','Tür Değiştir','Aynı seviyede taş değiştir']]],
+  ['Birleştirme',[['stones','Şans Taşı','Üst seviye şans taşı üret'],['wings','Kanat','İki kanadı birleştir'],['combine','Binek Kartı','Ruh parçalarını birleştir']]]
+ ];
+ workshop=function(){
+  const template=document.createElement('template');template.innerHTML=previousWorkshop();
+  const shell=template.content.querySelector('.vw-shell');if(!shell)return template.innerHTML;
+  shell.classList.add('valor-forge');
+  const current=groups.flatMap(g=>g[1]).find(t=>t[0]===workTab)||groups[0][1][0];
+  const menu=document.createElement('nav');menu.className='forge-nav';menu.setAttribute('aria-label','Atölye işlemleri');
+  menu.innerHTML=groups.map(([name,tabs])=>'<section class="forge-nav-group"><h3>'+name+'</h3><div>'+tabs.map(([id,label,hint])=>'<button type="button" '+(workTab===id?'class="active" aria-current="page" ':'')+'onclick="workTab=\''+id+'\';render()"><span>'+label+'</span><small>'+hint+'</small></button>').join('')+'</div></section>').join('');
+  shell.querySelector('.vw-top-dropdown')?.replaceWith(menu);
+  const hero=document.createElement('header');hero.className='forge-hero';hero.innerHTML='<span>VALOR ONLINE · DEMİRHANE</span><h1>Atölye</h1><p>Ekipmanını güçlendir. Savaşa hazırlan.</p>';shell.prepend(hero);
+  const panel=shell.querySelector('.vw-panel');
+  panel.dataset.forgeTab=workTab;
+  const title=panel.querySelector('h2');if(title)title.insertAdjacentHTML('afterend','<p class="forge-panel-intro">'+current[2]+'.</p>');
+  const equippedIds=new Set(Object.values(state.equipped||{}).filter(Boolean).map(it=>String(it.id)));
+  const all=[...(state.inventory||[]),...Object.values(state.equipped||{}).filter(Boolean)];
+  panel.querySelectorAll('.vw-item').forEach(button=>{
+   const id=button.getAttribute('onclick')?.match(/vwChooseItem\('([^']+)'\)/)?.[1];
+   const item=all.find(it=>String(it.id)===id);if(!item)return;
+   button.setAttribute('aria-pressed',String(String(vwSelectedItemId)===String(item.id)));
+   button.title=item.name+' +'+(item.plus||0);
+   const name=button.querySelector('div');if(name){name.classList.add('forge-item-name');name.textContent=item.name;}
+   if(equippedIds.has(String(item.id))){const badge=document.createElement('span');badge.className='forge-equipped';badge.textContent='TAKILI';button.append(badge);}
+  });
+  if(panel.querySelector('.vw-item-list')&&!panel.querySelector('.vw-item'))panel.insertAdjacentHTML('beforeend','<div class="forge-empty">Bu işlem için uygun ekipmanın yok.<small>Çantana ekipman eklediğinde burada görünecek.</small></div>');
+  return template.innerHTML;
+ };
+})();
