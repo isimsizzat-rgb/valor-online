@@ -29,7 +29,9 @@ function valorDungeonBasePower(floor){
  const base=VALOR_DUNGEON_ANCHORS.map(([f,p])=>[f,p/valorDungeonFloorMult(f)]);
  return valorBalanceInterp(base,floor);
 }
-vsEnemy=function(floor){const f=Math.max(1,Math.min(100,Math.floor(Number(floor)||1)));return Math.round(valorDungeonBasePower(f)*valorDungeonFloorMult(f))};
+/* Late content (Sv.50+): floors past the Sv.50 player's reach are twice as strong, ramping in over floors 34-40. */
+function valorDungeonLateMult(floor){return floor<=33?1:floor>=40?2:1+(floor-33)/7}
+vsEnemy=function(floor){const f=Math.max(1,Math.min(100,Math.floor(Number(floor)||1)));return Math.round(valorDungeonBasePower(f)*valorDungeonFloorMult(f)*valorDungeonLateMult(f))};
 
 /* ---------- Stages ---------- */
 /* Per area [Kolay, Zor, Kabus] base power of the first foe. Foes ramp +5% each, the boss is +25%.
@@ -37,9 +39,11 @@ vsEnemy=function(floor){const f=Math.max(1,Math.min(100,Math.floor(Number(floor)
    clears it about half the time. Zor sits between them. */
 const VALOR_STAGE_POWER=[[3000,11600,35800],[35000,54600,85000],[83000,112000,152000],[146000,278000,530000]];
 const VALOR_STAGE_DIFFS=['Kolay','Zor','Kabus'];
+/* Late areas (Buzul Dağları 51-75, Cehennem Ovaları 76-100) are twice as strong. */
+const VALOR_STAGE_LATE_MULT=[1,1,2,2];
 function valorStageFoePower(area,diff,idx,boss){
  const row=VALOR_STAGE_POWER[Math.max(0,Math.min(3,area))],base=row[Math.max(0,VALOR_STAGE_DIFFS.indexOf(diff))];
- return Math.round(base*(1+.05*idx)*(boss?1.25:1));
+ return Math.round(base*VALOR_STAGE_LATE_MULT[Math.max(0,Math.min(3,area))]*(1+.05*idx)*(boss?1.25:1));
 }
 function valorStageMagic(area,idx){return (area+idx)%3===1}
 stageNewEnemy=function(run){
