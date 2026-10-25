@@ -96,3 +96,9 @@ function valorBossTiming(now=Date.now()){
   return template.innerHTML;
  };
 })();
+
+/* Lucky wheel assets are isolated from the existing game panels. */
+(function(){
+ const css=document.createElement('link');css.rel='stylesheet';css.href='assets/wheel/wheel.css?v=20261025-1';document.head.appendChild(css);
+ const js=document.createElement('script');js.src='assets/wheel/wheel.js?v=20261025-1';document.head.appendChild(js);
+})();
