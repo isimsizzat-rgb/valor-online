@@ -99,8 +99,8 @@ function valorBossTiming(now=Date.now()){
 
 /* Lucky wheel assets are isolated from the existing game panels. */
 (function(){
- const css=document.createElement('link');css.rel='stylesheet';css.href='assets/wheel/wheel.css?v=20261025-8';document.head.appendChild(css);
- const js=document.createElement('script');js.src='assets/wheel/wheel.js?v=20261025-8';document.head.appendChild(js);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='assets/wheel/wheel.css?v=20261025-9';document.head.appendChild(css);
+ const js=document.createElement('script');js.src='assets/wheel/wheel.js?v=20261025-9';document.head.appendChild(js);
 })();
 
 /* One-time wheel-testing top-up for every account; keep the original receipt to avoid paying DooM twice. */

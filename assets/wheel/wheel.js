@@ -78,7 +78,16 @@
   }
   return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg><div class="vwf-prizes">'+prizes.map((p,i)=>{const angle=i*30-90,visible=((angle+rotation)%360+360)%360,flip=visible>90&&visible<=270?180:0;return '<div class="vwf-prize" data-prize="'+p.id+'" data-top="'+(visible===270)+'" title="'+escapeAttr(p.name)+'" style="--angle:'+angle+'deg;--upright:'+(-(angle+rotation))+'deg;--label-flip:'+flip+'deg">'+iconMarkup(p.id)+'<span class="vwf-label"><span class="vwf-label-text">'+wheelLabels[p.id]+'</span></span></div>'}).join('')+'</div>';
  }
- let timer=null;
+ let timer=null,dayTimer=null;
+ function wheelDay(now=Date.now()){
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(now)).map(p=>[p.type,p.value]));
+  return parts.year+'-'+parts.month+'-'+parts.day;
+ }
+ function freeAvailable(){return state.luckyWheelFreeDay!==wheelDay()}
+ function scheduleDayRefresh(){
+  clearTimeout(dayTimer);const next=Date.parse(wheelDay()+'T00:00:00+03:00')+86400000;
+  dayTimer=setTimeout(()=>{if(page===NAME&&state.class&&valorAccountCanPlay())render()},Math.max(1,next-Date.now()+30));
+ }
  function data(){return state.luckyWheelV1||{from:0,to:0,ends:0}}
  function spinning(){return (data().ends||0)>Date.now()}
  function currentRound(d,now=Date.now()){
@@ -96,9 +105,9 @@
  };
  function diamondHtml(){return '<span class="vwf-diamond"><span class="vwf-sr">💎</span>'+(document.querySelector('.valor-diamond-icon')?.innerHTML||'')+'</span>'}
  function pageHtml(){
-  const d=data(),busy=spinning(),round=currentRound(d);
-  const status=busy?'Çark dönüyor…':d.count===10?'10 tur tamamlandı.':d.last?'Kazandın: <strong>'+escapeAttr(d.last)+'</strong>':'On iki dilim, on iki farklı ödül.';
-  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="Şans çarkını 99 elmas karşılığında çevir" '+(busy?'disabled aria-busy="true"':'')+'><b>ÇEVİR</b></button></div><div class="vwf-caption">Tek tur <b>99 💎</b></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
+  const d=data(),busy=spinning(),round=currentRound(d),free=freeAvailable();
+  const status=busy?(d.wasFree?'Ücretsiz çevirme…':'Çark dönüyor…'):d.count===10?'10 tur tamamlandı.':d.last?'Kazandın: <strong>'+escapeAttr(d.last)+'</strong>':'On iki dilim, on iki farklı ödül.';
+  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="'+(free?'Günlük ücretsiz çevirme hakkını kullan':'Şans çarkını 99 elmas karşılığında çevir')+'" '+(busy?'disabled aria-busy="true"':'')+'><b>ÇEVİR</b></button></div><div class="vwf-caption">'+(free?'<b class="vwf-free">Günlük ücretsiz hak: 1 / 1</b>':'Tek tur <b>99 💎</b> · Ücretsiz hak: 0 / 1')+'<small>Her gün 00.00’da yenilenir · Türkiye saati</small></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
  }
  function animate(){
   clearTimeout(timer);const d=data(),round=currentRound(d),remaining=round.ends-Date.now(),disc=document.getElementById('valorWheelDisc');
@@ -115,20 +124,22 @@
  }
  window.valorWheelSpin=function(count=1){
   if(![1,10].includes(count)||page!==NAME||!state.class||!valorAccountCanPlay()||spinning())return;
-  const price=count===10?899:PRICE;
+  const day=wheelDay(),wasFree=count===1&&state.luckyWheelFreeDay!==day;
+  const price=count===10?899:wasFree?0:PRICE;
   if((Number(state.diamonds)||0)<price)return toast('Yeterli elmasın yok · '+price+' 💎 gerekiyor');
   vsData();vwInit();vmData();
   const old=JSON.stringify(state),tickets=new Uint32Array(count);crypto.getRandomValues(tickets);
   const previous=data(),rounds=[],outcomes={};let from=previous.to||0;
   try{
-   state.diamonds-=price;
+   state.diamonds=Math.max(0,Number(state.diamonds)||0)-price;
+   if(wasFree)state.luckyWheelFreeDay=day;
    for(const ticket of tickets){
     const index=pick(ticket/4294967296*10000),target=(360-index*30)%360,to=from+(count===10?720:1800)+((target-from%360+360)%360),last=grant(prizes[index].id);
     rounds.push({from,to,last,prize:prizes[index].id});outcomes[last]=(outcomes[last]||0)+1;from=to;
    }
    const started=Date.now(),roundDuration=count===10?3000:DURATION,lastRound=rounds[rounds.length-1],initialFrom=rounds[0].from;
    const animationTo=count===10?initialFrom+1080+((lastRound.to%360-initialFrom%360+360)%360):lastRound.to;
-   state.luckyWheelV1={...lastRound,from:initialFrom,to:animationTo,started,roundDuration,duration:roundDuration,batchAnimation:count===10,rounds,count,totalPrice:price,outcomes,ends:started+roundDuration,spins:(previous.spins||0)+count,summaryShown:false};
+   state.luckyWheelV1={...lastRound,from:initialFrom,to:animationTo,started,roundDuration,duration:roundDuration,batchAnimation:count===10,rounds,count,wasFree,totalPrice:price,outcomes,ends:started+roundDuration,spins:(previous.spins||0)+count,summaryShown:false};
    // Payment and every reward are saved together before the animation.
    save();
   }catch(error){state=JSON.parse(old);toast('Çevirme tamamlanamadı. Elmasın harcanmadı.');console.error(error);return}
@@ -138,9 +149,10 @@
  home=function(){const html=oldHome(),template=document.createElement('template');template.innerHTML=html;const grid=template.content.querySelector('.mmorpg-home-grid');if(!grid)return html;grid.insertAdjacentHTML('beforeend','<button type="button" class="mmorpg-home-tile valor-vertical-tile vwf-home-tile" onclick="go(\'Şans Çarkı\')" aria-label="Şans Çarkı"><img src="assets/home-fantasy/sans-carki.webp?v=20261025" alt="Şans Çarkı" decoding="async" draggable="false"></button>');return template.innerHTML};
  function fitWheelLabels(){for(const label of document.querySelectorAll('.vwf-label')){const text=label.firstElementChild;if(!text||!label.clientWidth||!text.offsetWidth)continue;text.style.transform='scaleX('+Math.min(1,label.clientWidth/text.offsetWidth)+')'}}
  window.addEventListener('resize',fitWheelLabels,{passive:true});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&page===NAME&&state.class&&valorAccountCanPlay())render()});
  const oldRender=render;
- render=function(){oldRender.apply(this,arguments);if(page===NAME&&state.class&&valorAccountCanPlay()){document.body.classList.remove('valor-home','valor-market-page','valor-profile-page');document.getElementById('main').innerHTML=pageHtml();fitWheelLabels();animate()}};
+ render=function(){oldRender.apply(this,arguments);if(page===NAME&&state.class&&valorAccountCanPlay()){document.body.classList.remove('valor-home','valor-market-page','valor-profile-page');document.getElementById('main').innerHTML=pageHtml();fitWheelLabels();animate();scheduleDayRefresh()}};
  // Expose pure reward geometry for automated checks without changing game state.
- window.valorWheelConfig={price:PRICE,batchPrice:899,batchCount:10,prizes:prizes.map(p=>({...p})),pick,sectorAngle:30};
+ window.valorWheelConfig={price:PRICE,batchPrice:899,batchCount:10,dayKey:wheelDay,prizes:prizes.map(p=>({...p})),pick,sectorAngle:30};
  if(state.class&&valorAccountCanPlay()&&page==='Anasayfa')render();
 })();

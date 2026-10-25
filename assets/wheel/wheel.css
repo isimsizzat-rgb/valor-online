@@ -45,3 +45,5 @@ html body #main .vwf-prize[data-prize="health"] .vg-icon,html body #main .vwf-pr
 html body #main .vwf-prize[data-prize="health"] .vg-sprite{background-size:1000% 700%!important;background-position:100% 100%!important}
 
 .vwf-label-text{display:inline-block;flex:0 0 auto;white-space:nowrap;transform-origin:center}
+
+.vwf-caption small{display:block;margin-top:5px;font:10px/1.5 system-ui;color:#bca78a}.vwf-caption .vwf-free{color:#cfdfa5;font-size:12px}
