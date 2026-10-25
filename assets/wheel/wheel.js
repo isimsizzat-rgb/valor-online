@@ -135,7 +135,7 @@
   render();
  };
  const oldHome=home;
- home=function(){const html=oldHome(),template=document.createElement('template');template.innerHTML=html;const grid=template.content.querySelector('.mmorpg-home-grid');if(!grid)return html;grid.insertAdjacentHTML('beforeend','<button type="button" class="mmorpg-home-tile valor-vertical-tile vwf-home-tile" onclick="go(\'Şans Çarkı\')" aria-label="Şans Çarkı"><span class="vwf-home-emblem" aria-hidden="true">✦</span><b>ŞANS ÇARKI</b></button>');return template.innerHTML};
+ home=function(){const html=oldHome(),template=document.createElement('template');template.innerHTML=html;const grid=template.content.querySelector('.mmorpg-home-grid');if(!grid)return html;grid.insertAdjacentHTML('beforeend','<button type="button" class="mmorpg-home-tile valor-vertical-tile vwf-home-tile" onclick="go(\'Şans Çarkı\')" aria-label="Şans Çarkı"><img src="assets/home-fantasy/sans-carki.webp?v=20261025" alt="Şans Çarkı" decoding="async" draggable="false"></button>');return template.innerHTML};
  function fitWheelLabels(){for(const label of document.querySelectorAll('.vwf-label')){const text=label.firstElementChild;if(!text||!label.clientWidth||!text.offsetWidth)continue;text.style.transform='scaleX('+Math.min(1,label.clientWidth/text.offsetWidth)+')'}}
  window.addEventListener('resize',fitWheelLabels,{passive:true});
  const oldRender=render;
