@@ -41,12 +41,18 @@
  function hasMageArt(){return typeof VALOR_COMBAT_ART!=='undefined'}
  function supported(cls){return cls==='Savaşçı'||cls==='Büyücü'&&hasMageArt()}
  function actions(cls){return cls==='Büyücü'&&hasMageArt()?VALOR_COMBAT_ART.mage.actions:VALOR_WARRIOR_MOTION_ART.actions}
- function effectMarkup(){return '<svg class="vab-fx" viewBox="0 0 600 340" preserveAspectRatio="none" aria-hidden="true">'+['me','enemy'].map((side,i)=>'<g class="vab-fx-target vab-fx-'+side+'" transform="translate('+(i*300)+',0)"><g class="vab-lightning"><path class="vab-bolt-halo" d="M150 -10 133 43 154 38 137 91 157 83 141 137 158 130 147 196 153 226"/><path class="vab-bolt" d="M150 -10 133 43 154 38 137 91 157 83 141 137 158 130 147 196 153 226 M137 91 114 104 123 132 105 143 M141 137 179 153 168 177 190 194"/><ellipse class="vab-magic-ring" cx="150" cy="294" rx="61" ry="14"/><ellipse class="vab-magic-core" cx="150" cy="195" rx="30" ry="49"/></g><g class="vab-sword"><path class="vab-cut-halo" d="M90 113 Q226 144 135 270 Q204 178 90 113"/><path class="vab-cut" d="M90 113 Q226 144 135 270 Q199 175 90 113"/><path class="vab-sparks" d="m150 194-31-15m35 12 30-25m-28 32 38 4m-41 1 17 34m-27-36-22 28m25-40 7-29"/><circle class="vab-impact-core" cx="150" cy="195" r="13"/></g></g>').join('')+'</svg>'}
- function impact(s,attacker,target){
-  const fx=s.root.querySelector('.vab-fx');fx.classList.remove('vab-fx-live');fx.dataset.kind=s.classes[attacker]==='Büyücü'?'mage':'sword';fx.dataset.target=target;void fx.getBoundingClientRect();fx.classList.add('vab-fx-live');
-  s.root.querySelector('.vab-arena').dataset.impact=fx.dataset.kind;
+ function effectMarkup(){return '<div class="vab-fx" aria-hidden="true"><div class="vab-vfx-sprite"></div></div>'}
+ function prepareEffect(s,attacker,target){
+  if(typeof VALOR_COMBAT_VFX==='undefined')return;
+  const kind=s.classes[attacker]==='Büyücü'?'mage':'sword',art=VALOR_COMBAT_VFX[kind],fx=s.root.querySelector('.vab-fx');
+  fx.dataset.kind=kind;fx.dataset.target=target;fx.dataset.attacker=attacker;
+  const sprite=fx.firstElementChild;sprite.style.backgroundImage='url("'+art.src+'")';sprite.style.backgroundSize=art.frames*100+'% 100%';
+  fx.style.visibility='hidden';s.effect={kind,start:performance.now()+160,fx,sprite};
  }
-
+ function impact(s,attacker,target){
+  s.root.querySelector('.vab-arena').dataset.impact=s.classes[attacker]==='Büyücü'?'mage':'sword';
+  s.hitStopUntil=performance.now()+45;
+ }
  const beforeSimulate=valorArenaSimulate;
  valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass){
   const result=beforeSimulate.apply(this,arguments);
@@ -91,7 +97,7 @@
    hp(s,step);if(step.mine)damage(s,'enemy',step.mine);if(step.theirs)damage(s,'me',step.theirs);
    s.status.textContent='Tur sonu etkileri';s.timer=setTimeout(()=>next(s),450);return;
   }
-  const target=step.side==='me'?'enemy':'me';pose(s,step.side,'attack');
+  const target=step.side==='me'?'enemy':'me';pose(s,step.side,'attack');prepareEffect(s,step.side,target);
   s.status.textContent=(step.side==='me'?s.myName:s.result.opponent)+' saldırıyor!';
   s.timer=setTimeout(()=>{
    if(active!==s)return;pose(s,target,'hit');hp(s,step);damage(s,target,step.damage,step.hit);impact(s,step.side,target);
@@ -102,6 +108,8 @@
  function tick(s,now){
   if(active!==s)return;
   if(!s.root.isConnected){clean();return}
+  if(s.effect){const e=s.effect,art=VALOR_COMBAT_VFX[e.kind],elapsed=now-e.start,frame=Math.floor(elapsed/art.frameMs);e.fx.style.visibility=frame>=0&&frame<art.frames?'visible':'hidden';if(frame>=0&&frame<art.frames){e.sprite.style.backgroundPosition=frame/(art.frames-1)*100+'% 0';e.sprite.dataset.frame=String(frame)}}
+  if(now<s.hitStopUntil){s.raf=requestAnimationFrame(t=>tick(s,t));return}
   for(const side of ['me','enemy']){
    const p=s.poses[side],bank=actions(s.classes[side]),art=bank[p.name];
    let frame=Math.floor((now-p.start)/art.frameMs);
@@ -133,7 +141,7 @@
   active=s;s.key=e=>{if(e.key==='Escape'){e.preventDefault();finish()}if(e.key==='Tab'){e.preventDefault();root.querySelector('button').focus()}};
   root.querySelector('button').onclick=finish;document.body.appendChild(root);document.body.style.overflow='hidden';document.addEventListener('keydown',s.key);root.querySelector('button').focus();
   setHp(s,'me',result.myMaxHp,result.myMaxHp);setHp(s,'enemy',result.enemyMaxHp,result.enemyMaxHp);pose(s,'me','idle');pose(s,'enemy','idle');tick(s,performance.now());
-  const art=[...new Set(cls)].flatMap(c=>Object.values(actions(c)));
+  const art=[...new Set(cls)].flatMap(c=>Object.values(actions(c)));if(typeof VALOR_COMBAT_VFX!=='undefined')art.push(...Object.values(VALOR_COMBAT_VFX));
   const ready=Promise.all(art.map(a=>new Promise(resolve=>{const image=new Image();image.onload=image.onerror=resolve;image.src=a.src})));
   // Never leave a completed fight blocked by an image decode or tab lifecycle.
   s.timer=setTimeout(()=>{if(active===s){clearTimeout(s.timer);next(s)}},2500);
@@ -147,7 +155,7 @@
  .vab-arena{position:relative;isolation:isolate;height:300px;overflow:hidden;background:radial-gradient(ellipse at 50% 80%,#a7814938,transparent 60%),linear-gradient(0deg,#181719,transparent 65%);border-bottom:1px solid #98805755}.vab-arena:before{content:'';position:absolute;inset:12% 4% 14%;border:1px solid #aa89581f;border-radius:50% 50% 0 0;box-shadow:inset 0 0 60px #0008;z-index:-1}.vab-arena:after{content:'';position:absolute;bottom:15%;left:5%;right:5%;height:1px;background:linear-gradient(90deg,transparent,#a8845555,transparent);z-index:-1}
  .vab-fighter{position:absolute;width:76%;aspect-ratio:1;bottom:0;pointer-events:none}.vab-me{left:-14%}.vab-enemy{right:-14%}.vab-facing,.vab-sprite{width:100%;height:100%}.vab-enemy .vab-facing{transform:scaleX(-1)}.vab-sprite{background-repeat:no-repeat;filter:drop-shadow(0 5px 5px #0009)}.vab-shadow{position:absolute;bottom:8%;left:35%;width:30%;height:9px;background:#0009;filter:blur(5px);border-radius:50%}.vab-fighter[data-class=warrior][data-action=attack] .vab-facing{animation:vabLunge .6s ease-in-out}.vab-enemy[data-class=warrior][data-action=attack] .vab-facing{animation-name:vabEnemyLunge}.vab-fighter[data-action=hit] .vab-sprite{filter:drop-shadow(0 0 10px #db5e4155)}
  .vab-damage{position:absolute;top:34%;left:35%;right:0;text-align:center;font:bold 22px Georgia;color:#ffe3ad;text-shadow:0 2px 4px #000,0 0 10px #a33;opacity:0;z-index:4}.vab-float{animation:vabFloat .8s ease-out forwards}.vab-heal{position:absolute;top:50%;left:45%;color:#abe5a0;font:bold 16px Georgia;animation:vabFloat 1s forwards}.vab-status{min-height:36px;margin:12px 0 6px;font:14px/1.5 Georgia;color:#dac6a2}.vab-dialog .vab-skip{min-height:44px;padding:10px 24px;border:1px solid #816b49;border-radius:5px;background:#17151b;color:#d6c8ae;font:14px Georgia}.vab-impact{animation:vabShake .18s}
- @keyframes vabLunge{50%{transform:translateX(16px)}}@keyframes vabEnemyLunge{50%{transform:scaleX(-1) translateX(16px)}}@keyframes vabFloat{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-32px)}}@keyframes vabShake{50%{transform:translateX(2px)}}
+ @keyframes vabLunge{50%{transform:translateX(16px)}}@keyframes vabEnemyLunge{50%{transform:scaleX(-1) translateX(16px)}}@keyframes vabFloat{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-32px)}}@keyframes vabShake{25%{transform:translate(2px,1px)}65%{transform:translate(-2px,-1px)}}
  @media(min-width:500px){.vab-arena{height:365px}.vab-fighter{width:64%}.vab-me{left:-3%}.vab-enemy{right:-3%}}@media(max-width:350px){.vab-dialog{padding:16px 8px}.vab-arena{height:255px}.vab-health-row{gap:14px}.vab-damage{font-size:18px}}@media(max-height:540px){.vab-arena{height:210px}.vab-fighter{width:250px}.vab-me{left:calc(25% - 125px)}.vab-enemy{right:calc(25% - 125px)}}
  `;document.head.appendChild(style);
 })();
@@ -157,10 +165,12 @@
 .vab-arena:before{inset:0;border:0;border-radius:0;box-shadow:inset 0 0 28px #0007;background:linear-gradient(0deg,#0a0b0f33,transparent 40%);z-index:0;pointer-events:none}.vab-arena:after{display:none}.vab-fighter{z-index:2}.vab-damage{color:#fff0cd}.vab-shadow{background:#000b;filter:blur(4px)}
 .vab-dust{position:absolute;inset:55% -25% 0;z-index:3;pointer-events:none;opacity:.25;background:radial-gradient(ellipse at 30% 80%,#a8acba70,transparent 45%),radial-gradient(ellipse at 70% 70%,#9babb450,transparent 50%);animation:vabMist 9s ease-in-out infinite alternate}
 .vab-embers{position:absolute;inset:0;pointer-events:none;z-index:4;background-image:radial-gradient(circle,#fbd7a6 0 1px,transparent 2px),radial-gradient(circle,#eb975c 0 1px,transparent 2px),radial-gradient(circle,#d5a27c 0 1px,transparent 2px);background-size:107px 139px,151px 173px,193px 127px;opacity:.5;animation:vabEmbers 8s linear infinite}
-.vab-fx{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:hidden}.vab-fx-target{opacity:0}.vab-fx-live[data-target=me] .vab-fx-me,.vab-fx-live[data-target=enemy] .vab-fx-enemy{opacity:1}.vab-lightning,.vab-sword{display:none}.vab-fx-live[data-kind=mage] .vab-lightning{display:block;animation:vabLightning .4s ease-out both}.vab-fx-live[data-kind=sword] .vab-sword{display:block;animation:vabSlash .38s ease-out both;transform-origin:150px 195px}
-.vab-bolt-halo{fill:none;stroke:#8b72ff;stroke-width:11;filter:blur(5px);opacity:.9}.vab-bolt{fill:none;stroke:#f1f8ff;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #84c8ff)}.vab-magic-ring{fill:#9887ff33;stroke:#b9b4ff;stroke-width:2;filter:drop-shadow(0 0 5px #946bff)}.vab-magic-core{fill:#b5bdff;opacity:.4;filter:blur(10px)}
-.vab-cut-halo{fill:#e6b56d;filter:blur(6px);opacity:.8}.vab-cut{fill:#fff1ce;filter:drop-shadow(0 0 3px #e9ba7b)}.vab-sparks{fill:none;stroke:#fff3c0;stroke-width:2;stroke-linecap:round}.vab-impact-core{fill:#fff9dc;filter:blur(3px)}
+.vab-fx{position:absolute;z-index:5;pointer-events:none;visibility:hidden;left:76%;top:59%;width:58%;aspect-ratio:1;transform:translate(-50%,-50%);mix-blend-mode:screen}
+.vab-fx[data-target=me]{left:24%}.vab-vfx-sprite{width:100%;height:100%;background-repeat:no-repeat}.vab-fx[data-attacker=enemy][data-kind=sword] .vab-vfx-sprite{transform:scaleX(-1)}
+.vab-fx[data-kind=mage]{top:-4%;height:112%;width:82%;aspect-ratio:auto;transform:translateX(-50%)}
+.vab-fighter[data-action=hit]{animation:vabRecoil .2s ease-out}.vab-enemy[data-action=hit]{animation-name:vabEnemyRecoil}
+@keyframes vabRecoil{35%{transform:translateX(-6px)}}@keyframes vabEnemyRecoil{35%{transform:translateX(6px)}}
 .vab-fighter[data-class=mage][data-action=attack] .vab-sprite{animation:vabCast .4s ease-in both}.vab-arena.vab-impact[data-impact=mage]:before{animation:vabSkyFlash .35s ease-out}.vab-arena.vab-impact[data-impact=sword]:before{animation:vabGoldFlash .2s ease-out}
-@keyframes vabMist{to{transform:translateX(10%);opacity:.4}}@keyframes vabEmbers{from{background-position:0 160px,30px 90px,80px 110px}to{background-position:25px -118px,4px -256px,110px -144px}}@keyframes vabCast{to{filter:drop-shadow(0 0 9px #b79dff)}}@keyframes vabLightning{0%{opacity:0;transform:translateY(-40px)}10%{opacity:1;transform:translateY(0)}28%{opacity:.8}44%{opacity:1}100%{opacity:0}}@keyframes vabSlash{0%{opacity:0;transform:rotate(-40deg) scale(.65)}20%{opacity:1}65%{opacity:.9}100%{opacity:0;transform:rotate(18deg) scale(1.18)}}@keyframes vabSkyFlash{0%,25%{background:#b5c9ff55}100%{background:transparent}}@keyframes vabGoldFlash{0%{background:#efc78022}100%{background:transparent}}
+@keyframes vabMist{to{transform:translateX(10%);opacity:.4}}@keyframes vabEmbers{from{background-position:0 160px,30px 90px,80px 110px}to{background-position:25px -118px,4px -256px,110px -144px}}@keyframes vabCast{to{filter:drop-shadow(0 0 9px #b79dff)}}@keyframes vabSkyFlash{0%,25%{background:#b5c9ff55}100%{background:transparent}}@keyframes vabGoldFlash{0%{background:#efc78022}100%{background:transparent}}
 @media(prefers-reduced-motion:reduce){.vab-dust,.vab-embers{animation:none}}
 `;document.head.appendChild(style)})();
