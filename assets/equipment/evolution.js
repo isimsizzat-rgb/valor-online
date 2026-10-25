@@ -1,8 +1,10 @@
-/* Four-stage evolution for the original beginner equipment. */
+/* Four-stage evolution for beginner equipment and approved warrior scene sets. */
 (function(){
  const names=['Normal','Epik','Ebedi','İlahi'],colors=['#b7bdc9','#d5b16b','#bda0ef','#f0db9e'];
  const oldPower=equipmentPower;let pending=null;
- const eligible=it=>!!it&&it.starterSet==='starter-v1'&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
+ function sceneSet(it){if(!it||it.starterSet||it.cls!=='Savaşçı')return null;const level=Number(it.level);return level>75&&level<=100?'lumeris':level>50&&level<=75?'mordrak':level>25&&level<=50?'varkhan':null}
+ const eligible=it=>!!it&&(it.starterSet==='starter-v1'||sceneSet(it))&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
+ function artFor(it){if(it?.cls!=='Savaşçı')return null;const name=sceneSet(it);if(!name)return it?.starterSet==='starter-v1'&&typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART:null;return name==='varkhan'&&typeof VALOR_WARRIOR_VARKHAN_ART!=='undefined'?VALOR_WARRIOR_VARKHAN_ART:name==='mordrak'&&typeof VALOR_WARRIOR_MORDRAK_ART!=='undefined'?VALOR_WARRIOR_MORDRAK_ART:name==='lumeris'&&typeof VALOR_WARRIOR_LUMERIS_ART!=='undefined'?VALOR_WARRIOR_LUMERIS_ART:null}
  function tier(it){if(!eligible(it))return it?.epic?1:0;const n=it.evolutionTier;return Number.isInteger(n)&&n>=0&&n<4?n:it.epic?1:0}
  function at(it,t,plus){
   if(t===0)return oldPower({...it,epic:false,plus});
@@ -14,7 +16,7 @@
  window.valorEvolutionPowerAt=function(it,t,plus){return eligible(it)&&Number.isInteger(t)&&t>=0&&t<=3&&Number.isInteger(plus)&&plus>=0&&plus<=21?at(it,t,plus):null};
  equipmentPower=function(it){return eligible(it)?at(it,tier(it),Math.max(0,Math.min(21,Math.trunc(Number(it.plus)||0)))):oldPower.apply(this,arguments)};
  const oldIcon=equipmentIcon;
- equipmentIcon=function(it){return eligible(it)&&it.cls==='Savaşçı'&&typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART[tier(it)][it.slot]||oldIcon.apply(this,arguments):oldIcon.apply(this,arguments)};
+ equipmentIcon=function(it){const art=artFor(it);return eligible(it)&&art?art[tier(it)]?.[it.slot]||oldIcon.apply(this,arguments):oldIcon.apply(this,arguments)};
  function label(it){return names[tier(it)]+' +'+(Number(it.plus)||0)}
  function find(id){return veFindItem(id)}
  function button(id){const b=document.createElement('button');b.type='button';b.className='evo-button';b.textContent='EVRİMLEŞTİR';b.onclick=()=>valorEvolutionAsk(id);return b}
@@ -38,7 +40,7 @@
  bag=function(){const template=document.createElement('template');template.innerHTML=oldBag.apply(this,arguments);template.content.querySelectorAll('.bag-slot').forEach(el=>{const m=el.getAttribute('onclick')?.match(/selectItem\((\d+)\)/),it=m&&state.inventory[Number(m[1])];if(!eligible(it))return;el.dataset.evolutionTier=String(tier(it));el.title=it.name+' · '+label(it);const badge=document.createElement('span');badge.className='evo-badge';badge.textContent=names[tier(it)];badge.style.color=colors[tier(it)];el.append(badge)});return template.innerHTML};
  const oldWorkshop=workshop;
  workshop=function(){const template=document.createElement('template');template.innerHTML=oldWorkshop.apply(this,arguments);const root=template.content;root.querySelectorAll('.vw-item').forEach(el=>{const m=el.getAttribute('onclick')?.match(/vwChooseItem\('([^']+)'\)/),it=m&&find(m[1]);if(eligible(it)){el.dataset.evolutionTier=String(tier(it));el.title=it.name+' · '+label(it);const name=el.querySelector('.forge-item-name,div');if(name)name.textContent=it.name+' · '+names[tier(it)]}});
-  {const nav=[...root.querySelectorAll('.forge-nav button')].find(b=>b.getAttribute('onclick')?.includes("workTab='epic'"));if(nav){nav.querySelector('span').textContent='Evrim';nav.querySelector('small').textContent='+21 başlangıç ekipmanını evrimleştir'}if(workTab==='epic'){const box=root.querySelector('.vw-panel'),it=find(vwSelectedItemId);if(box){const h=box.querySelector('h2');if(h)h.textContent='Evrim';const intro=box.querySelector('.forge-panel-intro');if(intro)intro.textContent='Başlangıç ekipmanları: Normal → Epik → Ebedi → İlahi.';if(eligible(it)){box.querySelector('.vw-action')?.remove();box.append(panel(it));}}}}
+  {const nav=[...root.querySelectorAll('.forge-nav button')].find(b=>b.getAttribute('onclick')?.includes("workTab='epic'"));if(nav){nav.querySelector('span').textContent='Evrim';nav.querySelector('small').textContent='+21 ekipmanını sonraki aşamaya taşı'}if(workTab==='epic'){const box=root.querySelector('.vw-panel'),it=find(vwSelectedItemId);if(box){const h=box.querySelector('h2');if(h)h.textContent='Evrim';const intro=box.querySelector('.forge-panel-intro');if(intro)intro.textContent='Normal → Epik → Ebedi → İlahi.';if(eligible(it)){box.querySelector('.vw-action')?.remove();box.append(panel(it));}}}}
   return template.innerHTML;
  };
  // Template serialization drops DOM listeners, so bind evolution controls after render.
