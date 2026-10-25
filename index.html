@@ -1510,4 +1510,56 @@ function valorFormatProfileStats(html,stats,maxHp){
 const valorProfileBeforeIntegerDisplay=profile;
 profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.class).maxHp;return valorFormatProfileStats(valorProfileBeforeIntegerDisplay.apply(this,arguments),stats,hp)};
 </script>
+<style id="valor-chat-news-style">
+.valor-social-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 20px;padding-bottom:12px;border-bottom:1px solid #b59b5f44}
+.valor-social-tabs button{min-height:44px;padding:10px;border:1px solid #8b78554d;border-radius:6px;background:#14182099;color:#c1b49b;font:700 17px Georgia,serif}
+.valor-social-tabs button[aria-selected="true"]{color:#f5ddb0;border-color:#c8a96b;background:linear-gradient(#5c472944,#171720aa);box-shadow:inset 0 -2px #c8a96b}
+.valor-news-panel h1{font:700 26px Georgia,serif;color:#ecd2a2;margin:12px 0 18px}
+.valor-news-list{display:grid;gap:10px}
+.valor-news-row{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:13px 11px;border:1px solid #a88b5640;border-radius:7px;background:#11151c99}
+.valor-news-row>div{flex:1;min-width:0}
+.valor-news-row p{margin:0;color:#d6cbb7;font:14px/1.7 Georgia,serif;overflow-wrap:anywhere}
+.valor-news-player{color:#efd395}.valor-news-item{color:#dfc49a}.is-epic .valor-news-item{color:#d5acf0}
+.valor-news-symbol{flex:0 0 22px;line-height:1.5;font-size:22px;color:#d3b16e}.is-epic .valor-news-symbol{color:#cb9fed}
+.valor-news-row time{display:block;margin-top:6px;font:10px/1.4 system-ui,sans-serif;color:#9d978c}
+.valor-news-empty{padding:22px 12px;border:1px solid #8d79543b;border-radius:7px;color:#beb5a3;font-size:14px;line-height:1.7;text-align:center}
+</style>
+<script id="valor-chat-news">
+(function(){
+ const STORAGE_KEY='valor-online-achievement-news-v1',LIMIT=200;
+ let activeTab='chat',fallback=[],sequence=0;
+ const kinds=new Set(['epic','wheel-mount','anniversary-mount']);
+ function valid(entry){return entry&&kinds.has(entry.kind)&&typeof entry.player==='string'&&typeof entry.item==='string'&&Number.isFinite(entry.at)}
+ function read(){try{const list=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(list)?list.filter(valid).slice(0,LIMIT):fallback}catch{return fallback}}
+ function publish(kind,item){
+  if(!kinds.has(kind)||!item)return;
+  const entry={id:Date.now()+'-'+(++sequence),kind,player:String(state.name||'Oyuncu').slice(0,80),item:String(item).slice(0,180),at:Date.now()};
+  fallback=[entry,...read()].slice(0,LIMIT);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(fallback))}catch{}
+ }
+ function message(entry){const player='<strong class="valor-news-player">'+escapeAttr(entry.player)+'</strong>',item='<strong class="valor-news-item">'+escapeAttr(entry.item)+'</strong>';
+  if(entry.kind==='epic')return player+' '+item+' eşyasını epik yaptı!';
+  if(entry.kind==='wheel-mount')return player+' Şans Çarkı’ndan '+item+' adlı bineği elde etti!';
+  return player+' Yıldönümü Kutusu’ndan '+item+' adlı bineği çıkardı!';
+ }
+ function newsHtml(){const list=read(),time=new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  return '<section class="valor-news-panel" id="valor-social-panel" role="tabpanel" aria-labelledby="valor-news-tab"><h1>Haberler</h1>'+(list.length?'<div class="valor-news-list" role="list">'+list.map(entry=>'<article class="valor-news-row '+(entry.kind==='epic'?'is-epic':'is-mount')+'" role="listitem"><span class="valor-news-symbol" aria-hidden="true">'+(entry.kind==='epic'?'✦':'♞')+'</span><div><p>'+message(entry)+'</p><time datetime="'+new Date(entry.at).toISOString()+'">'+time.format(new Date(entry.at))+'</time></div></article>').join('')+'</div>':'<p class="valor-news-empty">Henüz haber yok. Epik yükseltmeler ve kazanılan binekler burada görünecek.</p>')+'</section>';
+ }
+ const oldChat=chatPage;
+ chatPage=function(){return '<div class="valor-social-tabs" role="tablist" aria-label="Sohbet ve haberler"><button type="button" id="valor-chat-tab" role="tab" aria-selected="'+(activeTab==='chat')+'" aria-controls="valor-social-panel" onclick="valorSocialSelectTab(\'chat\')">Sohbet</button><button type="button" id="valor-news-tab" role="tab" aria-selected="'+(activeTab==='news')+'" aria-controls="valor-social-panel" onclick="valorSocialSelectTab(\'news\')">Haberler</button></div>'+(activeTab==='news'?newsHtml():'<section id="valor-social-panel" role="tabpanel" aria-labelledby="valor-chat-tab">'+oldChat.apply(this,arguments)+'</section>')};
+ window.valorSocialSelectTab=function(tab){if(!['chat','news'].includes(tab))return;activeTab=tab;if(page==='Sohbet'){render();document.getElementById(tab==='news'?'valor-news-tab':'valor-chat-tab')?.focus({preventScroll:true})}};
+ const oldEpic=epic;
+ epic=function(id){const it=getItem(id),wasEpic=!!it?.epic,result=oldEpic.apply(this,arguments);if(it&&!wasEpic&&it.epic)publish('epic',it.name);return result};
+ const oldBoxReward=giveAnniversaryBoxReward;
+ giveAnniversaryBoxReward=function(){const before=new Set(state.inventory.filter(it=>it.slot==='Binek').map(it=>it.id)),result=oldBoxReward.apply(this,arguments);for(const it of state.inventory)if(it.slot==='Binek'&&!before.has(it.id))publish('anniversary-mount',it.name);return result};
+ function connectWheelNews(){
+  const previous=window.valorWheelSpin;if(typeof previous!=='function'||previous.valorNewsWrapped)return;
+  const wrapped=function(){const previousSpins=Number(state.luckyWheelV1?.spins)||0,before=new Set(state.inventory.filter(it=>it.slot==='Binek').map(it=>it.id)),result=previous.apply(this,arguments);if((Number(state.luckyWheelV1?.spins)||0)>previousSpins)for(const it of state.inventory)if(it.slot==='Binek'&&!before.has(it.id))publish('wheel-mount',it.name);return result};
+  wrapped.valorNewsWrapped=true;window.valorWheelSpin=wrapped;
+ }
+ connectWheelNews();
+ document.addEventListener('load',event=>{if(event.target?.tagName==='SCRIPT'&&event.target.src.includes('/wheel/wheel.js'))connectWheelNews()},true);
+ window.addEventListener('load',connectWheelNews,{once:true});
+ window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY&&page==='Sohbet'&&activeTab==='news')render()});
+})();
+</script>
 </body></html>
