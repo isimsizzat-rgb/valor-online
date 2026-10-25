@@ -37,17 +37,16 @@
   if(withButton&&ready)el.appendChild(button(it.id));return el;
  }
  function decoratePopup(it,id){
-  if(!eligible(it))return;const root=document.getElementById(id),dialog=root?.querySelector('.valor-item-dialog');if(!dialog||dialog.querySelector('.evo-panel'))return;
-  dialog.dataset.evolutionTier=String(tier(it));const rarity=dialog.querySelector('.detail-rarity');if(rarity)rarity.textContent=names[tier(it)]+' · '+it.slot;
-  for(const p of dialog.querySelectorAll(':scope > p'))if(/^(✦ Epik|Normal) ·/.test(p.textContent))p.textContent=p.textContent.replace(/^(✦ Epik|Normal)/,names[tier(it)]);
-  dialog.querySelector('h3')?.insertAdjacentElement('afterend',panel(it));
+  if(!artFor(it))return;const root=document.getElementById(id),dialog=root?.querySelector('.valor-item-dialog');if(!dialog)return;
+  dialog.dataset.evolutionTier=String(tier(it));const rarity=dialog.querySelector('.detail-rarity');if(rarity)rarity.textContent=it.slot;
+  for(const p of dialog.querySelectorAll(':scope > p'))if(/^(✦ Epik|Normal) ·/.test(p.textContent))p.textContent=p.textContent.replace(/^(✦ Epik|Normal) · /,'');
  }
  const oldBagPopup=showBagItemPopup;
  showBagItemPopup=function(n){const r=oldBagPopup.apply(this,arguments);decoratePopup(state.inventory[n],'valor-bag-popup');return r};
  const oldProfilePopup=showProfileDetails;
  showProfileDetails=function(slot){const r=oldProfilePopup.apply(this,arguments);decoratePopup(state.equipped[slot],'valor-item-overlay');return r};
  const oldBag=bag;
- bag=function(){const template=document.createElement('template');template.innerHTML=oldBag.apply(this,arguments);template.content.querySelectorAll('.bag-slot').forEach(el=>{const m=el.getAttribute('onclick')?.match(/selectItem\((\d+)\)/),it=m&&state.inventory[Number(m[1])];if(!eligible(it))return;el.dataset.evolutionTier=String(tier(it));el.title=it.name+' · '+label(it);const badge=document.createElement('span');badge.className='evo-badge';badge.textContent=names[tier(it)];badge.style.color=colors[tier(it)];el.append(badge)});return template.innerHTML};
+ bag=function(){const template=document.createElement('template');template.innerHTML=oldBag.apply(this,arguments);template.content.querySelectorAll('.bag-slot').forEach(el=>{const m=el.getAttribute('onclick')?.match(/selectItem\((\d+)\)/),it=m&&state.inventory[Number(m[1])];if(!eligible(it))return;el.dataset.evolutionTier=String(tier(it));el.title=it.name+' · '+label(it);});return template.innerHTML};
  const oldWorkshop=workshop;
  workshop=function(){const template=document.createElement('template');template.innerHTML=oldWorkshop.apply(this,arguments);const root=template.content;root.querySelectorAll('.vw-item').forEach(el=>{const m=el.getAttribute('onclick')?.match(/vwChooseItem\('([^']+)'\)/),it=m&&find(m[1]);if(eligible(it)){el.dataset.evolutionTier=String(tier(it));el.title=it.name+' · '+label(it);const name=el.querySelector('.forge-item-name,div');if(name)name.textContent=it.name+' · '+names[tier(it)]}});
   {const nav=[...root.querySelectorAll('.forge-nav button')].find(b=>b.getAttribute('onclick')?.includes("workTab='epic'"));if(nav){nav.querySelector('span').textContent='Evrim';nav.querySelector('small').textContent='+21 ekipmanını sonraki aşamaya taşı'}if(workTab==='epic'){const box=root.querySelector('.vw-panel'),it=find(vwSelectedItemId);if(box){const h=box.querySelector('h2');if(h)h.textContent='Evrim';const intro=box.querySelector('.forge-panel-intro');if(intro)intro.textContent='Normal → Epik → Ebedi → İlahi.';if(eligible(it)){box.querySelector('.vw-action')?.remove();box.append(panel(it));}}}}
@@ -57,7 +56,7 @@
  const oldRender=render;
  render=function(){const r=oldRender.apply(this,arguments);document.querySelectorAll('#main .evo-button').forEach(b=>{b.onclick=()=>valorEvolutionAsk(vwSelectedItemId)});return r};
  const oldDraw=vwDrawEnhance;
- vwDrawEnhance=function(){const r=oldDraw.apply(this,arguments),it=vwEnhanceItem(),root=document.getElementById('vw-enhance-overlay');if(eligible(it)&&root){root.querySelector('h2')?.insertAdjacentElement('afterend',panel(it));root.querySelector('.vw-enhance-dialog').dataset.evolutionTier=String(tier(it))}return r};
+ vwDrawEnhance=function(){const r=oldDraw.apply(this,arguments),it=vwEnhanceItem(),root=document.getElementById('vw-enhance-overlay');if(eligible(it)&&root){root.querySelector('.vw-enhance-dialog').dataset.evolutionTier=String(tier(it))}return r};
  const oldEpic=epic;
  epic=function(id){const it=find(id);if(eligible(it)){if(it.plus!==21)return toast('Evrim için ekipmanı +21 yapmalısın.');return valorEvolutionAsk(id)}return oldEpic.apply(this,arguments)};
  window.valorEvolutionCancel=function(){pending=null;document.getElementById('valor-evolution-confirm')?.remove()};
