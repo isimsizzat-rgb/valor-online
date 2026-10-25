@@ -79,7 +79,6 @@ function valorBossTiming(now=Date.now()){
   const menu=document.createElement('nav');menu.className='forge-nav';menu.setAttribute('aria-label','Atölye işlemleri');
   menu.innerHTML=groups.map(([name,tabs])=>'<section class="forge-nav-group"><h3>'+name+'</h3><div>'+tabs.map(([id,label,hint])=>'<button type="button" '+(workTab===id?'class="active" aria-current="page" ':'')+'onclick="workTab=\''+id+'\';render()"><span>'+label+'</span><small>'+hint+'</small></button>').join('')+'</div></section>').join('');
   shell.querySelector('.vw-top-dropdown')?.replaceWith(menu);
-  const hero=document.createElement('header');hero.className='forge-hero';hero.innerHTML='<span>VALOR ONLINE · DEMİRHANE</span><h1>Atölye</h1><p>Ekipmanını güçlendir. Savaşa hazırlan.</p>';shell.prepend(hero);
   const panel=shell.querySelector('.vw-panel');
   panel.dataset.forgeTab=workTab;
   const title=panel.querySelector('h2');if(title)title.insertAdjacentHTML('afterend','<p class="forge-panel-intro">'+current[2]+'.</p>');
