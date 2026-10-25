@@ -64,3 +64,13 @@
 .vpet-equip:disabled{opacity:1;background:linear-gradient(#5a4526,#2c2216);border-color:#e0b863;color:#f6dca2;cursor:default}
 .vpet-equipped{box-shadow:0 0 0 2px #e0b863,0 0 22px #e0b86355}
 .vpet-equipped-badge{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background:#1a130bcc;border:1px solid #e0b863;color:#f6dca2;font-size:10px;letter-spacing:.8px;white-space:nowrap}
+
+/* Guardian special power */
+.vpet-buff{margin-top:12px;padding:10px 11px;border:1px solid #6d5a3d;border-radius:8px;background:#120f0d99}
+.vpet-buff>div{display:flex;flex-direction:column;gap:2px}
+.vpet-buff small{font-size:9px;letter-spacing:.8px;color:#a9967a}
+.vpet-buff b{font-size:14px;color:#ecd7b4}
+.vpet-buff p{margin:6px 0 0;font-size:11px;line-height:1.5;color:#cbb895}
+.vpet-buff .vpet-buff-next{display:block;margin-top:5px;font-size:10px;letter-spacing:0;line-height:1.45;color:#8f7f66}
+.vpet-buff.active{border-color:#e0b863;background:linear-gradient(120deg,#3a2b17cc,#17120ecc)}
+.vpet-buff.active small:first-child{color:#e0b863}

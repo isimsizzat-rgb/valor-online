@@ -67,19 +67,32 @@ function valorArenaFury(round){return valorArenaFuryActive?Math.max(0,round-VALO
 function valorAstrologyHeal(unit,chance,rng=Math.random){if(unit.hp<=0||!chance||rng()>=chance)return 0;const healed=Math.min(unit.maxHp-unit.hp,Math.max(1,Math.round(unit.maxHp*.05)));unit.hp+=healed;return healed;}
 valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.random){
   const me=valorArenaUnit({...myStats},myClass),enemy=valorArenaUnit({...rivalStats},rivalClass),log=[];
+  /* Equipped guardian buffs live on stats.petBuff: kozpence (burn), safakkanat (wounded bonus), gecegaga (shadow strike). Ayazdiş is applied inside valorArenaHit. */
+  const buff=u=>u.stats.petBuff||null;
   for(let round=1;me.hp>0&&enemy.hp>0&&round<=10000;round++){
     let mine=0,theirs=0,myHit=null,enemyHit=null;
     const fury=valorArenaFury(round);
-    const strike=(a,b)=>{const hit=valorArenaHit(a,b,rng);if(fury>0&&!hit.resisted){hit.fury=fury;hit.damage=Math.max(1,Math.round(hit.damage*(1+fury)));}const damage=Math.min(b.hp,hit.damage);b.hp-=damage;hit.healed=valorAstrologyHeal(b,b.stats.astrologyHealing,rng);return {hit,damage};};
-    const strikeMine=()=>{const s=strike(me,enemy);myHit=s.hit;mine=s.damage;},strikeEnemy=()=>{const s=strike(enemy,me);enemyHit=s.hit;theirs=s.damage;};
+    const strike=(a,b)=>{const hit=valorArenaHit(a,b,rng),pb=buff(a);
+      if(fury>0&&!hit.resisted){hit.fury=fury;hit.damage=Math.max(1,Math.round(hit.damage*(1+fury)));}
+      if(pb?.id==='safakkanat'&&!hit.resisted&&b.hp<b.maxHp*.25){hit.dawn=pb.bonus;hit.damage=Math.max(1,Math.round(hit.damage*(1+pb.bonus)));}
+      const damage=Math.min(b.hp,hit.damage);b.hp-=damage;
+      if(pb?.id==='kozpence'&&b.hp>0&&rng()<pb.chance){b.burn={rounds:3,damage:Math.max(1,Math.round(b.maxHp*pb.burn))};hit.ignite=true;}
+      hit.healed=valorAstrologyHeal(b,b.stats.astrologyHealing,rng);return {hit,damage};};
+    const attack=(a,b)=>{const s=strike(a,b);let total=s.damage;const pb=buff(a);
+      if(pb?.id==='gecegaga'&&b.hp>0&&rng()<pb.chance){const extra=strike(a,b);total+=extra.damage;s.hit.shadow=extra.damage;}
+      return {hit:s.hit,damage:total};};
+    const strikeMine=()=>{const s=attack(me,enemy);myHit=s.hit;mine=s.damage;},strikeEnemy=()=>{const s=attack(enemy,me);enemyHit=s.hit;theirs=s.damage;};
     const meFirst=me.attack===enemy.attack?rng()<.5:me.attack>enemy.attack;
     if(meFirst){strikeMine();if(enemy.hp>0)strikeEnemy();}else{strikeEnemy();if(me.hp>0)strikeMine();}
+    // Burn ticks at the end of the round.
+    const tick=(u,hit)=>{if(!u.burn||u.hp<=0)return 0;const d=Math.min(u.hp,u.burn.damage);u.hp-=d;if(--u.burn.rounds<=0)u.burn=null;if(hit)hit.burnTick=(hit.burnTick||0)+d;return d;};
+    if(me.hp>0&&enemy.hp>0){mine+=tick(enemy,myHit||(myHit={damage:0}));theirs+=tick(me,enemyHit||(enemyHit={damage:0}));}
     log.push({round,mine,theirs,myHit,enemyHit,myHp:me.hp,enemyHp:enemy.hp});if(me.hp===0||enemy.hp===0)break;
   }
   const knockout=me.hp===0||enemy.hp===0,draw=!knockout,win=enemy.hp===0&&me.hp>0;return {win,draw,rounds:log.length,myHp:me.hp,enemyHp:enemy.hp,myMaxHp:me.maxHp,enemyMaxHp:enemy.maxHp,reason:knockout?'knockout':'stalemate',log};
 };
 const valorAstrologyPreviousHitLabel=valorArenaHitLabel;
-valorArenaHitLabel=function(hit){return valorAstrologyPreviousHitLabel(hit)+(hit?.fury?' <strong class="arena-critical">Öfke +%'+Math.round(hit.fury*100)+'</strong>':'')+(hit?.resisted?' <strong class="arena-blocked">Sonsuz Direnç!</strong>':'')+(hit?.healed?' <strong class="arena-healed">Yaşam Işığı +'+money(hit.healed)+' can</strong>':'');};
+valorArenaHitLabel=function(hit){return valorAstrologyPreviousHitLabel(hit)+(hit?.dawn?' <strong class="arena-critical">Şafak İnfazı +%'+Math.round(hit.dawn*100)+'</strong>':'')+(hit?.shadow?' <strong class="arena-critical">Gölge Darbesi +'+money(hit.shadow)+'</strong>':'')+(hit?.ignite?' <strong class="arena-critical">Tutuşturdu!</strong>':'')+(hit?.burnTick?' <strong class="arena-critical">Yanık +'+money(hit.burnTick)+'</strong>':'')+(hit?.fury?' <strong class="arena-critical">Öfke +%'+Math.round(hit.fury*100)+'</strong>':'')+(hit?.resisted?' <strong class="arena-blocked">Sonsuz Direnç!</strong>':'')+(hit?.healed?' <strong class="arena-healed">Yaşam Işığı +'+money(hit.healed)+' can</strong>':'');};
 const valorAstrologyPreviousDungeonEnemy=vsEnemy;
 vsEnemy=function(floor){return Math.max(1,Math.round(valorAstrologyEnemyThreat(valorAstrologyPreviousDungeonEnemy(floor))));};
 /* NPCs copy base stat strengths, never the player's passive chances. */
