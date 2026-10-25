@@ -39,18 +39,19 @@
 (function(){
  let active=null;
  function hasMageArt(){return typeof VALOR_COMBAT_ART!=='undefined'}
- function supported(cls){return cls==='Savaşçı'||cls==='Büyücü'&&hasMageArt()}
- function actions(cls){return cls==='Büyücü'&&hasMageArt()?VALOR_COMBAT_ART.mage.actions:VALOR_WARRIOR_MOTION_ART.actions}
- function effectMarkup(){return '<div class="vab-fx" aria-hidden="true"><div class="vab-vfx-sprite"></div></div>'}
+ function supported(cls){return cls==='Savaşçı'||cls==='Büyücü'&&hasMageArt()||cls==='Okçu'&&typeof VALOR_ARCHER_MOTION_ART!=='undefined'}
+ function actions(cls){if(cls==='Okçu'&&typeof VALOR_ARCHER_MOTION_ART!=='undefined')return VALOR_ARCHER_MOTION_ART.actions;return cls==='Büyücü'&&hasMageArt()?VALOR_COMBAT_ART.mage.actions:VALOR_WARRIOR_MOTION_ART.actions}
+ function effectMarkup(){return '<div class="vab-fx" aria-hidden="true"><div class="vab-vfx-sprite"></div></div><div class="vab-arrow" aria-hidden="true"><svg viewBox="0 0 120 14"><path d="M9 7H106" stroke="#aa8552" stroke-width="2.2"/><path d="m103 3 15 4-15 4 3-4Z" fill="#d6dad4"/><path d="M5 2 22 4 29 7 11 6ZM5 12 22 10 29 7 11 8Z" fill="#c9bd9c"/></svg></div>'}
  function prepareEffect(s,attacker,target){
   if(typeof VALOR_COMBAT_VFX==='undefined')return;
-  const kind=s.classes[attacker]==='Büyücü'?'mage':'sword',art=VALOR_COMBAT_VFX[kind],fx=s.root.querySelector('.vab-fx');
+  const kind=s.classes[attacker]==='Büyücü'?'mage':s.classes[attacker]==='Okçu'?'archer':'sword',art=VALOR_COMBAT_VFX[kind==='archer'?'sword':kind],fx=s.root.querySelector('.vab-fx');
   fx.dataset.kind=kind;fx.dataset.target=target;fx.dataset.attacker=attacker;
   const sprite=fx.firstElementChild;sprite.style.backgroundImage='url("'+art.src+'")';sprite.style.backgroundSize=art.frames*100+'% 100%';
-  fx.style.visibility='hidden';s.effect={kind,start:performance.now()+160,fx,sprite};
+  fx.style.visibility='hidden';s.effect={kind,art,frameStart:kind==='archer'?3:0,start:performance.now()+(kind==='archer'?300:160),fx,sprite};
+  if(kind==='archer')s.shot={start:performance.now()+200,attacker,element:s.root.querySelector('.vab-arrow')};
  }
  function impact(s,attacker,target){
-  s.root.querySelector('.vab-arena').dataset.impact=s.classes[attacker]==='Büyücü'?'mage':'sword';
+  s.root.querySelector('.vab-arena').dataset.impact=s.classes[attacker]==='Büyücü'?'mage':s.classes[attacker]==='Okçu'?'archer':'sword';
   s.hitStopUntil=performance.now()+45;
  }
  const beforeSimulate=valorArenaSimulate;
@@ -108,7 +109,8 @@
  function tick(s,now){
   if(active!==s)return;
   if(!s.root.isConnected){clean();return}
-  if(s.effect){const e=s.effect,art=VALOR_COMBAT_VFX[e.kind],elapsed=now-e.start,frame=Math.floor(elapsed/art.frameMs);e.fx.style.visibility=frame>=0&&frame<art.frames?'visible':'hidden';if(frame>=0&&frame<art.frames){e.sprite.style.backgroundPosition=frame/(art.frames-1)*100+'% 0';e.sprite.dataset.frame=String(frame)}}
+  if(s.shot){const shot=s.shot,t=(now-shot.start)/100,forward=shot.attacker==='me';shot.element.style.visibility=t>=0&&t<1?'visible':'hidden';if(t>=0&&t<1){shot.element.style.left=((forward?44:56)+(forward?30:-30)*t)+'%';shot.element.style.top=(42+6*t)+'%';shot.element.style.transform='translate(-50%,-50%) '+(forward?'rotate(6deg)':'rotate(174deg)')}}
+  if(s.effect){const e=s.effect,art=e.art,elapsed=now-e.start,localFrame=Math.floor(elapsed/art.frameMs),frame=localFrame+e.frameStart;e.fx.style.visibility=localFrame>=0&&frame<art.frames?'visible':'hidden';if(localFrame>=0&&frame<art.frames){e.sprite.style.backgroundPosition=frame/(art.frames-1)*100+'% 0';e.sprite.dataset.frame=String(frame)}}
   if(now<s.hitStopUntil){s.raf=requestAnimationFrame(t=>tick(s,t));return}
   for(const side of ['me','enemy']){
    const p=s.poses[side],bank=actions(s.classes[side]),art=bank[p.name];
@@ -167,6 +169,7 @@
 .vab-embers{position:absolute;inset:0;pointer-events:none;z-index:4;background-image:radial-gradient(circle,#fbd7a6 0 1px,transparent 2px),radial-gradient(circle,#eb975c 0 1px,transparent 2px),radial-gradient(circle,#d5a27c 0 1px,transparent 2px);background-size:107px 139px,151px 173px,193px 127px;opacity:.5;animation:vabEmbers 8s linear infinite}
 .vab-fx{position:absolute;z-index:5;pointer-events:none;visibility:hidden;left:76%;top:59%;width:58%;aspect-ratio:1;transform:translate(-50%,-50%);mix-blend-mode:screen}
 .vab-fx[data-target=me]{left:24%}.vab-vfx-sprite{width:100%;height:100%;background-repeat:no-repeat}.vab-fx[data-attacker=enemy][data-kind=sword] .vab-vfx-sprite{transform:scaleX(-1)}
+.vab-arrow{position:absolute;z-index:6;width:18%;max-width:92px;aspect-ratio:120/14;visibility:hidden;pointer-events:none;filter:drop-shadow(-3px 0 2px #c5c2ad44)}.vab-arrow svg{display:block;width:100%;height:100%}.vab-fx[data-kind=archer]{width:32%;top:48%}
 .vab-fx[data-kind=mage]{top:-4%;height:112%;width:82%;aspect-ratio:auto;transform:translateX(-50%)}
 .vab-fighter[data-action=hit]{animation:vabRecoil .2s ease-out}.vab-enemy[data-action=hit]{animation-name:vabEnemyRecoil}
 @keyframes vabRecoil{35%{transform:translateX(-6px)}}@keyframes vabEnemyRecoil{35%{transform:translateX(6px)}}
