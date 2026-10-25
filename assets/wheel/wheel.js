@@ -19,7 +19,7 @@
  if(!valorMounts.some(m=>m.id===king.id))valorMounts.push(king);
  const oldMountArt=vmMountImage;
  vmMountImage=function(m){return oldMountArt(m.id===king.id?{...m,id:'yildonumu50'}:m)};
- const fashionBag={id:'wheelFashionBag',name:'Fashion Çantası',description:'İçinden dört kanat türünden rastgele bir Sv.1 kanat çıkar.',icon:mosaicStoneBagGraphic()};
+ const fashionBag={id:'wheelFashionBag',name:'Fashion Çantası',description:'İçinden dört kanat türünden rastgele bir Sv.1 kanat çıkar.',icon:'<img src="assets/wheel/mosaic-bag.webp" alt="">' };
  const oldProduct=marketProduct;
  marketProduct=function(id){return id===fashionBag.id?fashionBag:oldProduct.apply(this,arguments)};
  const oldUse=useInventoryStack;
@@ -54,12 +54,12 @@
  function pick(ticket){let cumulative=0;for(let i=0;i<prizes.length;i++){cumulative+=prizes[i].weight;if(ticket<cumulative)return i}return prizes.length-1}
  function art(id){
   switch(id){
-   case 'mosaic':return mosaicStoneBagGraphic();
+   case 'mosaic':return '<img src="assets/wheel/mosaic-bag.webp" alt="">';
    case 'gold':return '<img src="'+valorFarmGoldArt[2]+'" alt="">';
    case 'crystal':return '<img src="'+valorFarmGrowthArt[2]+'" alt="">';
    case 'mountStone':return mountStoneGraphic();
    case 'king':return vmDrawing(king);
-   case 'luck':return luckStoneBagGraphic();
+   case 'luck':return '<img src="assets/wheel/luck-bag.webp" alt="">';
    case 'epic':return epicStoneGraphic();
    case 'wing':return '<img src="'+valorWingArt(valorWings[0])+'" alt="">';
    case 'energy':return marketProduct('energyBottle').icon;
@@ -76,7 +76,7 @@
    const a=(i*30-105)*Math.PI/180,b=a+Math.PI/6;
    paths+='<path d="M300 300 L'+(300+300*Math.cos(a))+' '+(300+300*Math.sin(a))+' A300 300 0 0 1 '+(300+300*Math.cos(b))+' '+(300+300*Math.sin(b))+' Z" fill="'+(i%2?'url(#vwf-worn-black)':'url(#vwf-worn-red)')+'" stroke="#ba914e" stroke-width="2"/>';
   }
-  return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg><div class="vwf-prizes">'+prizes.map((p,i)=>{const angle=i*30-90,visible=((angle+rotation)%360+360)%360,flip=visible>90&&visible<=270?180:0;return '<div class="vwf-prize" data-prize="'+p.id+'" title="'+escapeAttr(p.name)+'" style="--angle:'+angle+'deg;--upright:'+(-(angle+rotation))+'deg;--label-flip:'+flip+'deg">'+iconMarkup(p.id)+'<span class="vwf-label">'+wheelLabels[p.id]+'</span></div>'}).join('')+'</div>';
+  return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg><div class="vwf-prizes">'+prizes.map((p,i)=>{const angle=i*30-90,visible=((angle+rotation)%360+360)%360,flip=visible>90&&visible<=270?180:0;return '<div class="vwf-prize" data-prize="'+p.id+'" data-top="'+(visible===270)+'" title="'+escapeAttr(p.name)+'" style="--angle:'+angle+'deg;--upright:'+(-(angle+rotation))+'deg;--label-flip:'+flip+'deg">'+iconMarkup(p.id)+'<span class="vwf-label"><span class="vwf-label-text">'+wheelLabels[p.id]+'</span></span></div>'}).join('')+'</div>';
  }
  let timer=null;
  function data(){return state.luckyWheelV1||{from:0,to:0,ends:0}}
@@ -136,8 +136,10 @@
  };
  const oldHome=home;
  home=function(){const html=oldHome(),template=document.createElement('template');template.innerHTML=html;const grid=template.content.querySelector('.mmorpg-home-grid');if(!grid)return html;grid.insertAdjacentHTML('beforeend','<button type="button" class="mmorpg-home-tile valor-vertical-tile vwf-home-tile" onclick="go(\'Şans Çarkı\')" aria-label="Şans Çarkı"><span class="vwf-home-emblem" aria-hidden="true">✦</span><b>ŞANS ÇARKI</b></button>');return template.innerHTML};
+ function fitWheelLabels(){for(const label of document.querySelectorAll('.vwf-label')){const text=label.firstElementChild;if(!text||!label.clientWidth||!text.offsetWidth)continue;text.style.transform='scaleX('+Math.min(1,label.clientWidth/text.offsetWidth)+')'}}
+ window.addEventListener('resize',fitWheelLabels,{passive:true});
  const oldRender=render;
- render=function(){oldRender.apply(this,arguments);if(page===NAME&&state.class&&valorAccountCanPlay()){document.body.classList.remove('valor-home','valor-market-page','valor-profile-page');document.getElementById('main').innerHTML=pageHtml();animate()}};
+ render=function(){oldRender.apply(this,arguments);if(page===NAME&&state.class&&valorAccountCanPlay()){document.body.classList.remove('valor-home','valor-market-page','valor-profile-page');document.getElementById('main').innerHTML=pageHtml();fitWheelLabels();animate()}};
  // Expose pure reward geometry for automated checks without changing game state.
  window.valorWheelConfig={price:PRICE,batchPrice:899,batchCount:10,prizes:prizes.map(p=>({...p})),pick,sectorAngle:30};
  if(state.class&&valorAccountCanPlay()&&page==='Anasayfa')render();
