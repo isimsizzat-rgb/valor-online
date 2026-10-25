@@ -81,13 +81,14 @@ valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass,rng=Math.rando
     const attack=(a,b)=>{const s=strike(a,b);let total=s.damage;const pb=buff(a);
       if(pb?.id==='gecegaga'&&b.hp>0&&rng()<pb.chance){const extra=strike(a,b);total+=extra.damage;s.hit.shadow=extra.damage;}
       return {hit:s.hit,damage:total};};
-    const strikeMine=()=>{const s=attack(me,enemy);myHit=s.hit;mine=s.damage;},strikeEnemy=()=>{const s=attack(enemy,me);enemyHit=s.hit;theirs=s.damage;};
+    const events=[];
+    const strikeMine=()=>{const s=attack(me,enemy);myHit=s.hit;mine=s.damage;events.push({side:'me',damage:s.damage,hit:{...s.hit},myHp:me.hp,enemyHp:enemy.hp});},strikeEnemy=()=>{const s=attack(enemy,me);enemyHit=s.hit;theirs=s.damage;events.push({side:'enemy',damage:s.damage,hit:{...s.hit},myHp:me.hp,enemyHp:enemy.hp});};
     const meFirst=me.attack===enemy.attack?rng()<.5:me.attack>enemy.attack;
     if(meFirst){strikeMine();if(enemy.hp>0)strikeEnemy();}else{strikeEnemy();if(me.hp>0)strikeMine();}
     // Burn ticks at the end of the round.
     const tick=(u,hit)=>{if(!u.burn||u.hp<=0)return 0;const d=Math.min(u.hp,u.burn.damage);u.hp-=d;if(--u.burn.rounds<=0)u.burn=null;if(hit)hit.burnTick=(hit.burnTick||0)+d;return d;};
     if(me.hp>0&&enemy.hp>0){mine+=tick(enemy,myHit||(myHit={damage:0}));theirs+=tick(me,enemyHit||(enemyHit={damage:0}));}
-    log.push({round,mine,theirs,myHit,enemyHit,myHp:me.hp,enemyHp:enemy.hp});if(me.hp===0||enemy.hp===0)break;
+    log.push({round,mine,theirs,myHit,enemyHit,myHp:me.hp,enemyHp:enemy.hp,events});if(me.hp===0||enemy.hp===0)break;
   }
   const knockout=me.hp===0||enemy.hp===0,draw=!knockout,win=enemy.hp===0&&me.hp>0;return {win,draw,rounds:log.length,myHp:me.hp,enemyHp:enemy.hp,myMaxHp:me.maxHp,enemyMaxHp:enemy.maxHp,reason:knockout?'knockout':'stalemate',log};
 };
