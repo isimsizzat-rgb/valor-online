@@ -102,3 +102,22 @@ function valorBossTiming(now=Date.now()){
  const css=document.createElement('link');css.rel='stylesheet';css.href='assets/wheel/wheel.css?v=20261025-7';document.head.appendChild(css);
  const js=document.createElement('script');js.src='assets/wheel/wheel.js?v=20261025-7';document.head.appendChild(js);
 })();
+
+/* One-time wheel-testing top-up for DooM, retained in the account save. */
+(function(){
+ const flag='valorDoomWheelDiamonds20261025',prefix='valor-doom-wheel-diamonds-20261025:';
+ const previousSave=save,previousRender=render;let granting=false,message=false;
+ function apply(){
+  if(granting||!state.class||!valorAccountCanPlay()||String(state.name||'').trim().toLowerCase()!=='doom')return;
+  const receipt=prefix+(valorAccountActive?.id||'legacy-guest');
+  if(state[flag])return;
+  if(localStorage.getItem(receipt)){state[flag]=true;previousSave();return}
+  const before=state.diamonds;
+  granting=true;state.diamonds=Math.max(0,Number(before)||0)+100000;state[flag]=true;
+  try{previousSave();localStorage.setItem(receipt,'claimed');message=true}
+  catch(error){state.diamonds=before;delete state[flag];console.error('Wheel top-up could not be saved',error)}
+  finally{granting=false}
+ }
+ render=function(){apply();const result=previousRender.apply(this,arguments);if(message){message=false;toast('+100.000 💎 hesabına eklendi!')}return result};
+ render();
+})();
