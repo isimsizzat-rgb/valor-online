@@ -41,6 +41,21 @@
  function hasMageArt(){return typeof VALOR_COMBAT_ART!=='undefined'}
  function supported(cls){return cls==='Savaşçı'||cls==='Büyücü'&&hasMageArt()||cls==='Okçu'&&typeof VALOR_ARCHER_MOTION_ART!=='undefined'}
  function actions(cls){if(cls==='Okçu'&&typeof VALOR_ARCHER_MOTION_ART!=='undefined')return VALOR_ARCHER_MOTION_ART.actions;return cls==='Büyücü'&&hasMageArt()?VALOR_COMBAT_ART.mage.actions:VALOR_WARRIOR_MOTION_ART.actions}
+ const wingAnchors={
+  'Savaşçı':{idle:[[46,35,-5],[46,34,-4],[46,35,-5],[46,36,-6]],attack:[[46,36,-8],[48,35,-12],[51,35,-15],[53,39,4],[49,37,5],[46,35,-4]],hit:[[46,38,-10],[42,39,-20],[44,38,-12],[46,35,-5]],defeat:[[46,42,-12],[45,53,-25],[47,67,-45],[49,79,-65],[52,86,-82],[54,89,-88]]},
+  'Büyücü':{idle:[[47,38,-4],[47,37,-3],[47,38,-4],[47,39,-5]],attack:[[47,39,-4],[47,40,-6],[46,42,-10],[47,41,-10]],hit:[[46,41,-10],[43,40,-20],[45,41,-9],[47,38,-4]],defeat:[[47,43,-10],[46,57,-25],[48,80,-60],[48,87,-85]]},
+  'Okçu':{idle:[[46,36,-4],[46,35,-3],[46,36,-4],[46,37,-5]],attack:[[45,37,-6],[44,35,-9],[44,36,-9],[46,36,-4]],hit:[[43,43,-14],[43,39,-25],[46,44,-14],[46,36,-4]],defeat:[[45,46,-12],[45,61,-25],[52,80,-65],[57,88,-87]]}
+ };
+ function wingId(value){const id=typeof value==='string'?value:value?.wingId;return typeof valorWings!=='undefined'&&valorWings.some(w=>w.id===id)?id:null}
+ function wingMarkup(id){const w=typeof valorWings!=='undefined'&&valorWings.find(w=>w.id===id);return w?'<div class="vab-wings" role="img" aria-label="'+escapeAttr(w.name)+'" data-wing="'+w.id+'" style="--vab-wing-art:url('+valorWingArt(w)+');--vab-wing-color:'+w.color+'"><div class="vab-wing-half vab-wing-left"></div><div class="vab-wing-half vab-wing-right"></div></div>':''}
+ function moveWings(s,side,name,frame,now){
+  const wing=s.wings[side];if(!wing)return;
+  const table=wingAnchors[s.classes[side]],points=table?.[name]||table?.idle;if(!points)return;
+  const a=points[Math.min(frame,points.length-1)],fall=name==='defeat',progress=fall?Math.min(1,frame/(points.length-1)):0;
+  const flap=fall?28+progress*50:22+Math.sin((now-s.started)/650*Math.PI+(side==='enemy'?.7:0))*10+(name==='attack'?9:0);
+  wing.style.left=a[0]+'%';wing.style.top=a[1]+'%';wing.style.transform='translate(-50%,-53%) rotate('+a[2]+'deg) scale('+(1-progress*.3)+')';
+  wing.style.setProperty('--vab-wing-fold',flap+'deg');wing.style.opacity=String(1-progress*.18);wing.dataset.action=name;wing.dataset.frame=String(frame);
+ }
  function effectMarkup(){return '<div class="vab-fx" aria-hidden="true"><div class="vab-vfx-sprite"></div></div><div class="vab-arrow" aria-hidden="true"><svg viewBox="0 0 120 14"><path d="M9 7H106" stroke="#aa8552" stroke-width="2.2"/><path d="m103 3 15 4-15 4 3-4Z" fill="#d6dad4"/><path d="M5 2 22 4 29 7 11 6ZM5 12 22 10 29 7 11 8Z" fill="#c9bd9c"/></svg></div>'}
  function prepareEffect(s,attacker,target){
   if(typeof VALOR_COMBAT_VFX==='undefined')return;
@@ -48,7 +63,7 @@
   fx.dataset.kind=kind;fx.dataset.target=target;fx.dataset.attacker=attacker;
   const sprite=fx.firstElementChild;sprite.style.backgroundImage='url("'+art.src+'")';sprite.style.backgroundSize=art.frames*100+'% 100%';
   fx.style.visibility='hidden';s.effect={kind,art,frameStart:kind==='archer'?3:0,start:performance.now()+(kind==='archer'?300:160),fx,sprite};
-  if(kind==='archer')s.shot={start:performance.now()+200,attacker,element:s.root.querySelector('.vab-arrow')};
+  if(kind==='archer'){const arena=s.root.querySelector('.vab-arena'),box=s.fighters[attacker].getBoundingClientRect(),stage=arena.getBoundingClientRect(),forward=attacker==='me';s.shot={start:performance.now()+200,attacker,element:s.root.querySelector('.vab-arrow'),fromX:(box.left-stage.left+box.width*(forward?.86:.14))/stage.width*100,fromY:(box.top-stage.top+box.height*.31)/stage.height*100};}
  }
  function impact(s,attacker,target){
   s.root.querySelector('.vab-arena').dataset.impact=s.classes[attacker]==='Büyücü'?'mage':s.classes[attacker]==='Okçu'?'archer':'sword';
@@ -57,7 +72,7 @@
  const beforeSimulate=valorArenaSimulate;
  valorArenaSimulate=function(myStats,myClass,rivalStats,rivalClass){
   const result=beforeSimulate.apply(this,arguments);
-  result.motionClasses=[myClass,rivalClass];return result;
+  result.motionClasses=[myClass,rivalClass];result.motionWings=[wingId(state.equipped?.Kanat),null];return result;
  };
  const beforeWait=valorArenaBeginWait;
  valorArenaBeginWait=function(finish){
@@ -109,7 +124,7 @@
  function tick(s,now){
   if(active!==s)return;
   if(!s.root.isConnected){clean();return}
-  if(s.shot){const shot=s.shot,t=(now-shot.start)/100,forward=shot.attacker==='me';shot.element.style.visibility=t>=0&&t<1?'visible':'hidden';if(t>=0&&t<1){shot.element.style.left=((forward?44:56)+(forward?30:-30)*t)+'%';shot.element.style.top=(42+6*t)+'%';shot.element.style.transform='translate(-50%,-50%) '+(forward?'rotate(6deg)':'rotate(174deg)')}}
+  if(s.shot){const shot=s.shot,t=(now-shot.start)/100,forward=shot.attacker==='me';shot.element.style.visibility=t>=0&&t<1?'visible':'hidden';if(t>=0&&t<1){shot.element.style.left=(shot.fromX+((forward?74:26)-shot.fromX)*t)+'%';shot.element.style.top=(shot.fromY+(48-shot.fromY)*t)+'%';shot.element.style.transform='translate(-50%,-50%) '+(forward?'rotate(6deg)':'rotate(174deg)')}}
   if(s.effect){const e=s.effect,art=e.art,elapsed=now-e.start,localFrame=Math.floor(elapsed/art.frameMs),frame=localFrame+e.frameStart;e.fx.style.visibility=localFrame>=0&&frame<art.frames?'visible':'hidden';if(localFrame>=0&&frame<art.frames){e.sprite.style.backgroundPosition=frame/(art.frames-1)*100+'% 0';e.sprite.dataset.frame=String(frame)}}
   if(now<s.hitStopUntil){s.raf=requestAnimationFrame(t=>tick(s,t));return}
   for(const side of ['me','enemy']){
@@ -118,7 +133,7 @@
    if(frame>=art.frames&&!p.hold&&p.name!=='idle'){pose(s,side,'idle');frame=0}
    const current=bank[s.poses[side].name],sprite=s.fighters[side].querySelector('.vab-sprite');
    frame=s.poses[side].hold?Math.min(frame,current.frames-1):frame%current.frames;
-   sprite.dataset.frame=String(frame);
+   sprite.dataset.frame=String(frame);moveWings(s,side,s.poses[side].name,frame,now);
    if(supported(s.classes[side])){
     if(sprite.dataset.sheet!==s.poses[side].name){sprite.style.backgroundImage='url("'+current.src+'")';sprite.style.backgroundSize=current.frames*100+'% 100%';sprite.dataset.sheet=s.poses[side].name}
     sprite.style.backgroundPosition=frame/(current.frames-1)*100+'% 0';
@@ -131,7 +146,9 @@
   clean();document.getElementById('valor-arena-result')?.remove();
   const root=document.createElement('div');root.id='valor-arena-result';root.className='vab-overlay';
   const cls=result.motionClasses||[state.class,'Savaşçı'],myName=state.name||'Sen';
-  const fighter=(side,c)=>'<div class="vab-fighter vab-'+side+'" data-side="'+side+'" data-class="'+(c==='Büyücü'?'mage':c==='Savaşçı'?'warrior':'archer')+'"><div class="vab-shadow"></div><div class="vab-facing"><div class="vab-sprite" role="img" aria-label="'+escapeAttr(c)+'"'+(!supported(c)?' style="background-image:url('+escapeAttr(heroImages[Math.max(0,classes.indexOf(c))])+');background-size:contain;background-position:center bottom"':'')+'></div></div><span class="vab-damage"></span></div>';
+  const myWing=wingId(Array.isArray(result.motionWings)?result.motionWings[0]:state.equipped?.Kanat),rival=(!result.training&&typeof valorArenaPlayers==='function')?valorArenaPlayers().find(p=>p.name===result.opponent):null;
+  const wings={me:myWing,enemy:result.training?myWing:wingId(result.motionWings?.[1]||rival?.equipped?.Kanat||rival?.wingId)};
+  const fighter=(side,c)=>'<div class="vab-fighter vab-'+side+'" data-side="'+side+'" data-class="'+(c==='Büyücü'?'mage':c==='Savaşçı'?'warrior':'archer')+'"'+(wings[side]?' data-wing="'+wings[side]+'"':'')+'><div class="vab-shadow"></div><div class="vab-facing">'+wingMarkup(wings[side])+'<div class="vab-sprite" role="img" aria-label="'+escapeAttr(c)+'"'+(!supported(c)?' style="background-image:url('+escapeAttr(heroImages[Math.max(0,classes.indexOf(c))])+');background-size:contain;background-position:center bottom"':'')+'></div></div><span class="vab-damage"></span></div>';
   const health=(side,name)=>'<div class="vab-health" data-health="'+side+'"><span>'+escapeAttr(name)+'</span><div><i></i></div><b></b></div>';
   root.innerHTML='<section class="vab-dialog" role="dialog" aria-modal="true" aria-labelledby="vab-title"><header><small>ZAFER ARENASI</small><h2 id="vab-title">'+(result.training?'Denk Rakip':'Düello')+'</h2><span class="vab-round">1. TUR</span></header><div class="vab-health-row">'+health('me',myName)+health('enemy',result.opponent)+'</div><div class="vab-arena">'+fighter('me',cls[0])+fighter('enemy',cls[1])+'<div class="vab-dust"></div><div class="vab-embers"></div>'+effectMarkup()+'</div><p class="vab-status" role="status">Savaşçılar hazırlanıyor…</p><button type="button" class="vab-skip">Sonucu Göster</button></section>';
   if(hasMageArt())root.style.setProperty('--vab-arena-art','url("'+VALOR_COMBAT_ART.arena+'")');
@@ -140,10 +157,12 @@
    s.steps.push(...r.events.map(e=>({...e,round:r.round})));
    const last=r.events.at(-1);if(last&&(last.myHp!==r.myHp||last.enemyHp!==r.enemyHp))s.steps.push({side:'effects',round:r.round,myHp:r.myHp,enemyHp:r.enemyHp,mine:r.myHit?.burnTick||0,theirs:r.enemyHit?.burnTick||0});
   }
+  s.wings={me:s.fighters.me.querySelector('.vab-wings'),enemy:s.fighters.enemy.querySelector('.vab-wings')};s.started=performance.now();
+  if(wings.me||wings.enemy)root.querySelector('.vab-arena').classList.add('vab-winged-arena');
   active=s;s.key=e=>{if(e.key==='Escape'){e.preventDefault();finish()}if(e.key==='Tab'){e.preventDefault();root.querySelector('button').focus()}};
   root.querySelector('button').onclick=finish;document.body.appendChild(root);document.body.style.overflow='hidden';document.addEventListener('keydown',s.key);root.querySelector('button').focus();
   setHp(s,'me',result.myMaxHp,result.myMaxHp);setHp(s,'enemy',result.enemyMaxHp,result.enemyMaxHp);pose(s,'me','idle');pose(s,'enemy','idle');tick(s,performance.now());
-  const art=[...new Set(cls)].flatMap(c=>Object.values(actions(c)));if(typeof VALOR_COMBAT_VFX!=='undefined')art.push(...Object.values(VALOR_COMBAT_VFX));
+  const art=[...new Set(cls)].flatMap(c=>Object.values(actions(c)));if(typeof VALOR_COMBAT_VFX!=='undefined')art.push(...Object.values(VALOR_COMBAT_VFX));for(const id of new Set(Object.values(wings).filter(Boolean)))art.push({src:valorWingArt({id})});
   const ready=Promise.all(art.map(a=>new Promise(resolve=>{const image=new Image();image.onload=image.onerror=resolve;image.src=a.src})));
   // Never leave a completed fight blocked by an image decode or tab lifecycle.
   s.timer=setTimeout(()=>{if(active===s){clearTimeout(s.timer);next(s)}},2500);
@@ -176,4 +195,11 @@
 .vab-fighter[data-class=mage][data-action=attack] .vab-sprite{animation:vabCast .4s ease-in both}.vab-arena.vab-impact[data-impact=mage]:before{animation:vabSkyFlash .35s ease-out}.vab-arena.vab-impact[data-impact=sword]:before{animation:vabGoldFlash .2s ease-out}
 @keyframes vabMist{to{transform:translateX(10%);opacity:.4}}@keyframes vabEmbers{from{background-position:0 160px,30px 90px,80px 110px}to{background-position:25px -118px,4px -256px,110px -144px}}@keyframes vabCast{to{filter:drop-shadow(0 0 9px #b79dff)}}@keyframes vabSkyFlash{0%,25%{background:#b5c9ff55}100%{background:transparent}}@keyframes vabGoldFlash{0%{background:#efc78022}100%{background:transparent}}
 @media(prefers-reduced-motion:reduce){.vab-dust,.vab-embers{animation:none}}
+`;document.head.appendChild(style)})();
+
+(function(){const style=document.createElement('style');style.textContent=`
+.vab-facing{position:relative;isolation:isolate}.vab-sprite{position:relative;z-index:2}.vab-wings{position:absolute;left:46%;top:36%;width:72%;aspect-ratio:1;transform:translate(-50%,-53%) rotate(-5deg);z-index:1;pointer-events:none;filter:drop-shadow(0 2px 3px #0008);will-change:transform}
+.vab-wing-half{position:absolute;top:0;width:50%;height:100%;background-image:var(--vab-wing-art);background-size:200% 100%;background-repeat:no-repeat;backface-visibility:hidden}.vab-wing-left{left:0;background-position:left center;transform-origin:right 53%;transform:perspective(500px) rotateY(var(--vab-wing-fold,22deg)) rotate(-2deg)}.vab-wing-right{right:0;background-position:right center;transform-origin:left 53%;transform:perspective(500px) rotateY(calc(-1 * var(--vab-wing-fold,22deg))) rotate(2deg)}
+.vab-winged-arena .vab-fighter{width:64%}.vab-winged-arena .vab-me{left:-7%}.vab-winged-arena .vab-enemy{right:-7%}.vab-wings[data-wing=anka]{filter:drop-shadow(0 0 3px #b9502633)}.vab-wings[data-wing=ayaz]{filter:drop-shadow(0 0 3px #7ac9e533)}.vab-wings[data-wing=hiclik]{filter:drop-shadow(0 0 3px #9b65d633)}
+@media(max-height:540px){.vab-winged-arena .vab-fighter{width:220px}.vab-winged-arena .vab-me{left:calc(25% - 110px)}.vab-winged-arena .vab-enemy{right:calc(25% - 110px)}}
 `;document.head.appendChild(style)})();
