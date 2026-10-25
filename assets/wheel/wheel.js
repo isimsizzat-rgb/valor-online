@@ -3,8 +3,8 @@
  const PRICE=99,DURATION=6200,NAME='Şans Çarkı';
  const prizes=[
   {id:'mosaic',name:'Mozaik Çantası',weight:1443},
-  {id:'gold',name:'1M Altın',weight:1154},
-  {id:'crystal',name:'250K Kristal',weight:962},
+  {id:'gold',name:'100K Altın',weight:1154},
+  {id:'crystal',name:'25K Kristal',weight:962},
   {id:'mountStone',name:'Binek Taşı ×50',weight:481},
   {id:'king',name:'Kral Bineği · +100',weight:400},
   {id:'luck',name:'Şans Taşı Çantası',weight:1539},
@@ -36,8 +36,8 @@
  function grant(id){
   switch(id){
    case 'mosaic':addMarketStack('mosaicStone',1);break;
-   case 'gold':state.gold=(Number(state.gold)||0)+1000000;break;
-   case 'crystal':vsData().crystals=(Number(vsData().crystals)||0)+250000;break;
+   case 'gold':state.gold=(Number(state.gold)||0)+100000;break;
+   case 'crystal':vsData().crystals=(Number(vsData().crystals)||0)+25000;break;
    case 'mountStone':addMarketStack('mountStone',50);break;
    case 'king':state.inventory.push({id:valorUniqueItemId(),slot:'Binek',mountId:king.id,name:king.name,cls:state.class,level:1,plus:0,epic:true});break;
    case 'luck':addMarketStack('luckBag',1);break;
@@ -69,7 +69,7 @@
   }
  }
  function iconMarkup(id){return '<span class="vwf-icon" aria-hidden="true">'+art(id)+'</span>'}
- const wheelLabels={mosaic:'Mozaik Çantası',gold:'1M Altın',crystal:'250K Kristal',mountStone:'Binek Taşı ×50',king:'Kral Bineği +100',luck:'Şans Çantası',epic:'Epik Taşı ×2',wing:'Kanat',energy:'Enerji ×2',food:'Yem ×5',health:'Sv.10 Can',fashion:'Fashion Çantası'};
+ const wheelLabels={mosaic:'Mozaik Çantası',gold:'100K Altın',crystal:'25K Kristal',mountStone:'Binek Taşı ×50',king:'Kral Bineği +100',luck:'Şans Çantası',epic:'Epik Taşı ×2',wing:'Kanat',energy:'Enerji ×2',food:'Yem ×5',health:'Sv.10 Can',fashion:'Fashion Çantası'};
  function wheelFace(rotation=0){
   let paths='<defs><pattern id="vwf-worn-red" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#4a0d1a"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".64" style="mix-blend-mode:soft-light"/></pattern><pattern id="vwf-worn-black" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#17171b"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".38" style="mix-blend-mode:screen"/></pattern></defs>';
   for(let i=0;i<12;i++){
