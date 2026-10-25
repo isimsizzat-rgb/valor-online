@@ -1,10 +1,14 @@
-/* Four-stage evolution for beginner equipment and approved warrior scene sets. */
+/* Four-stage evolution for beginner equipment and approved warrior/mage scene sets. */
 (function(){
  const names=['Normal','Epik','Ebedi','İlahi'],colors=['#b7bdc9','#d5b16b','#bda0ef','#f0db9e'];
  const oldPower=equipmentPower;let pending=null;
- function sceneSet(it){if(!it||it.starterSet||it.cls!=='Savaşçı')return null;const level=Number(it.level);return level>75&&level<=100?'lumeris':level>50&&level<=75?'mordrak':level>25&&level<=50?'varkhan':null}
+ function sceneSet(it){if(!it||it.starterSet)return null;const families=it.cls==='Savaşçı'?['varkhan','mordrak','lumeris']:it.cls==='Büyücü'?['oryndis','aeloria','zephyriel']:null;if(!families)return null;const level=Number(it.level);return level>75&&level<=100?families[2]:level>50&&level<=75?families[1]:level>25&&level<=50?families[0]:null}
  const eligible=it=>!!it&&(it.starterSet==='starter-v1'||sceneSet(it))&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
- function artFor(it){if(it?.cls!=='Savaşçı')return null;const name=sceneSet(it);if(!name)return it?.starterSet==='starter-v1'&&typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART:null;return name==='varkhan'&&typeof VALOR_WARRIOR_VARKHAN_ART!=='undefined'?VALOR_WARRIOR_VARKHAN_ART:name==='mordrak'&&typeof VALOR_WARRIOR_MORDRAK_ART!=='undefined'?VALOR_WARRIOR_MORDRAK_ART:name==='lumeris'&&typeof VALOR_WARRIOR_LUMERIS_ART!=='undefined'?VALOR_WARRIOR_LUMERIS_ART:null}
+ const artBanks={
+  'Savaşçı':{starter:typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART:null,varkhan:typeof VALOR_WARRIOR_VARKHAN_ART!=='undefined'?VALOR_WARRIOR_VARKHAN_ART:null,mordrak:typeof VALOR_WARRIOR_MORDRAK_ART!=='undefined'?VALOR_WARRIOR_MORDRAK_ART:null,lumeris:typeof VALOR_WARRIOR_LUMERIS_ART!=='undefined'?VALOR_WARRIOR_LUMERIS_ART:null},
+  'Büyücü':{starter:typeof VALOR_MAGE_STARTER_ART!=='undefined'?VALOR_MAGE_STARTER_ART:null,oryndis:typeof VALOR_MAGE_ORYNDIS_ART!=='undefined'?VALOR_MAGE_ORYNDIS_ART:null,aeloria:typeof VALOR_MAGE_AELORIA_ART!=='undefined'?VALOR_MAGE_AELORIA_ART:null,zephyriel:typeof VALOR_MAGE_ZEPHYRIEL_ART!=='undefined'?VALOR_MAGE_ZEPHYRIEL_ART:null}
+ };
+ function artFor(it){return artBanks[it?.cls]?.[it?.starterSet==='starter-v1'?'starter':sceneSet(it)]||null}
  function tier(it){if(!eligible(it))return it?.epic?1:0;const n=it.evolutionTier;return Number.isInteger(n)&&n>=0&&n<4?n:it.epic?1:0}
  function at(it,t,plus){
   if(t===0)return oldPower({...it,epic:false,plus});
