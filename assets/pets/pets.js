@@ -107,7 +107,7 @@ showBagItemPopup=function(index){if(state.inventory[index]?.marketItemId==='petF
 /* Equipped guardian battle buffs (Arena and Dungeon). Values grow linearly from White 1★ (stage 0) to Gold 5★ (stage 24). */
 const VALOR_PET_BUFFS={
  kozpence:{name:'Tutuşturma',text:v=>'Vuruşların %'+valorPetNumber(v.chance*100)+' şansla rakibi tutuşturur. Tutuşan rakip 3 tur boyunca her tur maksimum canının %'+valorPetNumber(v.burn*100)+' oranında yanık hasarı alır.',values:t=>({chance:.10+.20*t,burn:.004+.002*t})},
- ayazdis:{name:'Don Nefesi',text:v=>'Rakibin kritik ve bloke şansı %'+valorPetNumber(v.reduce*100)+' azalır.',values:t=>({reduce:.02+.08*t})},
+ ayazdis:{name:'Don Nefesi',text:v=>'Rakibin kritik ve bloke şansı %'+valorPetNumber(v.reduce*100)+' azalır.',values:t=>({reduce:.05+.13*t})},
  safakkanat:{name:'Şafak İnfazı',text:v=>'Canı %25’in altındaki rakibe verdiğin hasar +%'+valorPetNumber(v.bonus*100)+'.',values:t=>({bonus:.10+.40*t})},
  gecegaga:{name:'Gölge Darbesi',text:v=>'%'+valorPetNumber(v.chance*100)+' şansla aynı turda gölgeden ikinci bir saldırı yapar.',values:t=>({chance:.04+.16*t})}
 };
