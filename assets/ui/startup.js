@@ -103,12 +103,12 @@ function valorBossTiming(now=Date.now()){
  const js=document.createElement('script');js.src='assets/wheel/wheel.js?v=20261025-7';document.head.appendChild(js);
 })();
 
-/* One-time wheel-testing top-up for DooM, retained in the account save. */
+/* One-time wheel-testing top-up for every account; keep the original receipt to avoid paying DooM twice. */
 (function(){
  const flag='valorDoomWheelDiamonds20261025',prefix='valor-doom-wheel-diamonds-20261025:';
  const previousSave=save,previousRender=render;let granting=false,message=false;
  function apply(){
-  if(granting||!state.class||!valorAccountCanPlay()||String(state.name||'').trim().toLowerCase()!=='doom')return;
+  if(granting||!state.class||!valorAccountCanPlay())return;
   const receipt=prefix+(valorAccountActive?.id||'legacy-guest');
   if(state[flag])return;
   if(localStorage.getItem(receipt)){state[flag]=true;previousSave();return}
