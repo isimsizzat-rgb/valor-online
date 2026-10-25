@@ -70,10 +70,10 @@
  }
  function iconMarkup(id){return '<span class="vwf-icon" aria-hidden="true">'+art(id)+'</span>'}
  function wheelFace(rotation=0){
-  let paths='';
+  let paths='<defs><pattern id="vwf-worn-red" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#4a0d1a"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".64" style="mix-blend-mode:soft-light"/></pattern><pattern id="vwf-worn-black" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#17171b"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".38" style="mix-blend-mode:screen"/></pattern></defs>';
   for(let i=0;i<12;i++){
    const a=(i*30-105)*Math.PI/180,b=a+Math.PI/6;
-   paths+='<path d="M300 300 L'+(300+288*Math.cos(a))+' '+(300+288*Math.sin(a))+' A288 288 0 0 1 '+(300+288*Math.cos(b))+' '+(300+288*Math.sin(b))+' Z" fill="'+(i%2?'#13151c':'#4b1723')+'" stroke="#ba914e" stroke-width="2"/>';
+   paths+='<path d="M300 300 L'+(300+288*Math.cos(a))+' '+(300+288*Math.sin(a))+' A288 288 0 0 1 '+(300+288*Math.cos(b))+' '+(300+288*Math.sin(b))+' Z" fill="'+(i%2?'url(#vwf-worn-black)':'url(#vwf-worn-red)')+'" stroke="#ba914e" stroke-width="2"/>';
   }
   return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg>'+prizes.map((p,i)=>'<div class="vwf-prize" style="--angle:'+(i*30-90)+'deg;--upright:'+(-(i*30-90+rotation))+'deg">'+iconMarkup(p.id)+'<span class="vwf-label">'+p.name+'</span></div>').join('');
  }
@@ -81,6 +81,7 @@
  function data(){return state.luckyWheelV1||{from:0,to:0,ends:0}}
  function spinning(){return (data().ends||0)>Date.now()}
  function currentRound(d,now=Date.now()){
+  if(d.batchAnimation)return {...d,duration:d.duration,number:1,count:d.count};
   if(!d.rounds?.length)return {...d,duration:DURATION,number:1,count:1};
   const index=Math.max(0,Math.min(d.rounds.length-1,Math.floor((now-d.started)/d.roundDuration)));
   return {...d.rounds[index],ends:d.started+(index+1)*d.roundDuration,duration:d.roundDuration,number:index+1,count:d.rounds.length};
@@ -95,8 +96,8 @@
  function diamondHtml(){return '<span class="vwf-diamond"><span class="vwf-sr">💎</span>'+(document.querySelector('.valor-diamond-icon')?.innerHTML||'')+'</span>'}
  function pageHtml(){
   const d=data(),busy=spinning(),round=currentRound(d);
-  const status=busy?(d.count===10?'Tur '+round.number+' / 10 · Çark dönüyor…':'Çark dönüyor…'):d.count===10?'10 tur tamamlandı.':d.last?'Kazandın: <strong>'+escapeAttr(d.last)+'</strong>':'On iki dilim, on iki farklı ödül.';
-  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="Şans çarkını 99 elmas karşılığında çevir" '+(busy?'disabled':'')+'><span aria-hidden="true"></span><b>'+(busy?(d.count===10?round.number+' / 10':'DÖNÜYOR'):'ÇEVİR')+'</b><small>99 💎</small></button></div><div class="vwf-caption">Tek tur <b>99 💎</b></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
+  const status=busy?'Çark dönüyor…':d.count===10?'10 tur tamamlandı.':d.last?'Kazandın: <strong>'+escapeAttr(d.last)+'</strong>':'On iki dilim, on iki farklı ödül.';
+  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="Şans çarkını 99 elmas karşılığında çevir" '+(busy?'disabled aria-busy="true"':'')+'><b>ÇEVİR</b></button></div><div class="vwf-caption">Tek tur <b>99 💎</b></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
  }
  function animate(){
   clearTimeout(timer);const d=data(),round=currentRound(d),remaining=round.ends-Date.now(),disc=document.getElementById('valorWheelDisc');
@@ -124,8 +125,9 @@
     const index=pick(ticket/4294967296*10000),target=(360-index*30)%360,to=from+(count===10?720:1800)+((target-from%360+360)%360),last=grant(prizes[index].id);
     rounds.push({from,to,last,prize:prizes[index].id});outcomes[last]=(outcomes[last]||0)+1;from=to;
    }
-   const started=Date.now(),roundDuration=count===10?1400:DURATION,lastRound=rounds[rounds.length-1];
-   state.luckyWheelV1={...lastRound,from:rounds[0].from,started,roundDuration,rounds,count,totalPrice:price,outcomes,ends:started+roundDuration*count,spins:(previous.spins||0)+count,summaryShown:false};
+   const started=Date.now(),roundDuration=count===10?3000:DURATION,lastRound=rounds[rounds.length-1],initialFrom=rounds[0].from;
+   const animationTo=count===10?initialFrom+1080+((lastRound.to%360-initialFrom%360+360)%360):lastRound.to;
+   state.luckyWheelV1={...lastRound,from:initialFrom,to:animationTo,started,roundDuration,duration:roundDuration,batchAnimation:count===10,rounds,count,totalPrice:price,outcomes,ends:started+roundDuration,spins:(previous.spins||0)+count,summaryShown:false};
    // Payment and every reward are saved together before the animation.
    save();
   }catch(error){state=JSON.parse(old);toast('Çevirme tamamlanamadı. Elmasın harcanmadı.');console.error(error);return}
