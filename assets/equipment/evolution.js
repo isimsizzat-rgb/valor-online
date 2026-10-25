@@ -6,9 +6,15 @@
  const eligible=it=>!!it&&(it.starterSet==='starter-v1'||sceneSet(it))&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
  const artBanks={
   'Savaşçı':{starter:typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART:null,varkhan:typeof VALOR_WARRIOR_VARKHAN_ART!=='undefined'?VALOR_WARRIOR_VARKHAN_ART:null,mordrak:typeof VALOR_WARRIOR_MORDRAK_ART!=='undefined'?VALOR_WARRIOR_MORDRAK_ART:null,lumeris:typeof VALOR_WARRIOR_LUMERIS_ART!=='undefined'?VALOR_WARRIOR_LUMERIS_ART:null},
+  'Okçu':{starter:VALOR_ARCHER_STARTER_ART,selthir:VALOR_ARCHER_SELTHIR_ART,vaelthorn:VALOR_ARCHER_VAELTHORN_ART,eryndor:VALOR_ARCHER_ERYNDOR_ART},
   'Büyücü':{starter:typeof VALOR_MAGE_STARTER_ART!=='undefined'?VALOR_MAGE_STARTER_ART:null,oryndis:typeof VALOR_MAGE_ORYNDIS_ART!=='undefined'?VALOR_MAGE_ORYNDIS_ART:null,aeloria:typeof VALOR_MAGE_AELORIA_ART!=='undefined'?VALOR_MAGE_AELORIA_ART:null,zephyriel:typeof VALOR_MAGE_ZEPHYRIEL_ART!=='undefined'?VALOR_MAGE_ZEPHYRIEL_ART:null}
  };
- function artFor(it){return artBanks[it?.cls]?.[it?.starterSet==='starter-v1'?'starter':sceneSet(it)]||null}
+ function artFor(it){
+  if(!it||!VALOR_STARTER_SLOTS.includes(it.slot)||it.wingId||it.marketItemId)return null;
+  const level=Number(it.level);
+  const family=it.starterSet==='starter-v1'||(level>=1&&level<=25)?'starter':it.cls==='Okçu'?(level>75&&level<=100?'eryndor':level>50&&level<=75?'vaelthorn':level>25&&level<=50?'selthir':null):sceneSet(it);
+  return artBanks[it.cls]?.[family]||null;
+ }
  function tier(it){if(!eligible(it))return it?.epic?1:0;const n=it.evolutionTier;return Number.isInteger(n)&&n>=0&&n<4?n:it.epic?1:0}
  function at(it,t,plus){
   if(t===0)return oldPower({...it,epic:false,plus});
@@ -20,7 +26,7 @@
  window.valorEvolutionPowerAt=function(it,t,plus){return eligible(it)&&Number.isInteger(t)&&t>=0&&t<=3&&Number.isInteger(plus)&&plus>=0&&plus<=21?at(it,t,plus):null};
  equipmentPower=function(it){return eligible(it)?at(it,tier(it),Math.max(0,Math.min(21,Math.trunc(Number(it.plus)||0)))):oldPower.apply(this,arguments)};
  const oldIcon=equipmentIcon;
- equipmentIcon=function(it){const art=artFor(it);return eligible(it)&&art?art[tier(it)]?.[it.slot]||oldIcon.apply(this,arguments):oldIcon.apply(this,arguments)};
+ equipmentIcon=function(it){const art=artFor(it),visualTier=Number.isInteger(it?.evolutionTier)&&it.evolutionTier>=0&&it.evolutionTier<4?it.evolutionTier:tier(it);return art?art[visualTier]?.[it.slot]||oldIcon.apply(this,arguments):oldIcon.apply(this,arguments)};
  function label(it){return names[tier(it)]+' +'+(Number(it.plus)||0)}
  function find(id){return veFindItem(id)}
  function button(id){const b=document.createElement('button');b.type='button';b.className='evo-button';b.textContent='EVRİMLEŞTİR';b.onclick=()=>valorEvolutionAsk(id);return b}
