@@ -74,9 +74,9 @@
   let paths='<defs><pattern id="vwf-worn-red" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#4a0d1a"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".64" style="mix-blend-mode:soft-light"/></pattern><pattern id="vwf-worn-black" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#17171b"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".38" style="mix-blend-mode:screen"/></pattern></defs>';
   for(let i=0;i<12;i++){
    const a=(i*30-105)*Math.PI/180,b=a+Math.PI/6;
-   paths+='<path d="M300 300 L'+(300+288*Math.cos(a))+' '+(300+288*Math.sin(a))+' A288 288 0 0 1 '+(300+288*Math.cos(b))+' '+(300+288*Math.sin(b))+' Z" fill="'+(i%2?'url(#vwf-worn-black)':'url(#vwf-worn-red)')+'" stroke="#ba914e" stroke-width="2"/>';
+   paths+='<path d="M300 300 L'+(300+300*Math.cos(a))+' '+(300+300*Math.sin(a))+' A300 300 0 0 1 '+(300+300*Math.cos(b))+' '+(300+300*Math.sin(b))+' Z" fill="'+(i%2?'url(#vwf-worn-black)':'url(#vwf-worn-red)')+'" stroke="#ba914e" stroke-width="2"/>';
   }
-  return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg>'+prizes.map((p,i)=>{const angle=i*30-90,visible=((angle+rotation)%360+360)%360,flip=visible>90&&visible<=270?180:0;return '<div class="vwf-prize" data-prize="'+p.id+'" title="'+escapeAttr(p.name)+'" style="--angle:'+angle+'deg;--upright:'+(-(angle+rotation))+'deg;--label-flip:'+flip+'deg">'+iconMarkup(p.id)+'<span class="vwf-label">'+wheelLabels[p.id]+'</span></div>'}).join('');
+  return '<svg class="vwf-sectors" viewBox="0 0 600 600" aria-hidden="true">'+paths+'</svg><div class="vwf-prizes">'+prizes.map((p,i)=>{const angle=i*30-90,visible=((angle+rotation)%360+360)%360,flip=visible>90&&visible<=270?180:0;return '<div class="vwf-prize" data-prize="'+p.id+'" title="'+escapeAttr(p.name)+'" style="--angle:'+angle+'deg;--upright:'+(-(angle+rotation))+'deg;--label-flip:'+flip+'deg">'+iconMarkup(p.id)+'<span class="vwf-label">'+wheelLabels[p.id]+'</span></div>'}).join('')+'</div>';
  }
  let timer=null;
  function data(){return state.luckyWheelV1||{from:0,to:0,ends:0}}
