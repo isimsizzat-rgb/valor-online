@@ -1424,4 +1424,12 @@ html body header.top.valor-resource-bar:before{inset:7px;border:1px solid #d2ab6
 .valor-royal-frame>span:after{transform:skewY(10deg)}
 html body header.top.valor-resource-bar .valor-portrait-button:before{border:2px double #d9b46d;box-shadow:0 0 0 2px #302114,0 0 12px #c8963433}
 @media(max-width:350px){.valor-royal-frame i{width:43px;height:43px}.valor-royal-frame>span:before,.valor-royal-frame>span:after{width:22px}}
+</style><style id="valor-header-screen-and-badge-fix">/* Account and creation screens have no in-game HUD. */
+html body.valor-account-screen header.top.valor-resource-bar,
+html body.character-selection header.top.valor-resource-bar,
+html body.valor-profile-page header.top.valor-resource-bar{display:none!important}
+/* Explicit circular clipping also keeps Safari from painting a square badge layer. */
+html body header.top.valor-resource-bar .valor-portrait-level{display:grid!important;place-items:center!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;border-radius:50%!important;-webkit-clip-path:circle(50%);clip-path:circle(50%);overflow:hidden!important;background:radial-gradient(circle at 35% 20%,#57412a,#12151b 78%)!important;background-clip:padding-box!important;isolation:isolate;transform:translateZ(0);line-height:1!important}
+html body header.top.valor-resource-bar .valor-portrait-level:before,
+html body header.top.valor-resource-bar .valor-portrait-level:after{content:none!important;display:none!important}
 </style></body></html>
