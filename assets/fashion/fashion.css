@@ -23,3 +23,32 @@ html body #main .vp-wrap .vp-scene.vf-eight-slots .vf-slot-caption{position:abso
 .vf-card.vf-market-wing{background:#151116}
 .vf-market-wing .vf-art{background:transparent!important}
 .vf-market-wing .vf-art img{filter:none}
+
+/* Fashion equipment: three slots left, two right, selected character between. */
+.vfw-page{max-width:780px;margin:auto;padding:4px 0 20px}
+.vfw-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid #927044;border-radius:10px 10px 0 0;background:linear-gradient(100deg,#181219,#35271c,#181219)}
+.vfw-heading h1{margin:0;color:#efd3a0;font:700 24px Georgia,serif}
+.vfw-heading>span{font-size:11px;color:#bba480;text-align:right}
+.vfw-scene{position:relative;isolation:isolate;min-height:360px;aspect-ratio:4/4.7;max-height:650px;overflow:hidden;border:1px solid #8f6c3e;border-top:0;border-radius:0 0 10px 10px;background:#0c0b10 url('../home-fantasy/gothic-city.webp') center/cover no-repeat}
+.vfw-character{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.vfw-character img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center}
+.vfw-scene:after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#08080b66,transparent 28%,transparent 72%,#08080b66),linear-gradient(0deg,#09080c99,transparent 22%)}
+.vfw-slots{position:absolute;top:7%;bottom:7%;width:20%;z-index:2;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;gap:12px}
+.vfw-left{left:2%}.vfw-right{right:2%}
+.vfw-slot-wrap{width:100%;max-width:94px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.vfw-slot{position:relative;display:grid;place-items:center;width:100%;height:auto!important;min-height:0!important;aspect-ratio:1;padding:5px;border:1px solid #8c6a3d;border-radius:7px;background:linear-gradient(145deg,#292126ed,#0a090fed);box-shadow:inset 0 0 0 3px #171015,0 5px 15px #0008;overflow:hidden;cursor:pointer;touch-action:manipulation}
+.vfw-slot.is-selected{border-color:#f1cb85;box-shadow:inset 0 0 0 2px #573e25,0 0 15px #d2a85d55}
+.vfw-slot:focus-visible{outline:2px solid #ffe2a2;outline-offset:3px}
+.vfw-slot img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+.vfw-empty-icon{font-size:27px;color:#9d855e;opacity:.65;line-height:1}
+.vfw-slot-label{color:#e6cd9f;font:12px Georgia,serif;text-shadow:0 2px 4px #000}
+.vfw-level,.vfw-equipped-mark{position:absolute;bottom:3px;right:3px;padding:2px 4px;border:1px solid #b78e4f;border-radius:3px;background:#100b15eb;color:#f3d795;font:9px Arial,sans-serif}
+.vfw-equipped-mark{color:#bce0b4}
+.vfw-collection{margin-top:14px;padding:14px;border:1px solid #6e5438;border-radius:9px;background:#17121ad9}
+.vfw-collection-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;margin-bottom:6px;border-bottom:1px solid #b48d4d33}
+.vfw-collection-heading h2{font:18px Georgia,serif;color:#ead0a2;margin:0}
+.vfw-collection-heading>span{font-size:10px;color:#c1ad8a;text-align:right;overflow-wrap:anywhere}
+.vfw-empty-note{font:12px/1.7 Arial,sans-serif;color:#aa9b87;text-align:center;margin:16px 0}
+.vfw-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.vfw-actions button{flex:1;min-height:44px;font-size:12px;border:1px solid #8b693c;border-radius:6px;color:#e3ca9d;background:linear-gradient(#3a2b1f,#20171a)}
+@media(max-width:600px){.vfw-heading{padding:12px}.vfw-heading h1{font-size:21px}.vfw-heading>span{font-size:10px}.vfw-scene{min-height:350px;aspect-ratio:4/4.9}.vfw-slots{width:19%;gap:10px;top:6%;bottom:6%}.vfw-left{left:2%}.vfw-right{right:2%}.vfw-slot-wrap{gap:5px}.vfw-slot-label{font-size:10px}.vfw-empty-icon{font-size:24px}.vfw-level{font-size:8px;padding:2px}.vfw-collection{padding:12px}}
