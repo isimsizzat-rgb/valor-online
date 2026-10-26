@@ -23,7 +23,8 @@ function valorAstrologyTakenDamage(damage,reduction=valorAstrologyReduction()){
   return Math.max(1,Math.round(Math.max(1,Number(damage)||1)*(1-Math.max(0,Math.min(.20,Number(reduction)||0)))));
 }
 function valorAstrologyEnemyThreat(power){return Math.max(1,Number(power)*(1-valorAstrologyReduction()));}
-function valorAstrologyCost(level){return 5000*(level+1)*(level+1);}
+/* Cubic cost: 5,000 x (next level)^3; all 8 talents to 20 = 1.764 billion gold. */
+function valorAstrologyCost(level){return 5000*(level+1)*(level+1)*(level+1);}
 function valorAstrologyUpgrade(id){
   if(page!=='Astroloji'||!state.class)return;
   const t=VALOR_ASTROLOGY_TALENTS.find(t=>t.id===id);if(!t)return;

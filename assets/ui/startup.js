@@ -43,7 +43,7 @@ function valorBossTiming(now=Date.now()){
    if(s.paid||!/^\d{4}-\d{2}-\d{2}-(10|20)$/.test(id))continue;
    const hour=id.slice(11),end=Date.parse(id.slice(0,10)+'T'+hour+':15:00+03:00');
    if(Date.now()<end)continue;
-   s.paid=true;s.reward=Math.floor(s.damage);s.bonus=0;
+   s.paid=true;s.reward=Math.floor(s.damage*(typeof VALOR_BOSS_GOLD_RATE==='number'?VALOR_BOSS_GOLD_RATE:.1));s.bonus=0;
    if(s.hits){state.gold+=s.reward;store.pending.push(id)}save();
   }
  };
