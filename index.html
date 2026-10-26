@@ -1555,11 +1555,20 @@ profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.c
  let activeTab='chat',fallback=[],sequence=0;
  const kinds=new Set(['epic','wheel-mount','anniversary-mount']);
  function valid(entry){return entry&&kinds.has(entry.kind)&&typeof entry.player==='string'&&typeof entry.item==='string'&&Number.isFinite(entry.at)}
- function read(){try{const list=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(list)?list.filter(valid).slice(0,LIMIT):fallback}catch{return fallback}}
+ /* Signed-in players share one news feed on the server; guests keep the local list. */
+ const server={list:null,at:0,loading:false};
+ const online=()=>typeof valorAccountActive!=='undefined'&&valorAccountActive?.cloud&&typeof valorCloudFetch==='function';
+ async function loadServer(force){if(!online()||server.loading||(!force&&server.at&&Date.now()-server.at<30000))return;server.loading=true;
+  try{const rows=await valorCloudFetch('/rest/v1/news?select=id,kind,player,item,created_at&order=created_at.desc&limit=100');server.list=(Array.isArray(rows)?rows:[]).map(r=>({id:'s'+r.id,kind:r.kind,player:r.player,item:r.item,at:Date.parse(r.created_at)})).filter(valid)}catch{server.list=server.list||null}
+  finally{server.at=Date.now();server.loading=false;if(page==='Sohbet'&&activeTab==='news')render()}}
+ function readLocal(){try{const list=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(list)?list.filter(valid).slice(0,LIMIT):fallback}catch{return fallback}}
+ function read(){if(online()){loadServer();if(server.list)return server.list}return readLocal()}
+ setInterval(()=>{if(page==='Sohbet'&&activeTab==='news'&&!document.hidden)loadServer(true)},30000);
  function publish(kind,item){
   if(!kinds.has(kind)||!item)return;
   const entry={id:Date.now()+'-'+(++sequence),kind,player:String(state.name||'Oyuncu').slice(0,80),item:String(item).slice(0,180),at:Date.now()};
-  fallback=[entry,...read()].slice(0,LIMIT);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(fallback))}catch{}
+  fallback=[entry,...readLocal()].slice(0,LIMIT);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(fallback))}catch{}
+  if(online()){if(server.list)server.list=[entry,...server.list].slice(0,100);valorCloudFetch('/rest/v1/rpc/news_add',{method:'POST',body:JSON.stringify({kind,item:entry.item})}).then(()=>{server.at=0}).catch(()=>{})}
  }
  function message(entry){const player='<strong class="valor-news-player">'+escapeAttr(entry.player)+'</strong>',item='<strong class="valor-news-item">'+escapeAttr(entry.item)+'</strong>';
   if(entry.kind==='epic')return player+' '+item+' eşyasını epik yaptı!';
@@ -1571,7 +1580,7 @@ profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.c
  }
  const oldChat=chatPage;
  chatPage=function(){return '<div class="valor-social-tabs" role="tablist" aria-label="Sohbet ve haberler"><button type="button" id="valor-chat-tab" role="tab" aria-selected="'+(activeTab==='chat')+'" aria-controls="valor-social-panel" onclick="valorSocialSelectTab(\'chat\')">Sohbet</button><button type="button" id="valor-news-tab" role="tab" aria-selected="'+(activeTab==='news')+'" aria-controls="valor-social-panel" onclick="valorSocialSelectTab(\'news\')">Haberler</button></div>'+(activeTab==='news'?newsHtml():'<section id="valor-social-panel" role="tabpanel" aria-labelledby="valor-chat-tab">'+oldChat.apply(this,arguments)+'</section>')};
- window.valorSocialSelectTab=function(tab){if(!['chat','news'].includes(tab))return;activeTab=tab;if(page==='Sohbet'){render();document.getElementById(tab==='news'?'valor-news-tab':'valor-chat-tab')?.focus({preventScroll:true})}};
+ window.valorSocialSelectTab=function(tab){if(!['chat','news'].includes(tab))return;activeTab=tab;if(tab==='news')loadServer(true);if(page==='Sohbet'){render();document.getElementById(tab==='news'?'valor-news-tab':'valor-chat-tab')?.focus({preventScroll:true})}};
  const oldEpic=epic;
  epic=function(id){const it=getItem(id),wasEpic=!!it?.epic,result=oldEpic.apply(this,arguments);if(it&&!wasEpic&&it.epic)publish('epic',it.name);return result};
  const oldBoxReward=giveAnniversaryBoxReward;
