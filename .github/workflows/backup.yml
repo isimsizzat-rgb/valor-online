@@ -1,0 +1,54 @@
+name: Database backup
+# Weekly encrypted backup of the Supabase database (players, guilds, chat and accounts).
+# Needs two repository secrets: SUPABASE_DB_URL (Session pooler connection string) and BACKUP_PASSPHRASE.
+# The backup is kept for 90 days as a downloadable, password-encrypted file under Actions → this run → Artifacts.
+on:
+  schedule:
+    - cron: '17 1 * * 1'      # every Monday 04:17 Türkiye time
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secrets
+        id: check
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$PASS" ]; then echo "::warning::SUPABASE_DB_URL or BACKUP_PASSPHRASE secret is missing, backup skipped."; echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Install PostgreSQL 17 client
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+      - name: Dump and encrypt
+        if: steps.check.outputs.ok == 'true'
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          PGDUMP=/usr/lib/postgresql/17/bin/pg_dump
+          stamp=$(date -u +%Y-%m-%d)
+          mkdir backup
+          # Game tables: structure + data.
+          $PGDUMP "$DB" --schema=public --no-owner --no-privileges -f backup/public.sql
+          # Accounts (usernames and password hashes) so players can sign in after a restore.
+          $PGDUMP "$DB" --data-only --table=auth.users --table=auth.identities --no-owner --no-privileges -f backup/auth.sql
+          ls -la backup
+          tar czf "valor-backup-$stamp.tgz" backup
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" --symmetric --cipher-algo AES256 -o "valor-backup-$stamp.tgz.gpg" "valor-backup-$stamp.tgz"
+          rm -rf backup "valor-backup-$stamp.tgz"
+          echo "FILE=valor-backup-$stamp.tgz.gpg" >> "$GITHUB_ENV"
+      - name: Keep the encrypted file
+        if: steps.check.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILE }}
+          path: ${{ env.FILE }}
+          retention-days: 90
