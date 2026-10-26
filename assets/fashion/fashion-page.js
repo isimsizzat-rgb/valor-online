@@ -9,16 +9,17 @@ function valorFashionTile(slot){
 }
 function valorFashionProfilePage(){
  const slot=valorFashionSlots.includes(valorFashionSelectedSlot)?valorFashionSelectedSlot:'Kanat',equipped=valorFashionEquipped(slot),items=valorFashionItems(slot);
- const collection=slot==='Kanat'?(items.length?valorWingCards(true):'<p class="vfw-empty-note">Henüz bir kanadın yok.</p>'):(items.length?'<div class="vf-grid">'+items.map(it=>{const worn=String(equipped?.id)===String(it.id);return '<article class="vf-card"><div class="vf-art"><img src="'+valorFashionItemArt(it)+'" alt="'+escapeAttr(it.name)+'"></div><h3>'+escapeAttr(it.name)+'</h3><button type="button" onclick="'+(worn?"valorFashionRemovePiece('"+slot+"')":"valorFashionEquipPiece('"+slot+"','"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></article>'}).join('')+'</div>':'<p class="vfw-empty-note">Henüz bir '+slot.toLocaleLowerCase('tr-TR')+' fashionın yok.</p>');
+ const collection=typeof valorFashionCollection==='function'?valorFashionCollection(slot):slot==='Kanat'?(items.length?valorWingCards(true):'<p class="vfw-empty-note">Henüz bir kanadın yok.</p>'):(items.length?'<div class="vf-grid">'+items.map(it=>{const worn=String(equipped?.id)===String(it.id);return '<article class="vf-card"><div class="vf-art"><img src="'+valorFashionItemArt(it)+'" alt="'+escapeAttr(it.name)+'"></div><h3>'+escapeAttr(it.name)+'</h3><button type="button" onclick="'+(worn?"valorFashionRemovePiece('"+slot+"')":"valorFashionEquipPiece('"+slot+"','"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></article>'}).join('')+'</div>':'<p class="vfw-empty-note">Henüz bir '+slot.toLocaleLowerCase('tr-TR')+' fashionın yok.</p>');
  const back='<button type="button" class="vp-slot vf-wing-equipment" title="Ekipman" aria-label="Ekipman sayfasına dön" onclick="go(\'Profil\')"><span class="vp-empty">⚔</span><small class="vf-slot-caption">EKİPMAN</small></button>';
  const spacer='<div class="vfp-spacer" aria-hidden="true"></div>';
  // Same bars as the profile (name, class/level, title rank), taken from the real profile page.
  let bars='<div class="vp-header"><strong>'+escapeAttr(state.name)+'</strong><span>'+escapeAttr(state.class)+' · Sv. '+state.level+'</span></div>';
  try{const m=(window.valorRealProfile||profile)().match(/^<div class="vp-wrap">([\s\S]*?)<div class="vp-scene/);if(m)bars=m[1]}catch(e){}
  return '<div class="vp-wrap vfp-wrap">'+bars
-  +'<div class="vp-scene vf-eight-slots"><div class="vp-hero valor-selected-profile-hero"><img src="'+valorCreationPortrait(state.class,state.gender)+'" alt="'+escapeAttr(state.class)+' karakteri"></div>'
+  +'<div class="vp-scene vf-eight-slots"><div class="vp-hero valor-selected-profile-hero"><img src="'+(typeof valorFashionPortrait==='function'?valorFashionPortrait():valorCreationPortrait(state.class,state.gender))+'" alt="'+escapeAttr(state.class)+' karakteri"></div>'
   +'<div class="vp-gear vp-left">'+['Silah','Kıyafet','Kask'].map(valorFashionTile).join('')+back+'</div>'
   +'<div class="vp-gear vp-right">'+['Ayakkabı','Kanat'].map(valorFashionTile).join('')+spacer+spacer+'</div></div>'
+  +(typeof valorAuroraWardrobeSummary==='function'?valorAuroraWardrobeSummary():'')
   +'<section class="vfw-collection" aria-label="'+slot+' koleksiyonu"><div class="vfw-collection-heading"><h2>'+slot+'</h2><span>'+(equipped?'Takılı: '+escapeAttr(equipped.name):'Kuşanılmadı')+'</span></div>'+collection+'</section>'
   +'<div class="vfw-actions"><button type="button" onclick="valorOpenWingMarket()">Fashion Marketi</button>'+(slot==='Kanat'?'<button type="button" onclick="valorOpenWingWorkshop()">Kanat Birleştirme</button>':'')+'</div></div>';
 }

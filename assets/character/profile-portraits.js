@@ -10,7 +10,7 @@
   if(!hero)return html;
   const portrait=document.createElement('div'),image=document.createElement('img');
   portrait.className='vp-hero valor-selected-profile-hero';
-  image.src=valorCreationPortrait(state.class,state.gender);
+  image.src=typeof valorFashionPortrait==='function'?valorFashionPortrait():valorCreationPortrait(state.class,state.gender);
   image.alt=(state.gender==='female'?'Kadın ':'Erkek ')+state.class+' karakteri';
   portrait.appendChild(image);
   hero.replaceWith(portrait);
