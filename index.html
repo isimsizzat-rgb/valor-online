@@ -6,7 +6,7 @@ html[data-valor-booting] body{visibility:hidden!important}
 </style>
 <script>
 /* Test mode: test packages and test screens run only for these cloud accounts (lower-case usernames). */
-window.VALOR_TESTERS=[];
+window.VALOR_TESTERS=['doom'];
 window.valorTestMode=function(){try{const id=sessionStorage.getItem('valor-account-session-v1'),reg=JSON.parse(localStorage.getItem('valor-accounts-v1')||'[]'),a=Array.isArray(reg)&&reg.find(x=>x&&x.id===id);return !!(a&&a.cloud&&window.VALOR_TESTERS.includes(String(a.username).trim().normalize('NFKC').toLocaleLowerCase('tr-TR')))}catch(e){return false}};
 </script>
 <script>
