@@ -63,6 +63,7 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 .vauth-story h2{font:400 20px/1.3 Georgia,serif;color:#d9bd8c;margin:10px 0}
 .vauth-story p{font:11px/1.85 Arial,sans-serif;color:#a59a8a;margin:0;max-width:360px;margin-inline:auto}
 @media(max-width:600px){.vauth-compact .vauth-panel{padding-top:8px}.vauth-story{padding:4px 20px 22px}.vauth-story h2{font-size:18px}}
+<<<<<<< Updated upstream
 
 /* Class seals: dark metal, engraved corners and a distinct glow per class. */
 .vcreate-page .vcreate-tabs{gap:12px;border:0;padding:4px 0 14px;margin-bottom:4px}
@@ -81,3 +82,10 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 @media(hover:hover){.vcreate-page .vcreate-tabs button:hover{transform:translateY(-2px);border-color:var(--seal);filter:none}}
 @media(max-width:600px){.vcreate-page .vcreate-tabs{gap:8px;margin-inline:12px}.vcreate-page .vcreate-tabs button{flex-direction:column;gap:8px;padding:12px 4px 14px;min-height:106px;border-radius:3px 12px 3px 12px}.vcreate-page .vcreate-tabs img{width:37px;height:41px}.vcreate-page .vcreate-tabs span{font-size:14px;letter-spacing:.2px}}
 @media(prefers-reduced-motion:reduce){.vcreate-page .vcreate-tabs button{transition:none}}
+=======
+/* Cloud save status (profile footer) */
+.valor-cloud-status{flex:1 0 100%;font-size:11px;color:#9fe0b3}
+.valor-cloud-status[data-state="pending"],.valor-cloud-status[data-state="saving"]{color:#c9b38a}
+.valor-cloud-status[data-state="offline"],.valor-cloud-status[data-state="error"]{color:#e3a08f}
+.vauth-profile-link{flex-wrap:wrap}
+>>>>>>> Stashed changes

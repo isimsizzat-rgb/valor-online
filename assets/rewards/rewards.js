@@ -42,7 +42,7 @@ function valorRewardsStrip(){if(!state.class)return '';const can=valorLoginCanCl
  home=function(){return valorRewardsStrip()+baseHome.apply(this,arguments)};
  const baseRender=render;
  render=function(){const r=baseRender.apply(this,arguments);try{valorRewardsAfterRender()}catch(e){}return r};
- function valorRewardsAfterRender(){if(!state.class||page!=='Anasayfa')return;const day=valorRewardDay();if(valorLoginPopupShown===day||!valorLoginCanClaim())return;if(!state.guide||!state.guide.done)return;valorLoginPopupShown=day;setTimeout(()=>{if(page==='Anasayfa'&&valorLoginCanClaim()&&state.guide&&state.guide.done&&!document.querySelector('.vr-overlay'))valorLoginOpen()},400)}
+ function valorRewardsAfterRender(){if(document.body.classList.contains('valor-account-screen')){document.querySelectorAll('.vr-overlay').forEach(e=>e.remove());return}if(!state.class||page!=='Anasayfa')return;const day=valorRewardDay();if(valorLoginPopupShown===day||!valorLoginCanClaim())return;if(!state.guide||!state.guide.done)return;valorLoginPopupShown=day;setTimeout(()=>{if(page==='Anasayfa'&&!document.body.classList.contains('valor-account-screen')&&valorLoginCanClaim()&&state.guide&&state.guide.done&&!document.querySelector('.vr-overlay'))valorLoginOpen()},400)}
  let wasReady=null;
  setInterval(function(){const el=document.getElementById('vr-chest-time');if(!el||!state.class)return;const left=valorChestLeft(),ready=!left;el.textContent=ready?'Açmaya hazır!':valorClock(left);if(wasReady!==null&&ready!==wasReady)el.closest('.vr-card')?.classList.toggle('vr-ready',ready);wasReady=ready},1000);
 })();
