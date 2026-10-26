@@ -1,0 +1,36 @@
+name: Extract inline images
+# Moves base64 images that get embedded in index.html / asset files into assets/img/
+# so the game's first load stays small. Runs on every push that touches code.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'assets/**/*.html'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: extract-inline-images
+  cancel-in-progress: false
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install Pillow
+      - run: python tools/perf/extract_inline_images.py
+      - name: Commit extracted images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A index.html assets
+          if git diff --cached --quiet; then echo "No embedded images"; exit 0; fi
+          git commit -m "Move embedded images to assets/img (auto)"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push origin HEAD:main && exit 0; sleep 5; done
+          exit 1

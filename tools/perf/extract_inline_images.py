@@ -3,7 +3,9 @@
 Each embedded image becomes assets/img/<hash>.<ext> (identical images share one file) and the
 source text points at that file instead, so images load only when shown and are cached.
 PNG/JPEG are re-encoded to WebP (q90) when that is at least 20% smaller.
+Changed asset files get a new ?v= in index.html so browsers fetch the new version.
 Usage (repo root): python3 tools/perf/extract_inline_images.py
+Runs automatically on every push via .github/workflows/extract-inline-images.yml.
 """
 import base64, hashlib, io, os, re, sys, urllib.parse
 from PIL import Image
@@ -54,6 +56,13 @@ def replace_in(path):
 if __name__ == '__main__':
     targets = [os.path.join(ROOT, 'index.html')] + [os.path.join(d, f) for d, _, fs in os.walk(os.path.join(ROOT, 'assets')) for f in fs if f.endswith(('.js', '.css', '.html'))]
     changed = [os.path.relpath(t, ROOT) for t in targets if replace_in(t)]
+    bump = [c.replace(os.sep, '/') for c in changed if c != 'index.html']
+    if bump:
+        ip = os.path.join(ROOT, 'index.html'); s = open(ip, encoding='utf-8').read()
+        for c in bump:
+            tag = hashlib.sha1(open(os.path.join(ROOT, c), 'rb').read()).hexdigest()[:8]
+            s = re.sub(re.escape(c) + r'\?v=[^"\'&)]+', c + '?v=i' + tag, s)
+        open(ip, 'w', encoding='utf-8').write(s)
     print('files changed:', len(changed))
     for c in changed: print('  ', c)
     print('images replaced: %d, unique files: %d, embedded text %.1f MB -> image files %.1f MB' % (stats['images'], len(stats['unique']), stats['before'] / 1e6, stats['after'] / 1e6))
