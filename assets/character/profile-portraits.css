@@ -21,3 +21,9 @@ html body header.top.valor-resource-bar .valor-hud-portrait-crop img{
  transform:scale(2.1)!important;transform-origin:center 12%!important;
  filter:none!important;border-radius:0!important;
 }
+
+/* The new transparent warrior stands centered over the retained profile scene. */
+html body #main .vp-wrap .vp-scene .valor-selected-profile-hero.valor-warrior-cutout img{
+ width:76%!important;height:96%!important;object-fit:contain!important;object-position:center center!important;
+ filter:drop-shadow(0 9px 12px #0008)!important;
+}

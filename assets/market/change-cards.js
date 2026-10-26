@@ -1,7 +1,7 @@
 /* Single-use identity cards. Cloud changes and card consumption commit in one revision. */
 function valorChangeCardArt(kind){
  const names={gender:'Cinsiyet Değiştirme Kartı',nick:'Nick Değiştirme Kartı',guild:'Birlik İsmi Değiştirme Kartı'};
- return '<img class="valor-change-card-art" src="assets/items/change-cards/'+kind+'.webp" alt="'+names[kind]+'" width="512" height="512" decoding="async">';
+ return '<img class="valor-change-card-art" src="assets/items/change-cards/'+kind+'-transparent.webp" alt="'+names[kind]+'" width="512" height="512" decoding="async">';
 }
 const VALOR_CHANGE_CARDS=[
  {id:'genderChangeCard',name:'Cinsiyet Değiştirme Kartı',price:149,kind:'gender',description:'Karakterinin cinsiyetini değiştirir.'},
