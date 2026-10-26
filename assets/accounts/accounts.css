@@ -165,3 +165,10 @@ body.valor-account-screen:has(.vcreate-page) .shell{padding-top:10px!important}
  .vcreate-page .vcreate-info>.vcreate-account-label{color:#b7aa97;text-shadow:0 2px 4px #000}
 }
 @media(max-width:350px){.vcreate-page .vcreate-tabs button{gap:5px}.vcreate-page .vcreate-tabs img{width:21px;height:25px}.vcreate-page .vcreate-tabs span{font-size:12px}}
+/* Password recovery */
+.vrc-code{margin:10px auto 12px;padding:12px 10px;border:1px dashed #e0b863;border-radius:9px;background:#120e0c;color:#f3d294;font:700 22px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;user-select:all}
+.vrc-dialog .vauth-form{text-align:left}
+.vrc-dialog .vauth-form input{font-size:16px}
+.vrc-forgot{display:block;margin:10px auto 0}
+.vrc-profile-btn{min-height:32px;padding:4px 12px;font-size:12px;border-color:#806b44}
+.vrc-profile-btn.vrc-missing{border-color:#e0b863;color:#f3d294;box-shadow:0 0 10px #e3b66933}
