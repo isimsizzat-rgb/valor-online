@@ -1,0 +1,44 @@
+/* Daily rewards strip + dialogs */
+.vr-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
+.vr-card{position:relative;display:flex;align-items:center;gap:9px;min-height:58px;padding:7px 10px;border:1px solid #806b44;border-radius:10px;background:linear-gradient(#231b16ee,#15110fee);color:#e8d6b4;text-align:left;cursor:pointer;box-shadow:inset 0 1px #ffffff10}
+.vr-card.vr-ready{border-color:#e0b863;box-shadow:0 0 0 1px #e0b86355,0 0 14px #e3b66944,inset 0 1px #ffffff18}
+.vr-card.vr-ready:after{content:'';position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:50%;background:#ff5a4a;box-shadow:0 0 6px #ff5a4a;animation:vrDot 1.4s ease-in-out infinite}
+.vr-card-art{flex:0 0 40px;width:40px;height:40px;display:grid;place-items:center}
+.vr-card-art .vr-res{width:36px;height:36px}
+.vr-cal{border:1px solid #c9a36b;border-radius:7px;background:linear-gradient(#3c2c1d,#1b1410);grid-template-rows:auto auto;align-content:center;line-height:1}
+.vr-cal b{font:700 18px Georgia,serif;color:#f3d294}.vr-cal small{font-size:7px;letter-spacing:1.4px;color:#bca27a}
+.vr-card-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.vr-card-text b{font:700 13px Georgia,serif;color:#f0d5a5;white-space:nowrap}
+.vr-card-text small{font-size:11px;color:#bca98c;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vr-card.vr-ready .vr-card-text small{color:#9fe0b3}
+.vr-res{display:block;object-fit:contain}
+.vr-overlay{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;padding:16px;background:#050403bb;backdrop-filter:blur(2px)}
+.vr-dialog{position:relative;width:min(440px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;box-sizing:border-box;padding:18px 14px 14px;border:1px solid #c9a36b;border-radius:14px;background:linear-gradient(#211915,#100c0b);color:#e8d6b4;text-align:center;box-shadow:0 18px 50px #000c}
+.vr-close{position:absolute;top:8px;right:10px;width:32px;height:32px;padding:0;border:0;background:none;color:#c9b38a;font-size:24px;line-height:1;cursor:pointer}
+.vr-eyebrow{font-size:10px;letter-spacing:2px;color:#b99b68}
+.vr-dialog h2{margin:4px 0 6px;font:700 21px Georgia,serif;color:#f3d294}
+.vr-lead{margin:0 0 12px;font-size:12px;line-height:1.5;color:#bca98c}
+.vr-days{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.vr-day{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 3px 6px;border:1px solid #6d5a3d;border-radius:9px;background:#15110f}
+.vr-day b{font-size:10px;color:#c9b38a;letter-spacing:.5px}
+.vr-big{grid-column:span 2;background:linear-gradient(#2e2216,#15110f);border-color:#a8854c}
+.vr-day-items{display:flex;justify-content:center;gap:4px}
+.vr-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.vr-art{width:34px;height:34px;display:grid;place-items:center}
+.vr-art img,.vr-art svg{width:100%!important;height:100%!important;object-fit:contain}
+.vr-item small{font-size:10px;font-weight:700;color:#f0d5a5;font-variant-numeric:tabular-nums}
+.vr-today{border-color:#e0b863;box-shadow:0 0 0 1px #e0b863,0 0 14px #e3b66955;animation:vrGlow 1.6s ease-in-out infinite}
+.vr-done{opacity:.55}
+.vr-done .vr-day-items{filter:grayscale(.7)}
+.vr-check{position:absolute;inset:0;display:grid;place-items:center;font:700 28px Georgia,serif;font-style:normal;color:#8be0a3;text-shadow:0 2px 6px #000}
+.vr-claim{width:100%;min-height:44px;border:1px solid #e0b863;border-radius:9px;background:linear-gradient(#8a6330,#4a3219);color:#fbe3ae;font:700 14px Georgia,serif;cursor:pointer}
+.vr-claim:disabled{border-color:#6d5a3d;background:#221b16;color:#8f7d62;cursor:default}
+.vr-reveal-art{width:96px;height:96px;margin:10px auto 2px;animation:vrPop .6s cubic-bezier(.2,1.6,.4,1) both}
+.vr-reveal-art .vr-res{width:100%;height:100%;filter:drop-shadow(0 0 16px #6fc6ff88)}
+.vr-reveal h2{font-size:28px;color:#bfe8ff}
+.vr-jackpot h2{color:#ffd36b}
+.vr-jackpot .vr-reveal-art .vr-res{filter:drop-shadow(0 0 22px #ffd36baa)}
+@keyframes vrDot{50%{transform:scale(1.35);opacity:.7}}
+@keyframes vrGlow{50%{box-shadow:0 0 0 1px #e0b863,0 0 22px #e3b66988}}
+@keyframes vrPop{0%{transform:scale(.2) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.vr-card.vr-ready:after,.vr-today,.vr-reveal-art{animation:none}}
