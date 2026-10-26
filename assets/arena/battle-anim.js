@@ -67,3 +67,41 @@ valorArenaTraining=function(){
  valorBattlePlay({left:{name:state.name||'Sen',portrait,sub:state.class+' · Sv. '+state.level,maxHp:battle.myMaxHp},right:{name:'Denk Rakip',portrait,sub:state.class+' · Sv. '+state.level,maxHp:battle.enemyMaxHp},battle,meFirst:Math.random()<.5,
   onDone:()=>{valorPrecomputedBattle=battle;valorArenaImmediateTraining();valorPrecomputedBattle=null}});
 };
+
+/* ---------- Team Arena playback (1v1 / 2v2 / 3v3) ---------- */
+function valorTeamFloat(overlay,idx,text,kind){
+ const host=overlay.querySelector('.vtp-f[data-i="'+idx+'"] .vba-portrait');if(!host)return;
+ const el=document.createElement('span');el.className='vba-float vtp-float vba-'+kind;el.textContent=text;el.style.left=(35+Math.random()*30)+'%';
+ host.appendChild(el);if(kind!=='heal'){host.classList.remove('vba-hit');void host.offsetWidth;host.classList.add('vba-hit')}
+ setTimeout(()=>el.remove(),1300);
+}
+function valorTeamPlay(prep,onDone){
+ if(valorArenaPendingBattle||document.getElementById('valor-arena-result'))return false;
+ const {start,battle,size}=prep,hp=start.map(u=>u.maxHp);
+ const row=(u,i)=>'<div class="vtp-f'+(u.me?' vtp-me':'')+'" data-i="'+i+'"><div class="vba-portrait"><img src="'+escapeAttr(u.portrait)+'" alt=""></div><div class="vtp-info"><b>'+escapeAttr(u.name)+(u.me?' (Sen)':'')+'</b><small>'+escapeAttr(u.cls)+' · Sv. '+(u.level||1)+'</small><div class="vba-track"><i style="width:100%"></i></div><span data-hp>'+money(u.maxHp)+'</span></div></div>';
+ const col=(side,title)=>'<div class="vtp-col" data-side="'+side+'"><h3>'+title+'</h3>'+start.map((u,i)=>u.side===side?row(u,i):'').join('')+'</div>';
+ const overlay=document.createElement('div');overlay.id='valor-arena-wait';overlay.className='valor-item-overlay vba-overlay';
+ overlay.innerHTML='<section class="valor-item-dialog vba-dialog vtp-dialog" role="dialog" aria-modal="true" aria-label="Takım savaşı" aria-busy="true"><div class="vba-round" data-round>'+size+'v'+size+' · 1. tur</div><div class="vtp-sides">'+col('A','Takımın')+'<span class="vba-vs">VS</span>'+col('B','Rakip')+'</div><div class="vba-actions"><button type="button" data-skip>Sonucu Göster</button><button type="button" onclick="valorArenaCancelPending()">Vazgeç</button></div></section>';
+ document.body.appendChild(overlay);
+ const pending={timer:null};valorArenaPendingBattle=pending;
+ const setHp=i=>{const f=overlay.querySelector('.vtp-f[data-i="'+i+'"]');if(!f)return;const max=start[i].maxHp,v=Math.max(0,Math.min(max,hp[i]));f.querySelector('i').style.width=(v/max*100)+'%';f.querySelector('[data-hp]').textContent=money(v);f.classList.toggle('vtp-down',v<=0)};
+ const log=battle.log||[],rounds=Math.max(1,log.length),stepOf=i=>1.3*(i<15?1000:Math.max(350,1000*Math.pow(.93,i-14))),starts=[];let total=0;
+ for(let i=0;i<rounds;i++){starts.push(total);total+=stepOf(i)}
+ let finished=false;
+ const finish=()=>{if(finished||valorArenaPendingBattle!==pending)return;finished=true;clearTimeout(pending.timer);valorArenaPendingBattle=null;overlay.remove();if(page==='Savaş'&&state.class)onDone()};
+ overlay.querySelector('[data-skip]').addEventListener('click',finish);
+ log.forEach((r,i)=>{const gap=stepOf(i)/Math.max(1,r.acts.length);
+  setTimeout(()=>{if(valorArenaPendingBattle===pending)overlay.querySelector('[data-round]').textContent=size+'v'+size+' · '+r.round+'. tur'+(valorArenaFury(r.round)>0?' · Öfke +%'+Math.round(valorArenaFury(r.round)*100):'')},starts[i]);
+  r.acts.forEach((x,j)=>setTimeout(()=>{
+   if(valorArenaPendingBattle!==pending)return;
+   if(x.ai>=0){const a=overlay.querySelector('.vtp-f[data-i="'+x.ai+'"]');if(a){a.classList.remove('vtp-act');void a.offsetWidth;a.classList.add('vtp-act')}}
+   const texts=x.burn?[['🔥 -'+money(x.dmg),'burn']]:valorBattleHitTexts(x.hit,x.dmg);
+   for(const [t,k] of texts)valorTeamFloat(overlay,x.bi,t,k);
+   hp[x.bi]-=x.dmg;if(x.hit?.healed){hp[x.bi]+=x.hit.healed;valorTeamFloat(overlay,x.bi,'+'+money(x.hit.healed),'heal')}
+   if(x.ko)hp[x.bi]=0;setHp(x.bi);
+  },starts[i]+j*gap));
+ });
+ pending.timer=setTimeout(()=>{(battle.units||[]).forEach((u,i)=>{hp[i]=u.hp;setHp(i)});setTimeout(finish,900)},total);
+ overlay.querySelector('[data-skip]')?.focus();
+ return true;
+}

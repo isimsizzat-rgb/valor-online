@@ -27,7 +27,8 @@ function valorTeamData(){
 function valorTeamRemaining(){return Math.max(0,VALOR_TEAM_DAILY-valorTeamData().used)}
 
 /* Computer-controlled players: names/classes from the arena list, power relative to the player. */
-function valorTeamPool(){return valorArenaPlayers().map(p=>({id:'npc-'+p.id,name:p.name,cls:p.cls,level:p.level}))}
+function valorTeamPool(){return valorArenaPlayers().map(p=>({id:'npc-'+p.id,name:p.name,cls:p.cls,level:p.level,portrait:p.portrait}))}
+function valorTeamPortrait(p){return p?.portrait||heroImages[Math.max(0,classes.indexOf(p?.cls))]}
 function valorTeamBotStats(ratio,cls){
  const snap=valorArenaStats(),mine=state.class==='Büyücü'?'Sihir':'Saldırı',primary=cls==='Büyücü'?'Sihir':'Saldırı',out={};
  for(const k of ['Saldırı','Sihir','Savunma','Sihir Savunma','Can','Kritik','Bloke'])out[k]=Math.round((Number(snap[k])||0)*ratio);
@@ -35,7 +36,7 @@ function valorTeamBotStats(ratio,cls){
  return out;
 }
 function valorTeamPick(n,exclude=[]){const used=new Set(exclude),pool=valorTeamPool().filter(p=>!used.has(p.id)).sort(()=>Math.random()-.5);return pool.slice(0,n)}
-function valorTeamMember(p,ratio){return {id:p.id,name:p.name,cls:p.cls,level:p.level,ratio:Math.round(ratio*100)/100}}
+function valorTeamMember(p,ratio){return {id:p.id,name:p.name,cls:p.cls,level:p.level,portrait:p.portrait,ratio:Math.round(ratio*100)/100}}
 
 /* ---------- Rooms ---------- */
 const VALOR_TEAM_ROOM_NAMES=['Gece Baskını','Ejder Avcıları','Kızıl Yemin','Çelik Kalkan','Sessiz Oklar','Kadim Birlik','Fırtına Takımı','Alev Muhafızları','Ay Işığı','Bozkır Kurtları'];
@@ -80,9 +81,9 @@ function valorTeamInvite(id){
 function valorTeamKick(id){const room=valorTeamData().room;if(!room?.own)return;room.members=room.members.filter(m=>m.id!==id);save();render()}
 
 /* ---------- Battle ---------- */
-function valorTeamUnit(name,cls,stats,side,me=false){const u=valorArenaUnit({...stats},cls);return {...u,name,cls,side,me,dealt:0}}
+function valorTeamUnit(name,cls,stats,side,me=false,portrait=null,level=1){const u=valorArenaUnit({...stats},cls);return {...u,name,cls,side,me,dealt:0,portrait:portrait||heroImages[Math.max(0,classes.indexOf(cls))],level}}
 function valorTeamSimulate(teamA,teamB,rng=Math.random){
- const all=[...teamA,...teamB],log=[];
+ const all=[...teamA,...teamB],log=[];all.forEach((u,i)=>u.idx=i);
  const alive=side=>all.filter(u=>u.side===side&&u.hp>0);
  for(let round=1;alive('A').length&&alive('B').length&&round<=300;round++){
   const fury=valorArenaFury(round),order=all.filter(u=>u.hp>0).sort((a,b)=>b.attack-a.attack||rng()-.5),acts=[];
@@ -98,29 +99,35 @@ function valorTeamSimulate(teamA,teamB,rng=Math.random){
    if(a.hp<=0)continue;const foes=alive(a.side==='A'?'B':'A');if(!foes.length)break;
    const b=foes[Math.floor(rng()*foes.length)],s=strike(a,b);let dmg=s.dmg;
    if(a.stats.petBuff?.id==='gecegaga'&&b.hp>0&&rng()<a.stats.petBuff.chance){const x=strike(a,b);dmg+=x.dmg;s.hit.shadow=x.dmg}
-   acts.push({a:a.name,b:b.name,dmg,hit:s.hit,ko:b.hp<=0});
+   acts.push({a:a.name,b:b.name,ai:a.idx,bi:b.idx,dmg,hit:s.hit,ko:b.hp<=0});
   }
-  for(const u of all){if(!u.burn||u.hp<=0)continue;const d=Math.min(u.hp,u.burn.damage);u.hp-=d;if(u.burn.from)u.burn.from.dealt+=d;acts.push({a:'Yanık',b:u.name,dmg:d,hit:null,ko:u.hp<=0});if(--u.burn.rounds<=0)u.burn=null}
+  for(const u of all){if(!u.burn||u.hp<=0)continue;const d=Math.min(u.hp,u.burn.damage);u.hp-=d;if(u.burn.from)u.burn.from.dealt+=d;acts.push({a:'Yanık',b:u.name,ai:-1,bi:u.idx,dmg:d,hit:null,ko:u.hp<=0,burn:true});if(--u.burn.rounds<=0)u.burn=null}
   log.push({round,acts});
  }
  const aLeft=alive('A').length,bLeft=alive('B').length,win=aLeft>0&&bLeft===0,draw=aLeft>0&&bLeft>0;
- return {win,draw,rounds:log.length,log,units:all.map(u=>({name:u.name,cls:u.cls,side:u.side,me:u.me,hp:u.hp,maxHp:u.maxHp,dealt:u.dealt}))};
+ return {win,draw,rounds:log.length,log,units:all.map(u=>({name:u.name,cls:u.cls,side:u.side,me:u.me,hp:u.hp,maxHp:u.maxHp,dealt:u.dealt,portrait:u.portrait,level:u.level}))};
 }
 function valorTeamFight(){
  if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
  if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData(),room=d.room;if(!room)return;
  if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
- valorArenaBeginWait(()=>valorArenaWithFury(()=>valorTeamResolve()));
+ const prep=valorTeamPrepare();
+ if(typeof valorTeamPlay==='function'&&valorTeamPlay(prep,()=>valorTeamResolve(prep)))return;
+ valorArenaBeginWait(()=>valorTeamResolve(prep));
 }
-function valorTeamResolve(){
+function valorTeamPrepare(){
+ const room=valorTeamData().room,size=1+room.members.length,mine=valorArenaStats();
+ const teamA=[valorTeamUnit(state.name||'Sen',state.class,mine,'A',true,document.getElementById('valor-hud-portrait')?.src,state.level),...room.members.map(m=>valorTeamUnit(m.name,m.cls,valorTeamBotStats(m.ratio,m.cls),'A',false,valorTeamPortrait(m),m.level))];
+ const avg=(1+room.members.reduce((s,m)=>s+m.ratio,0))/size,rivals=valorTeamPick(size,room.members.map(m=>m.id));
+ const teamB=rivals.map(p=>{const ratio=avg*(.9+Math.random()*.2);return valorTeamUnit(p.name,p.cls,valorTeamBotStats(ratio,p.cls),'B',false,valorTeamPortrait(p),p.level)});
+ const start=[...teamA,...teamB].map(u=>({name:u.name,cls:u.cls,side:u.side,me:u.me,maxHp:u.maxHp,portrait:u.portrait,level:u.level}));
+ return {size,start,battle:valorArenaWithFury(()=>valorTeamSimulate(teamA,teamB))};
+}
+function valorTeamResolve(prep){
  if(!valorTeamOpen()){valorTeamCloseRoomsIfShut();valorTeamNotice='Takım Arenası kapandı; savaş başlatılamadı. Hakkın düşmedi.';render();return}
  const d=valorTeamData(),room=d.room;if(!room||valorTeamRemaining()<1)return;
- const size=1+room.members.length,mine=valorArenaStats();
- const teamA=[valorTeamUnit(state.name||'Sen',state.class,mine,'A',true),...room.members.map(m=>valorTeamUnit(m.name,m.cls,valorTeamBotStats(m.ratio,m.cls),'A'))];
- const avg=(1+room.members.reduce((s,m)=>s+m.ratio,0))/size,rivals=valorTeamPick(size,room.members.map(m=>m.id));
- const teamB=rivals.map(p=>{const ratio=avg*(.9+Math.random()*.2);return valorTeamUnit(p.name,p.cls,valorTeamBotStats(ratio,p.cls),'B')});
- const battle=valorTeamSimulate(teamA,teamB);d.used++;
+ prep=prep||valorTeamPrepare();const size=prep.size,battle=prep.battle;d.used++;
  let gold=0,fame=0,delta=0;
  if(battle.win){d.wins++;gold=VALOR_TEAM_WIN_GOLD;fame=VALOR_TEAM_WIN_FAME;state.gold+=gold;state.fame=(Number(state.fame)||0)+fame;delta=VALOR_TEAM_RATING_WIN}
  else if(battle.draw)d.draws++;else{d.losses++;delta=-Math.min(d.rating,VALOR_TEAM_RATING_LOSS)}
