@@ -1,0 +1,25 @@
+.vad-page{display:flex;flex-direction:column;gap:10px}
+.vad-page h1{margin:0}
+.vad-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vad-stats div{padding:7px 9px;border:1px solid #806b4455;border-radius:8px;background:#17141188}
+.vad-stats span{display:block;font-size:10px;color:#a9967a}.vad-stats b{font-size:16px;color:#f3d294}
+.vad-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vad-tabs button{min-height:38px;font-size:12px}
+.vad-tabs button[aria-pressed=true]{border-color:#c9a36b;color:#f0d5a5;background:linear-gradient(#634a2c,#30241e)}
+.vad-line{display:flex;gap:6px;flex-wrap:wrap}
+.vad-line input,.vad-line select{flex:1 1 110px;min-width:0;min-height:38px;box-sizing:border-box;font-size:14px}
+.vad-line button{min-height:38px;padding:0 12px;font-size:12px}
+.vad-player{border:1px solid #806b4455;border-radius:9px;background:#15110f}
+.vad-player.open{border-color:#c9a36b}
+.vad-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;width:100%;padding:9px 10px!important;border:0!important;background:none!important;box-shadow:none!important;text-align:left;color:#e8d6b4}
+.vad-row b{display:block;font-size:13px;color:#ecd7b4}.vad-row small{display:block;font-size:11px;color:#a9967a;margin-top:2px}
+.vad-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;max-width:45%}
+.vad-tag{padding:1px 6px;border-radius:8px;background:#3a2d20;color:#d9bf8c;font-size:10px;font-style:normal}
+.vad-tag.ok{background:#1d3a28;color:#9fe0b3}.vad-tag.warn{background:#4a3a14;color:#f3d294}.vad-tag.bad{background:#4a1d1a;color:#e3a08f}
+.vad-actions{display:flex;flex-direction:column;gap:10px;padding:4px 10px 12px}
+.vad-actions label{display:block;margin-bottom:4px;font-size:11px;color:#c9b38a}
+.vad-danger{border-color:#a0574c!important;color:#e3a08f!important}
+.vad-mini{min-height:24px!important;padding:0 8px!important;font-size:10px!important;margin-left:6px}
+.vad-log{display:grid;gap:2px;padding:8px 10px;border-bottom:1px solid #806b4433;font-size:12px}
+.vad-log b{color:#ecd7b4}.vad-log span{color:#d5c3a2;overflow-wrap:anywhere}.vad-log small{color:#8f7d62}
+.vad-open{min-height:32px;padding:4px 12px;font-size:12px;border-color:#e0b863;color:#f3d294}

@@ -1049,3 +1049,251 @@ do $$ declare f text; begin
   loop execute 'revoke all on function public.' || f || ' from public'; execute 'grant execute on function public.' || f || ' to authenticated'; end loop;
   execute 'revoke all on function public.team_cleanup() from public, anon, authenticated';
 end $$;
+-- Valor Online: admin panel and bans (run once in Supabase → SQL Editor, after the other files).
+create table if not exists public.admins (user_id uuid primary key references auth.users(id) on delete cascade);
+create table if not exists public.bans (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  until      timestamptz,                 -- null = permanent
+  reason     text,
+  created_at timestamptz not null default now()
+);
+alter table public.admins enable row level security;
+alter table public.bans enable row level security;
+revoke all on public.admins, public.bans from anon, authenticated;
+
+-- DooM is the admin. Add more with: insert into public.admins select user_id from public.saves where lower(name) = 'isim';
+insert into public.admins (user_id) select user_id from public.saves where lower(name) = 'doom' on conflict do nothing;
+
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from admins where user_id = auth.uid());
+$$;
+create or replace function public.is_banned(uid uuid) returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from bans where user_id = uid and (until is null or until > now()));
+$$;
+
+-- What the game asks right after sign-in.
+create or replace function public.my_status() returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('admin', is_admin(),
+    'ban', (select jsonb_build_object('until', until, 'reason', reason) from bans where user_id = auth.uid() and (until is null or until > now())));
+$$;
+
+-- Banned players cannot send chat messages.
+create or replace function public.chat_ban_check() returns trigger language plpgsql security definer set search_path = public as $$
+begin if is_banned(new.user_id) then raise exception 'banned'; end if; return new; end; $$;
+drop trigger if exists chat_ban_check on public.chat_messages;
+create trigger chat_ban_check before insert on public.chat_messages for each row execute function public.chat_ban_check();
+
+-- ---------- Admin functions (every one checks is_admin()) ----------
+create or replace function public.admin_stats() returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  return jsonb_build_object(
+    'players', (select count(*) from saves where class is not null),
+    'active_today', (select count(*) from saves where updated_at > now() - interval '24 hours'),
+    'online', (select count(*) from saves where updated_at > now() - interval '10 minutes'),
+    'guilds', (select count(*) from guilds),
+    'bans', (select count(*) from bans where until is null or until > now()),
+    'cheats_today', (select count(*) from cheat_log where created_at > now() - interval '24 hours'));
+end; $$;
+
+create or replace function public.admin_find(q text) returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  return coalesce((select jsonb_agg(x) from (
+    select jsonb_build_object('user_id', s.user_id, 'username', s.username, 'name', s.name, 'class', s.class, 'level', s.level, 'power', s.power,
+      'diamonds', public.guard_num(s.data->'state'->>'diamonds'), 'gold', public.guard_num(s.data->'state'->>'gold'),
+      'updated_at', s.updated_at, 'hidden', s.hidden, 'trusted', s.trusted,
+      'muted', (select coalesce(until::text, 'kalıcı') from chat_mutes m where m.user_id = s.user_id and (m.until is null or m.until > now())),
+      'banned', (select coalesce(until::text, 'kalıcı') from bans b where b.user_id = s.user_id and (b.until is null or b.until > now())),
+      'cheats', (select count(*) from cheat_log c where c.user_id = s.user_id)) as x
+    from saves s
+    where coalesce(q, '') = '' or s.name ilike '%' || q || '%' or s.username ilike '%' || q || '%'
+    order by s.updated_at desc limit 30) t), '[]'::jsonb);
+end; $$;
+
+-- Give (or take, with a negative amount) diamonds and gold. The player's next start loads the new save.
+create or replace function public.admin_grant(uid uuid, add_diamonds bigint, add_gold bigint) returns text
+language plpgsql security definer set search_path = public as $$
+declare s saves%rowtype;
+begin
+  if not is_admin() then return 'not_admin'; end if;
+  select * into s from saves where user_id = uid for update;
+  if not found then return 'invalid'; end if;
+  perform set_config('valor.server_write', '1', true);
+  update saves set
+    data = jsonb_set(jsonb_set(data, '{state,diamonds}', to_jsonb(greatest(0, guard_num(data->'state'->>'diamonds') + coalesce(add_diamonds, 0)))),
+                     '{state,gold}', to_jsonb(greatest(0, guard_num(data->'state'->>'gold') + coalesce(add_gold, 0)))),
+    rev = rev + 1, updated_at = now()
+  where user_id = uid;
+  return 'ok';
+end; $$;
+
+create or replace function public.admin_flag(uid uuid, flag text, val boolean) returns text
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then return 'not_admin'; end if;
+  perform set_config('valor.server_write', '1', true);
+  if flag = 'hidden' then update saves set hidden = val where user_id = uid;
+  elsif flag = 'trusted' then update saves set trusted = val where user_id = uid;
+  else return 'invalid'; end if;
+  return 'ok';
+end; $$;
+
+create or replace function public.admin_mute(uid uuid, hours integer, why text) returns text
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then return 'not_admin'; end if;
+  if hours = 0 then delete from chat_mutes where user_id = uid; return 'ok'; end if;
+  insert into chat_mutes (user_id, until, reason) values (uid, case when hours is null then null else now() + make_interval(hours => hours) end, why)
+    on conflict (user_id) do update set until = excluded.until, reason = excluded.reason;
+  return 'ok';
+end; $$;
+
+create or replace function public.admin_ban(uid uuid, hours integer, why text) returns text
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then return 'not_admin'; end if;
+  if uid = auth.uid() then return 'invalid'; end if;
+  if hours = 0 then delete from bans where user_id = uid; return 'ok'; end if;
+  insert into bans (user_id, until, reason) values (uid, case when hours is null then null else now() + make_interval(hours => hours) end, why)
+    on conflict (user_id) do update set until = excluded.until, reason = excluded.reason, created_at = now();
+  return 'ok';
+end; $$;
+
+create or replace function public.admin_reset_password(uid uuid, new_password text) returns text
+language plpgsql security definer set search_path = public, extensions, auth as $$
+begin
+  if not is_admin() then return 'not_admin'; end if;
+  if char_length(coalesce(new_password, '')) < 8 or char_length(new_password) > 72 then return 'weak'; end if;
+  update auth.users set encrypted_password = crypt(new_password, gen_salt('bf')), updated_at = now() where id = uid;
+  return case when found then 'ok' else 'invalid' end;
+end; $$;
+
+create or replace function public.admin_cheat_log(lim integer default 50) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  return coalesce((select jsonb_agg(x order by (x->>'id')::bigint desc) from (
+    select jsonb_build_object('id', id, 'user_id', user_id, 'name', name, 'kind', kind, 'old', old_value, 'new', new_value, 'allowed', allowed, 'at', created_at) as x
+    from cheat_log order by id desc limit least(greatest(coalesce(lim, 50), 1), 200)) t), '[]'::jsonb);
+end; $$;
+
+create or replace function public.admin_chat(lim integer default 50) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  return coalesce((select jsonb_agg(x order by (x->>'id')::bigint desc) from (
+    select jsonb_build_object('id', id, 'user_id', user_id, 'channel', channel, 'name', name, 'body', body, 'at', created_at) as x
+    from chat_messages order by id desc limit least(greatest(coalesce(lim, 50), 1), 200)) t), '[]'::jsonb);
+end; $$;
+
+create or replace function public.admin_delete_message(mid bigint) returns text
+language plpgsql security definer set search_path = public as $$
+begin if not is_admin() then return 'not_admin'; end if; delete from chat_messages where id = mid; return 'ok'; end; $$;
+
+do $$ declare f text; begin
+  foreach f in array array['my_status()','admin_stats()','admin_find(text)','admin_grant(uuid,bigint,bigint)','admin_flag(uuid,text,boolean)',
+    'admin_mute(uuid,integer,text)','admin_ban(uuid,integer,text)','admin_reset_password(uuid,text)','admin_cheat_log(integer)','admin_chat(integer)','admin_delete_message(bigint)']
+  loop execute 'revoke all on function public.' || f || ' from public'; execute 'grant execute on function public.' || f || ' to authenticated'; end loop;
+  execute 'revoke all on function public.is_admin() from public'; execute 'grant execute on function public.is_admin() to authenticated';
+  execute 'revoke all on function public.is_banned(uuid) from public';
+end $$;
+-- Valor Online: save guard v2 (run once in Supabase → SQL Editor, after admin.sql and team.sql).
+-- Replaces the v1 guard. In addition to v1 (diamonds, level, arena wins, locked columns):
+--   * banned players cannot save at all
+--   * gold has a budget too (refills 200 million a day, holds up to 500 million)
+--   * equipment cannot be above +21
+--   * the power shown in rankings is recomputed from the combat stats (it cannot be typed in separately)
+--   * team rating is only changed by the team arena
+--   * server functions (admin panel, team arena) are allowed to change these columns
+alter table public.saves add column if not exists gold_budget numeric not null default 500000000;
+
+-- Power from the combat stats, with the same weights as the game.
+create or replace function public.guard_power(cls text, c jsonb) returns bigint language sql immutable as $$
+  select round(
+      guard_num(c->>'Saldırı') * case when cls = 'Büyücü' then 3 else 10 end
+    + guard_num(c->>'Sihir') * case when cls = 'Büyücü' then 10 else 3 end
+    + guard_num(c->>'Savunma') * 10 + guard_num(c->>'Sihir Savunma') * 10
+    + guard_num(c->>'Can') * 3 + guard_num(c->>'Kritik') * 4 + guard_num(c->>'Bloke') * 4)::bigint;
+$$;
+
+-- Caps every item's +level at 21 (inventory and equipped).
+create or replace function public.guard_items(d jsonb) returns jsonb language sql immutable as $$
+  select jsonb_set(jsonb_set(d,
+    '{state,inventory}', coalesce((select jsonb_agg(case when guard_num(e->>'plus') > 21 then jsonb_set(e, '{plus}', '21') else e end order by i)
+                                   from jsonb_array_elements(case when jsonb_typeof(d->'state'->'inventory') = 'array' then d->'state'->'inventory' else '[]'::jsonb end) with ordinality as t(e, i)), '[]'::jsonb)),
+    '{state,equipped}', coalesce((select jsonb_object_agg(k, case when jsonb_typeof(v) = 'object' and guard_num(v->>'plus') > 21 then jsonb_set(v, '{plus}', '21') else v end)
+                                  from jsonb_each(case when jsonb_typeof(d->'state'->'equipped') = 'object' then d->'state'->'equipped' else '{}'::jsonb end) as t(k, v)), '{}'::jsonb));
+$$;
+
+create or replace function public.saves_guard() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  hrs numeric; db numeric; lb numeric; gb numeric;
+  od numeric; nd numeric; ol numeric; nl numeric; og numeric; ng numeric;
+  notes text[] := '{}';
+begin
+  if auth.uid() is null then return new; end if;                                  -- SQL Editor / admin
+  if coalesce(current_setting('valor.server_write', true), '') = '1' then return new; end if;  -- admin panel, team arena
+  if is_banned(new.user_id) then raise exception 'banned'; end if;
+
+  if tg_op = 'UPDATE' then
+    new.user_id := old.user_id; new.username := old.username; new.trusted := old.trusted; new.hidden := old.hidden;
+    new.created_at := old.created_at; new.team_rating := old.team_rating; new.team_wins := old.team_wins;
+    if old.trusted then new.guard_note := null; return new; end if;
+    hrs := greatest(0, extract(epoch from now() - old.budget_at) / 3600);
+    db := least(3000, old.diamond_budget + hrs * 1000 / 24);
+    lb := least(20, old.level_budget + hrs * 3);
+    gb := least(500000000, old.gold_budget + hrs * 200000000 / 24);
+    od := guard_num(old.data->'state'->>'diamonds'); nd := guard_num(new.data->'state'->>'diamonds');
+    ol := greatest(1, guard_num(old.data->'state'->>'level')); nl := guard_num(new.data->'state'->>'level');
+    og := guard_num(old.data->'state'->>'gold'); ng := guard_num(new.data->'state'->>'gold');
+  else
+    new.trusted := false; new.hidden := false; new.team_rating := 1000; new.team_wins := 0;
+    db := 3000; lb := 20; gb := 500000000; ol := 1; og := 0;
+    nd := guard_num(new.data->'state'->>'diamonds'); nl := guard_num(new.data->'state'->>'level'); ng := guard_num(new.data->'state'->>'gold');
+    if nd > 20000 then
+      insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'diamonds-start', 0, nd, 20000);
+      new.data := jsonb_set(new.data, '{state,diamonds}', to_jsonb(20000)); notes := notes || 'diamonds';
+    end if;
+    if ng > 50000000 then
+      insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'gold-start', 0, ng, 50000000);
+      new.data := jsonb_set(new.data, '{state,gold}', to_jsonb(50000000)); notes := notes || 'gold';
+    end if;
+    nd := 0; od := 0; ng := 0; og := 0;
+  end if;
+
+  if nd - od > db then
+    insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'diamonds', od, nd, od + db);
+    new.data := jsonb_set(new.data, '{state,diamonds}', to_jsonb(floor(od + db))); notes := notes || 'diamonds'; db := 0;
+  else db := db - greatest(0, nd - od); end if;
+
+  if ng - og > gb then
+    insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'gold', og, ng, og + gb);
+    new.data := jsonb_set(new.data, '{state,gold}', to_jsonb(floor(og + gb))); notes := notes || 'gold'; gb := 0;
+  else gb := gb - greatest(0, ng - og); end if;
+
+  if nl > 100 or (tg_op = 'UPDATE' and nl - ol > lb) then
+    insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'level', ol, nl, least(100, ol + floor(lb)));
+    nl := least(100, case when tg_op = 'UPDATE' then ol + floor(lb) else nl end);
+    new.data := jsonb_set(new.data, '{state,level}', to_jsonb(nl)); new.level := nl; notes := notes || 'level'; lb := 0;
+  elsif tg_op = 'UPDATE' then lb := lb - greatest(0, nl - ol); end if;
+
+  if jsonb_path_exists(new.data, '$.state.inventory[*] ? (@.plus > 21)') or jsonb_path_exists(new.data, '$.state.equipped.* ? (@.plus > 21)') then
+    insert into cheat_log (user_id, name, kind, old_value, new_value, allowed) values (new.user_id, new.name, 'item-plus', null, null, 21);
+    new.data := guard_items(new.data); notes := notes || 'items';
+  end if;
+
+  if new.combat is not null then new.power := guard_power(new.class, new.combat); end if;
+
+  if to_regclass('public.arena_log') is not null then
+    execute 'select count(*) from public.arena_log where attacker = $1 and win' into new.arena_wins using new.user_id;
+  end if;
+
+  new.diamond_budget := db; new.level_budget := lb; new.gold_budget := gb; new.budget_at := now();
+  new.guard_note := case when cardinality(notes) > 0 then array_to_string(notes, ',') else null end;
+  return new;
+end; $$;
+
+drop trigger if exists saves_guard on public.saves;
+create trigger saves_guard before insert or update on public.saves for each row execute function public.saves_guard();
