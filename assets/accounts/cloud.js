@@ -46,16 +46,18 @@ async function valorCloudAuth(kind,username,password){
  if(!body?.access_token)throw Error(signup?'Hesap oluşturuldu ama oturum açılamadı: sunucuda e-posta onayı kapatılmalı.':'Giriş yapılamadı. Tekrar dene.');
  valorCloudStoreSession(body);return body.user;
 }
-/* Columns used by rankings. The extended ones (xp, spirit, fame, profile) are dropped automatically if the server table does not have them yet. */
-let valorCloudExtended=true;
+/* Columns used by rankings and the arena. Any column the server table does not have yet is dropped automatically. */
+let valorCloudExtended=true;const valorCloudMissing=new Set();
 function valorCloudProfile(){const eq={};for(const [slot,it] of Object.entries(state.equipped||{})){if(it&&typeof it==='object'&&slot!=='Kanat')eq[slot]={slot:it.slot,name:it.name,cls:it.cls,level:it.level,plus:it.plus||0,epic:!!it.epic,evolutionTier:it.evolutionTier||0,starterSet:it.starterSet||undefined}}return {gender:state.gender==='female'?'female':'male',equipped:eq}}
 function valorCloudMeta(snapshot,live=false){const s=snapshot?.state||{};const base={name:String(s.name||'').slice(0,40),class:s.class||null,level:Math.max(1,Math.floor(Number(s.level)||1))};
  if(!live||!state.class)return base;
  const num=f=>{try{return Math.max(0,Math.floor(Number(f())||0))}catch{return 0}};
  base.power=num(()=>combatPower());
  if(!valorCloudExtended)return base;
- return {...base,xp:num(()=>valorXpTotal(state.level)+(Number(state.xp)||0)),spirit:num(()=>vmTotals().spirit),fame:num(()=>state.fame),profile:(()=>{try{return valorCloudProfile()}catch{return null}})()}}
-function valorCloudBasic(meta){const m={...meta};delete m.xp;delete m.spirit;delete m.fame;delete m.profile;return m}
+ const out={...base,xp:num(()=>valorXpTotal(state.level)+(Number(state.xp)||0)),spirit:num(()=>vmTotals().spirit),fame:num(()=>state.fame),profile:(()=>{try{return valorCloudProfile()}catch{return null}})(),
+  combat:(()=>{try{return JSON.parse(JSON.stringify(valorArenaStats()))}catch{return null}})(),arena_wins:num(()=>state.arenaV1?.wins)};
+ for(const k of valorCloudMissing)delete out[k];return out}
+function valorCloudBasic(meta){const m={...meta};for(const k of ['xp','spirit','fame','profile','combat','arena_wins'])delete m[k];return m}
 async function valorCloudLoad(uid){const rows=await valorCloudFetch('/rest/v1/saves?select=data,rev,updated_at&user_id=eq.'+encodeURIComponent(uid));return Array.isArray(rows)&&rows[0]||null}
 function valorCloudNameless(meta){const m={...meta};delete m.name;return m}
 async function valorCloudCreate(uid,username,snapshot){const body=meta=>JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...meta});let rows;try{rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudMeta(snapshot))})}catch(e){if(e.code!=='23505'||/saves_pkey/.test(e.message))throw e;rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudNameless(valorCloudMeta(snapshot)))})}localStorage.setItem(valorCloudRevKey(uid),'1');return rows}
@@ -70,7 +72,12 @@ async function valorCloudUpload(keepalive=false){
  let rows;
  try{rows=await valorCloudFetch(url,opt(meta))}
  catch(e){
-  if(e.code==='PGRST204'&&valorCloudExtended){valorCloudExtended=false;rows=await valorCloudFetch(url,opt(valorCloudBasic(meta)))}
+  if(e.code==='PGRST204'&&valorCloudExtended){
+   // Drop the missing column(s) one by one; fall back to the basic columns if that does not help.
+   let m=meta,tries=0;rows=null;
+   while(tries++<8){const col=/'([a-z_]+)' column/.exec(e.message||'')?.[1];if(!col||!(col in m))break;valorCloudMissing.add(col);m={...m};delete m[col];try{rows=await valorCloudFetch(url,opt(m));break}catch(e2){if(e2.code!=='PGRST204')throw e2;e=e2}}
+   if(!rows){valorCloudExtended=false;rows=await valorCloudFetch(url,opt(valorCloudBasic(meta)))}
+  }
   else if(e.code==='23505')rows=await valorCloudFetch(url,opt(valorCloudNameless(valorCloudExtended?meta:valorCloudBasic(meta))));
   else throw e;
  }
