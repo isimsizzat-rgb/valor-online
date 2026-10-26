@@ -46,7 +46,16 @@ async function valorCloudAuth(kind,username,password){
  if(!body?.access_token)throw Error(signup?'Hesap oluşturuldu ama oturum açılamadı: sunucuda e-posta onayı kapatılmalı.':'Giriş yapılamadı. Tekrar dene.');
  valorCloudStoreSession(body);return body.user;
 }
-function valorCloudMeta(snapshot,live=false){const s=snapshot?.state||{};let power=0;try{if(live&&state.class&&typeof combatPower==='function')power=Math.floor(Number(combatPower())||0)}catch{}return {name:String(s.name||'').slice(0,40),class:s.class||null,level:Math.max(1,Math.floor(Number(s.level)||1)),power}}
+/* Columns used by rankings. The extended ones (xp, spirit, fame, profile) are dropped automatically if the server table does not have them yet. */
+let valorCloudExtended=true;
+function valorCloudProfile(){const eq={};for(const [slot,it] of Object.entries(state.equipped||{})){if(it&&typeof it==='object'&&slot!=='Kanat')eq[slot]={slot:it.slot,name:it.name,cls:it.cls,level:it.level,plus:it.plus||0,epic:!!it.epic,evolutionTier:it.evolutionTier||0,starterSet:it.starterSet||undefined}}return {gender:state.gender==='female'?'female':'male',equipped:eq}}
+function valorCloudMeta(snapshot,live=false){const s=snapshot?.state||{};const base={name:String(s.name||'').slice(0,40),class:s.class||null,level:Math.max(1,Math.floor(Number(s.level)||1))};
+ if(!live||!state.class)return base;
+ const num=f=>{try{return Math.max(0,Math.floor(Number(f())||0))}catch{return 0}};
+ base.power=num(()=>combatPower());
+ if(!valorCloudExtended)return base;
+ return {...base,xp:num(()=>valorXpTotal(state.level)+(Number(state.xp)||0)),spirit:num(()=>vmTotals().spirit),fame:num(()=>state.fame),profile:(()=>{try{return valorCloudProfile()}catch{return null}})()}}
+function valorCloudBasic(meta){const m={...meta};delete m.xp;delete m.spirit;delete m.fame;delete m.profile;return m}
 async function valorCloudLoad(uid){const rows=await valorCloudFetch('/rest/v1/saves?select=data,rev,updated_at&user_id=eq.'+encodeURIComponent(uid));return Array.isArray(rows)&&rows[0]||null}
 function valorCloudNameless(meta){const m={...meta};delete m.name;return m}
 async function valorCloudCreate(uid,username,snapshot){const body=meta=>JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...meta});let rows;try{rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudMeta(snapshot))})}catch(e){if(e.code!=='23505'||/saves_pkey/.test(e.message))throw e;rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudNameless(valorCloudMeta(snapshot)))})}localStorage.setItem(valorCloudRevKey(uid),'1');return rows}
@@ -58,7 +67,13 @@ async function valorCloudUpload(keepalive=false){
  const base=valorCloudRev(acc.id),snapshot=valorAccountSnapshot();
  const meta=valorCloudMeta(snapshot,true),url='/rest/v1/saves?user_id=eq.'+encodeURIComponent(acc.id)+'&rev=eq.'+base;
  const opt=m=>({method:'PATCH',headers:{Prefer:'return=representation'},keepalive:!!keepalive,body:JSON.stringify({data:snapshot,rev:base+1,updated_at:new Date().toISOString(),...m})});
- let rows;try{rows=await valorCloudFetch(url,opt(meta))}catch(e){if(e.code!=='23505')throw e;rows=await valorCloudFetch(url,opt(valorCloudNameless(meta)))}
+ let rows;
+ try{rows=await valorCloudFetch(url,opt(meta))}
+ catch(e){
+  if(e.code==='PGRST204'&&valorCloudExtended){valorCloudExtended=false;rows=await valorCloudFetch(url,opt(valorCloudBasic(meta)))}
+  else if(e.code==='23505')rows=await valorCloudFetch(url,opt(valorCloudNameless(valorCloudExtended?meta:valorCloudBasic(meta))));
+  else throw e;
+ }
  if(Array.isArray(rows)&&rows.length){localStorage.setItem(valorCloudRevKey(acc.id),String(base+1));return true}
  const row=await valorCloudLoad(acc.id);
  if(!row){await valorCloudCreate(acc.id,acc.username,snapshot);return true}
