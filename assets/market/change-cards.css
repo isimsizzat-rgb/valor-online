@@ -1,0 +1,15 @@
+.valor-change-card-art{display:block;width:100%;height:100%;max-width:160px;margin:auto;filter:drop-shadow(0 5px 8px #0006)}
+.vcc-dialog{width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 30px);overflow:auto}
+.vcc-dialog .vcc-art{width:100px;height:100px;margin:0 auto 12px}
+.vcc-dialog h3{text-align:center;margin:8px 0 20px;color:#eed6a6}
+.vcc-dialog form{display:grid;gap:12px}
+.vcc-dialog label,.vcc-genders legend{font:13px Arial,sans-serif;color:#d8c5a3;margin-bottom:4px}
+.vcc-dialog input{width:100%;max-width:none;min-height:46px;padding:12px;font-size:16px}
+.vcc-genders{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vcc-genders button{min-height:44px;background:#17121e;border:1px solid #6b5740;color:#c6b69d;box-shadow:none}
+.vcc-genders button[aria-pressed=true]{border-color:#d7b479;color:#ffebc9;background:#5a422c;box-shadow:inset 0 0 0 1px #d7b47966}
+#vcc-error{color:#f1a49b;font:12px/1.5 Arial,sans-serif;margin:0}#vcc-error:empty{display:none}
+.vcc-note{font:12px/1.5 Arial,sans-serif;color:#bdad94;margin:0}
+.vcc-submit{min-height:46px}.vcc-cancel{min-height:42px;background:transparent;border:1px solid #645039;box-shadow:none;color:#caba9d}
+@media(min-width:601px){#main .vm-market-categories:has([data-category=cards]){grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:600px){#main .vm-market-categories:has([data-category=cards]) .vm-market-category:nth-child(4),#main .vm-market-categories:has([data-category=cards]) .vm-market-category:nth-child(5){grid-column:span 2}}
