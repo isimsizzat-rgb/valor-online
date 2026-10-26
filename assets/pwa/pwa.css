@@ -1,0 +1,8 @@
+.vpwa-bar{display:flex;align-items:center;gap:9px;margin:0 0 10px;padding:8px 8px 8px 9px;border:1px solid #806b44;border-radius:10px;background:linear-gradient(#231b16ee,#15110fee);color:#e8d6b4}
+.vpwa-bar img{flex:0 0 38px;width:38px;height:38px;border-radius:9px;border:1px solid #c9a36b}
+.vpwa-bar span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.vpwa-bar span b{font:700 13px Georgia,serif;color:#f0d5a5}
+.vpwa-bar small{font-size:11px;line-height:1.4;color:#bca98c}
+.vpwa-bar small b{font:inherit;font-weight:700;color:#f0d5a5}
+.vpwa-install{flex:0 0 auto;min-height:34px;padding:0 14px;border:1px solid #e0b863;border-radius:8px;background:linear-gradient(#8a6330,#4a3219);color:#fbe3ae;font:700 13px Georgia,serif}
+.vpwa-close{flex:0 0 auto;width:28px;height:28px;min-height:0!important;padding:0;border:0!important;background:none!important;box-shadow:none!important;color:#8f7d62;font-size:20px;line-height:1}

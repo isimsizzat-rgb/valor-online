@@ -1,0 +1,16 @@
+{
+  "name": "Valor Online",
+  "short_name": "Valor",
+  "description": "Tarayıcıda oynanan fantastik MMORPG",
+  "lang": "tr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0a09",
+  "theme_color": "#1a1310",
+  "icons": [
+    {"src": "assets/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ]
+}
