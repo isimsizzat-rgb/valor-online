@@ -10,3 +10,14 @@ html body #main .vp-wrap .vp-scene .valor-selected-profile-hero img{
  object-fit:contain!important;object-position:center center!important;
  transform:none!important;filter:none!important;animation:none!important;
 }
+
+/* Face crop inside the existing HUD frame; keep its level badge outside. */
+html body header.top.valor-resource-bar .valor-hud-portrait-crop{
+ display:block;width:100%;height:100%;overflow:hidden;border-radius:50%;pointer-events:none;
+}
+html body header.top.valor-resource-bar .valor-hud-portrait-crop img{
+ display:block!important;width:100%!important;height:100%!important;max-width:none!important;
+ object-fit:cover!important;object-position:center top!important;
+ transform:scale(2.1)!important;transform-origin:center 12%!important;
+ filter:none!important;border-radius:0!important;
+}
