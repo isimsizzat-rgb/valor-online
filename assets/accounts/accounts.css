@@ -21,14 +21,6 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 
 /* Compact entry screen: the account actions stay close to the top on phones. */
 .vauth-compact{display:block;max-width:460px;min-height:0;margin:16px auto;background:#151318;border-color:#6d5638;border-radius:16px;box-shadow:0 18px 70px #0008}
-.vauth-compact .vauth-world{height:152px;min-height:0;background:#17171b url('../home-fantasy/gothic-city.webp') center 45%/cover no-repeat;border-bottom:1px solid #8f714044}
-.vauth-compact .vauth-world:after{background:linear-gradient(90deg,#100f16e6,transparent 80%),linear-gradient(0deg,#151318,transparent 70%)}
-.vauth-compact .vauth-brand{position:absolute;top:37px;left:27px;margin:0;padding:0;text-align:left}
-.vauth-compact .vauth-brand h1{font:700 43px/1 Georgia,serif;letter-spacing:4px;margin:0;color:#f3d8a6}
-.vauth-compact .vauth-brand h1 span{font:10px Arial,sans-serif;letter-spacing:9px;margin:12px 0 0 3px}
-.vauth-compact .vauth-entry-party{position:absolute;inset:0 0 0 auto;width:61%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));mask-image:linear-gradient(90deg,transparent,#000 12%)}
-.vauth-compact .vauth-entry-party img{width:100%;height:100%;min-width:0;min-height:0;object-fit:cover;object-position:50% 12%}
-.vauth-compact .vauth-world:after{background:linear-gradient(90deg,#100f16b3,transparent 62%),linear-gradient(0deg,#151318,transparent 45%)}
 .vauth-compact .vauth-panel{padding:22px 26px 20px;background:radial-gradient(ellipse at top,#44302022,transparent 70%)}
 .vauth-compact .vauth-tabs{gap:5px;margin:0 0 20px;padding:4px;background:#0d0c10;border:1px solid #51402c;border-radius:9px}
 .vauth-compact .vauth-tabs button{min-height:44px;margin:0;border:1px solid transparent;border-radius:6px;font:600 14px Arial,sans-serif}
@@ -40,7 +32,7 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 .vauth-compact .vauth-primary>span{position:absolute;right:18px;font-size:23px;font-weight:400}
 .vauth-compact .vauth-error:empty{display:none}
 .vauth-compact .vauth-error:not(:empty){padding-top:5px}
-.vauth-saved-picker{margin-bottom:16px;border:1px solid #4c3c29;border-radius:8px;background:#100f14}
+.vauth-saved-picker{margin-top:16px;margin-bottom:0;border:1px solid #4c3c29;border-radius:8px;background:#100f14}
 .vauth-saved-picker summary{cursor:pointer;min-height:46px;box-sizing:border-box;padding:14px;color:#d5c09c;font:12px Arial,sans-serif;list-style:none;display:flex;align-items:center;gap:8px}
 .vauth-saved-picker summary::-webkit-details-marker{display:none}
 .vauth-saved-picker summary>span{color:#a99370}
@@ -56,5 +48,10 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 .vauth-storage-note{font:10px/1.6 Arial,sans-serif!important;color:#9d9081;text-align:center;margin:0;padding-top:12px;border-top:1px solid #8e714026}
 .vauth-back{text-align:right;margin:-9px 0 6px}
 .vauth-compact .vauth-logout{margin-top:8px}
-@media(max-width:600px){body.valor-account-screen .shell{padding:12px!important}.vauth-compact{margin:0 auto}.vauth-compact .vauth-panel{padding:18px 20px}.vauth-compact .vauth-world{height:132px}.vauth-compact .vauth-brand{top:33px;left:22px}.vauth-compact .vauth-brand h1{font-size:32px}.vauth-compact .vauth-tabs{margin-bottom:16px}}
-@media(max-width:350px){.vauth-compact .vauth-panel{padding:16px}.vauth-compact .vauth-brand h1{font-size:31px}}
+@media(max-width:600px){body.valor-account-screen .shell{padding:12px!important}.vauth-compact{margin:0 auto}.vauth-compact .vauth-panel{padding:18px 20px}.vauth-compact .vauth-tabs{margin-bottom:16px}}
+@media(max-width:350px){.vauth-compact .vauth-panel{padding:16px}}
+
+.vauth-entry-wordmark{font:700 23px/1.2 Georgia,serif;color:#ecd09c;letter-spacing:3px;text-align:center;margin:0 0 20px}
+.vauth-entry-wordmark span{font:10px Arial,sans-serif;letter-spacing:4px;color:#b39a76;vertical-align:middle}
+.vauth-battle-cover{margin:0;border-top:1px solid #8f714066;background:#100f14;overflow:hidden}
+.vauth-battle-cover img{display:block;width:100%;height:auto;max-width:none;object-fit:contain}

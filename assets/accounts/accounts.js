@@ -112,19 +112,14 @@ function valorAccountPage(){
   const accounts=valorAccountRegistry(),register=valorAccountTab==='register',legacySave=valorAccountLegacySaved(),legacy=!!legacySave?.state?.class,legacyState=legacySave?.state;
   const cards=accounts.map(a=>{const hero=valorAccountRead(valorAccountStorageKey(a.id))?.state;return `<button type="button" class="vauth-account ${valorAccountNormalize(a.username)===valorAccountNormalize(valorAccountSelected)?'is-selected':''}" onclick="valorAccountChoose('${a.id}')"><img src="${valorCreationPortrait(hero?.class,hero?.gender)}" alt=""><span><b>${valorAccountEscape(a.username)}</b><small>${hero?.class?valorAccountEscape(hero.class)+' · Sv. '+Number(hero.level||1):'Karakter oluştur'}</small></span><i aria-hidden="true">›</i></button>`;}).join('');
   return `<section class="vauth-portal vauth-compact">
-    <header class="vauth-world">
-      <div class="vauth-brand"><h1>VALOR<span>ONLINE</span></h1></div>
-      <div class="vauth-entry-party" role="img" aria-label="Büyücü, savaşçı ve okçu">
-        ${['Büyücü','Savaşçı','Okçu'].map(cls=>`<img src="${valorCreationPortrait(cls,'male')}" alt="" aria-hidden="true">`).join('')}
-      </div>
-    </header>
     <div class="vauth-panel">
+      <div class="vauth-entry-wordmark" aria-label="Valor Online">VALOR <span>ONLINE</span></div>
       ${valorAccountActive?'<div class="vauth-back"><button type="button" class="vauth-text-button" onclick="valorAccountReturn()">‹ Oyuna dön</button></div>':''}
       <div class="vauth-tabs" role="tablist" aria-label="Hesap işlemi">
         <button type="button" role="tab" aria-selected="${!register}" class="${!register?'is-active':''}" onclick="valorAccountSetTab('login')">Giriş Yap</button>
         <button type="button" role="tab" aria-selected="${register}" class="${register?'is-active':''}" onclick="valorAccountSetTab('register')">Kayıt Ol</button>
       </div>
-      ${!register&&cards?`<details class="vauth-saved vauth-saved-picker"><summary>Kayıtlı hesaplar <span>${accounts.length}</span></summary><div class="vauth-account-list">${cards}</div></details>`:''}
+
       <form class="vauth-form" onsubmit="valorAccountSubmit(event)">
         <label for="valor-account-username">Kullanıcı adı</label>
         <input id="valor-account-username" name="username" autocomplete="username" minlength="3" maxlength="20" required spellcheck="false" autocapitalize="none" placeholder="Kullanıcı adın" value="${valorAccountEscape(valorAccountSelected)}">
@@ -134,11 +129,13 @@ function valorAccountPage(){
         <p id="valor-account-error" class="vauth-error" role="alert">${valorAccountEscape(valorAccountMessage)}</p>
         <button id="valor-account-submit" type="submit" class="vauth-primary">${register?'Kayıt Ol':'Giriş Yap'}<span aria-hidden="true">›</span></button>
       </form>
+      ${!register&&cards?`<details class="vauth-saved vauth-saved-picker"><summary>Kayıtlı hesaplar <span>${accounts.length}</span></summary><div class="vauth-account-list">${cards}</div></details>`:''}
       ${!register&&legacy?`<div class="vauth-legacy"><div><b>${valorAccountEscape(legacyState.name)}</b><small>Sv. ${Number(legacyState.level||1)} · Mevcut karakter</small></div><button type="button" onclick="valorAccountContinueLegacy()">Devam et ›</button></div>`:''}
       <div class="vauth-help">${valorAccountRecoveryHtml()}</div>
       <p class="vauth-storage-note">Kayıtlar bu tarayıcıda saklanır; veriler silinirse kaybolur.</p>
       ${valorAccountActive?'<button type="button" class="vauth-text-button vauth-logout" onclick="valorAccountLogout()">Çıkış yap</button>':''}
     </div>
+    <figure class="vauth-battle-cover"><img src="assets/accounts/battle-party-cover.webp" width="1200" height="402" alt="Büyücü, savaşçı ve okçu aynı kale önünde savaşa hazırlanıyor" decoding="async"></figure>
   </section>`;
 }
 const valorCharacterDetails={
