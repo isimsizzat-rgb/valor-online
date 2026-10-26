@@ -2,7 +2,7 @@
 html body #main .vp-wrap .vp-scene .valor-selected-profile-hero{
  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
- overflow:hidden!important;pointer-events:none;background:#090a0d!important;
+ overflow:hidden!important;pointer-events:none;background:#090a0d url('../home-fantasy/gothic-city.webp') center/cover no-repeat!important;
 }
 html body #main .vp-wrap .vp-scene .valor-selected-profile-hero img{
  position:static!important;inset:auto!important;display:block!important;
