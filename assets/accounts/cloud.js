@@ -48,16 +48,17 @@ async function valorCloudAuth(kind,username,password){
 }
 function valorCloudMeta(snapshot,live=false){const s=snapshot?.state||{};let power=0;try{if(live&&state.class&&typeof combatPower==='function')power=Math.floor(Number(combatPower())||0)}catch{}return {name:String(s.name||'').slice(0,40),class:s.class||null,level:Math.max(1,Math.floor(Number(s.level)||1)),power}}
 async function valorCloudLoad(uid){const rows=await valorCloudFetch('/rest/v1/saves?select=data,rev,updated_at&user_id=eq.'+encodeURIComponent(uid));return Array.isArray(rows)&&rows[0]||null}
-async function valorCloudCreate(uid,username,snapshot){const rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...valorCloudMeta(snapshot)})});localStorage.setItem(valorCloudRevKey(uid),'1');return rows}
+function valorCloudNameless(meta){const m={...meta};delete m.name;return m}
+async function valorCloudCreate(uid,username,snapshot){const body=meta=>JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...meta});let rows;try{rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudMeta(snapshot))})}catch(e){if(e.code!=='23505'||/saves_pkey/.test(e.message))throw e;rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudNameless(valorCloudMeta(snapshot)))})}localStorage.setItem(valorCloudRevKey(uid),'1');return rows}
 function valorCloudRev(uid){return Number(localStorage.getItem(valorCloudRevKey(uid)))||0}
 
 /* Upload the current character. Returns true when saved, false on a revision conflict. */
 async function valorCloudUpload(keepalive=false){
  const acc=valorAccountActive;if(!acc?.cloud||valorCloudBlocked)return true;
  const base=valorCloudRev(acc.id),snapshot=valorAccountSnapshot();
- const opt={method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({data:snapshot,rev:base+1,updated_at:new Date().toISOString(),...valorCloudMeta(snapshot,true)})};
- if(keepalive)opt.keepalive=true;
- const rows=await valorCloudFetch('/rest/v1/saves?user_id=eq.'+encodeURIComponent(acc.id)+'&rev=eq.'+base,opt);
+ const meta=valorCloudMeta(snapshot,true),url='/rest/v1/saves?user_id=eq.'+encodeURIComponent(acc.id)+'&rev=eq.'+base;
+ const opt=m=>({method:'PATCH',headers:{Prefer:'return=representation'},keepalive:!!keepalive,body:JSON.stringify({data:snapshot,rev:base+1,updated_at:new Date().toISOString(),...m})});
+ let rows;try{rows=await valorCloudFetch(url,opt(meta))}catch(e){if(e.code!=='23505')throw e;rows=await valorCloudFetch(url,opt(valorCloudNameless(meta)))}
  if(Array.isArray(rows)&&rows.length){localStorage.setItem(valorCloudRevKey(acc.id),String(base+1));return true}
  const row=await valorCloudLoad(acc.id);
  if(!row){await valorCloudCreate(acc.id,acc.username,snapshot);return true}
@@ -129,7 +130,25 @@ valorAccountSubmit=async function(event){
  }catch(error){valorAccountError(error?.message||'İşlem tamamlanamadı. Yeniden dene.');valorAccountSetBusy(false)}
 };
 
+/* Character names are unique (case-insensitive). The server reserves the name before the character exists. */
+async function valorCloudClaimName(name){return valorCloudFetch('/rest/v1/rpc/claim_character_name',{method:'POST',body:JSON.stringify({new_name:name})})}
+let valorCloudClaiming=false;
 (function(){
+ const prevCreate=createCharacter;
+ createCharacter=async function(){
+  const input=document.getElementById('characterNick'),err=document.getElementById('createError'),n=(input?.value||'').trim();
+  if(!valorAccountActive?.cloud||state.class||n.length<3||n.length>20||!/^[a-zA-ZğüşöçıİĞÜŞÖÇ0-9_ ]+$/.test(n))return prevCreate.apply(this,arguments);
+  if(valorCloudClaiming)return;valorCloudClaiming=true;const btn=document.querySelector('.vcreate-page .vauth-primary');if(btn)btn.disabled=true;
+  try{
+   const r=await valorCloudClaimName(n);
+   if(r==='taken'){if(err)err.textContent='Bu karakter adı başka bir oyuncuya ait. Başka bir ad seç.';return}
+   if(r==='invalid'){if(err)err.textContent='Bu karakter adı kullanılamıyor.';return}
+  }catch(e){
+   // Before the name function exists on the server (404) creation still works; other errors stop it.
+   if(e.status!==404&&e.code!=='PGRST202'){if(err)err.textContent=e.message;return}
+  }finally{valorCloudClaiming=false;if(btn)btn.disabled=false}
+  return prevCreate.apply(this,arguments);
+ };
  const prevSave=save;
  save=function(){const r=prevSave.apply(this,arguments);if(valorAccountActive?.cloud&&!valorAccountGate&&state.class!==undefined)valorCloudSchedule();return r};
  const prevStageSave=stageRunSave;
