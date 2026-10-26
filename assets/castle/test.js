@@ -29,7 +29,7 @@ function valorCastleTestPlayers(run){
  return run.rows.flatMap(row=>row.fighters.map(f=>({...f,guildId:row.id,guildName:row.name,bot:f.id!=='test-player'})));
 }
 let valorCastleTestOwner=null,valorCastleTestLastReal=0;
-let valorCastleTestRequested=new URLSearchParams(location.search).get('castleTest')==='1';
+let valorCastleTestRequested=new URLSearchParams(location.search).get('castleTest')==='1'&&valorTestMode();
 function valorCastleTestStats(power,cls){
  const stats={Saldırı:0,Sihir:0,Savunma:Math.round(power*.15/10),'Sihir Savunma':Math.round(power*.15/10),Can:Math.round(power*.18/3),Kritik:Math.round(power*.02/4),Bloke:Math.round(power*.02/4)};
  stats[cls==='Büyücü'?'Sihir':'Saldırı']=Math.round(power*.45/10);
@@ -140,5 +140,5 @@ render=function(){
 };
 setInterval(()=>{if(valorCastleTestUpdate())valorCastleTestRefresh()},1000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){valorCastleTestPause();valorCastleTestRefresh()}});
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(new URLSearchParams(location.search).get('castleTest')==='1'&&state.class&&valorAccountCanPlay()){valorCastleTestRequested=false;valorCastleTestOpen()}},{once:true});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(new URLSearchParams(location.search).get('castleTest')==='1'&&valorTestMode()&&state.class&&valorAccountCanPlay()){valorCastleTestRequested=false;valorCastleTestOpen()}},{once:true});
 render();

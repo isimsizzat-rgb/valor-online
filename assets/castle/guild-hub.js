@@ -53,7 +53,7 @@ function valorGuildHubContributions(){
 }
 
 function valorGuildCastlePage(){
- return '<div class="vgh-castle-links"><button type="button" onclick="valorCastleTestOpen()">Kale Savaşı Testi · 5 Birlik ›</button><button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı ›</button></div>'
+ return '<div class="vgh-castle-links">'+(valorTestMode()?'<button type="button" onclick="valorCastleTestOpen()">Kale Savaşı Testi · 5 Birlik ›</button>':'')+'<button type="button" onclick="valorMedallionOpenMarket()">Madalyon Pazarı ›</button></div>'
   +'<p class="vgr-fame">Şöhretin: <b id="vgr-fame-value">'+money(Number(state.fame)||0)+'</b></p>'
   +'<section class="valor-castle"><div id="valor-castle-panel">'+valorCastlePanel()+'</div></section>';
 }

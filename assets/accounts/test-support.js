@@ -3,10 +3,10 @@ const VALOR_ENDGAME_SUPPORT={gold:999000000,cutoff:1792834842176,flag:'valorEndg
 const VALOR_ENDGAME_SLOTS=['Silah','Zırh','Kask','Ayakkabı','Kolye','Küpe'];
 let valorEndgameCreating=false,valorEndgameMessage=false;
 const valorEndgamePreviousSave=save;
+/* Test mode only: the active tester's character, once. */
 function valorEndgameEligible(character,account){
  if(!['Savaşçı','Büyücü','Okçu'].includes(character?.class))return false;
- const created=Number(account?.createdAt??character.valorCharacterCreatedAt??0);
- return Number.isFinite(created)&&created<=VALOR_ENDGAME_SUPPORT.cutoff;
+ return !!account&&account.id===valorAccountActive?.id&&valorTestMode();
 }
 function valorEndgameGrant(character,account,persist){
  if(!valorEndgameEligible(character,account))return false;

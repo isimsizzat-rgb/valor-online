@@ -138,8 +138,8 @@ let valorPetFoodGiftCreating=false,valorPetFoodGiftMessage=false;
 const valorPetFoodGiftPreviousSave=save;
 function valorPetFoodGiftGrant(character,account,persist,storage=localStorage){
  if(!['Savaşçı','Büyücü','Okçu'].includes(character?.class))return false;
- const gift=VALOR_PET_FOOD_GIFT,created=Number(account?.createdAt??character.valorCharacterCreatedAt??0);
- if(!Number.isFinite(created)||created>gift.cutoff)return false;
+ const gift=VALOR_PET_FOOD_GIFT;
+ if(!account||account.id!==valorAccountActive?.id||!valorTestMode())return false; // test mode only
  const owner=account?.id||'legacy-guest';
  if(character[gift.flag]){if(!storage.getItem(gift.receipt))storage.setItem(gift.receipt,owner);return false}
  if(storage.getItem(gift.receipt))return false;

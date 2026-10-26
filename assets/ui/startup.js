@@ -11,7 +11,7 @@
   if(typeof valorAccountCanPlay==='function'&&valorAccountCanPlay()&&state.class){
    const url=new URL(location.href);
    const navigation=performance.getEntriesByType('navigation')[0];
-   const castleTest=url.searchParams.get('castleTest')==='1'&&navigation?.type==='navigate';
+   const castleTest=url.searchParams.get('castleTest')==='1'&&navigation?.type==='navigate'&&valorTestMode();
    if(url.searchParams.has('castleTest')){url.searchParams.delete('castleTest');history.replaceState(history.state,'',url.pathname+url.search+url.hash);}
    page=castleTest?'Kale Testi':'Anasayfa';selected=null;
   }

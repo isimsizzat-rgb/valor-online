@@ -4,8 +4,7 @@ let valorMedalTestCreating=false,valorMedalTestMessage=false;
 const valorMedalTestPreviousSave=save;
 function valorMedalTestGrant(character,account,persist){
  if(!['Savaşçı','Büyücü','Okçu'].includes(character?.class))return false;
- const created=Number(account?.createdAt??character.valorCharacterCreatedAt??0);
- if(!Number.isFinite(created)||created>VALOR_MEDAL_TEST_SUPPORT.cutoff)return false;
+ if(!account||account.id!==valorAccountActive?.id||!valorTestMode())return false; // test mode only
  const flag=VALOR_MEDAL_TEST_SUPPORT.flag,receipt=VALOR_MEDAL_TEST_SUPPORT.receipt+(account?.id||'legacy-guest');
  if(character[flag]){if(!localStorage.getItem(receipt))localStorage.setItem(receipt,'claimed');return false}
  if(localStorage.getItem(receipt)){character[flag]=true;persist();return false}
