@@ -60,7 +60,12 @@ function valorCloudMeta(snapshot,live=false){const s=snapshot?.state||{};const b
 function valorCloudBasic(meta){const m={...meta};for(const k of ['xp','spirit','fame','profile','combat','arena_wins'])delete m[k];return m}
 async function valorCloudLoad(uid){const rows=await valorCloudFetch('/rest/v1/saves?select=data,rev,updated_at&user_id=eq.'+encodeURIComponent(uid));return Array.isArray(rows)&&rows[0]||null}
 function valorCloudNameless(meta){const m={...meta};delete m.name;return m}
-async function valorCloudCreate(uid,username,snapshot){const body=meta=>JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...meta});let rows;try{rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudMeta(snapshot))})}catch(e){if(e.code!=='23505'||/saves_pkey/.test(e.message))throw e;rows=await valorCloudFetch('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudNameless(valorCloudMeta(snapshot)))})}localStorage.setItem(valorCloudRevKey(uid),'1');return rows}
+/* Saves answer with only the revision and the guard note (not the whole row), which keeps server traffic small. */
+let valorCloudReturnCols='rev,guard_note';
+async function valorCloudSend(path,opt){const sep=path.includes('?')?'&':'?';try{return await valorCloudFetch(path+sep+'select='+valorCloudReturnCols,opt)}catch(e){if(valorCloudReturnCols!=='rev'&&(e.code==='42703'||/guard_note/.test(e.message||''))){valorCloudReturnCols='rev';return valorCloudFetch(path+sep+'select=rev',opt)}throw e}}
+async function valorCloudCreate(uid,username,snapshot){const body=meta=>JSON.stringify({user_id:uid,username,data:snapshot,rev:1,...meta});let rows;try{rows=await valorCloudSend('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudMeta(snapshot))})}catch(e){if(e.code!=='23505'||/saves_pkey/.test(e.message))throw e;rows=await valorCloudSend('/rest/v1/saves',{method:'POST',headers:{Prefer:'return=representation'},body:body(valorCloudNameless(valorCloudMeta(snapshot)))})}
+ // If the server corrected the starting save, the next start loads the corrected copy.
+ localStorage.setItem(valorCloudRevKey(uid),Array.isArray(rows)&&rows[0]?.guard_note?'0':'1');return rows}
 function valorCloudRev(uid){return Number(localStorage.getItem(valorCloudRevKey(uid)))||0}
 
 /* Upload the current character. Returns true when saved, false on a revision conflict. */
@@ -70,18 +75,18 @@ async function valorCloudUpload(keepalive=false){
  const meta=valorCloudMeta(snapshot,true),url='/rest/v1/saves?user_id=eq.'+encodeURIComponent(acc.id)+'&rev=eq.'+base;
  const opt=m=>({method:'PATCH',headers:{Prefer:'return=representation'},keepalive:!!keepalive,body:JSON.stringify({data:snapshot,rev:base+1,updated_at:new Date().toISOString(),...m})});
  let rows;
- try{rows=await valorCloudFetch(url,opt(meta))}
+ try{rows=await valorCloudSend(url,opt(meta))}
  catch(e){
   if(e.code==='PGRST204'&&valorCloudExtended){
    // Drop the missing column(s) one by one; fall back to the basic columns if that does not help.
    let m=meta,tries=0;rows=null;
-   while(tries++<8){const col=/'([a-z_]+)' column/.exec(e.message||'')?.[1];if(!col||!(col in m))break;valorCloudMissing.add(col);m={...m};delete m[col];try{rows=await valorCloudFetch(url,opt(m));break}catch(e2){if(e2.code!=='PGRST204')throw e2;e=e2}}
-   if(!rows){valorCloudExtended=false;rows=await valorCloudFetch(url,opt(valorCloudBasic(meta)))}
+   while(tries++<8){const col=/'([a-z_]+)' column/.exec(e.message||'')?.[1];if(!col||!(col in m))break;valorCloudMissing.add(col);m={...m};delete m[col];try{rows=await valorCloudSend(url,opt(m));break}catch(e2){if(e2.code!=='PGRST204')throw e2;e=e2}}
+   if(!rows){valorCloudExtended=false;rows=await valorCloudSend(url,opt(valorCloudBasic(meta)))}
   }
-  else if(e.code==='23505')rows=await valorCloudFetch(url,opt(valorCloudNameless(valorCloudExtended?meta:valorCloudBasic(meta))));
+  else if(e.code==='23505')rows=await valorCloudSend(url,opt(valorCloudNameless(valorCloudExtended?meta:valorCloudBasic(meta))));
   else throw e;
  }
- if(Array.isArray(rows)&&rows.length){localStorage.setItem(valorCloudRevKey(acc.id),String(base+1));return true}
+ if(Array.isArray(rows)&&rows.length){localStorage.setItem(valorCloudRevKey(acc.id),String(base+1));if(rows[0].guard_note)setTimeout(()=>valorCloudGuardFix(rows[0].guard_note),0);return true}
  const row=await valorCloudLoad(acc.id);
  if(!row){await valorCloudCreate(acc.id,acc.username,snapshot);return true}
  return false;
@@ -108,6 +113,8 @@ function valorCloudConflict(){valorCloudBlocked=true;valorCloudSetStatus('error'
 function valorCloudExpired(){valorCloudBlocked=true;valorCloudOverlay('Oturumun sona erdi','Karakterini korumak için tekrar giriş yapman gerekiyor.','Giriş Yap','valorCloudForceLogin()')}
 /* Load a cloud snapshot: uploads stop and the in-memory state is swapped first, so nothing older is written back while the page reloads. */
 function valorCloudApply(acc,row){valorCloudBlocked=true;clearTimeout(valorCloudTimer);localStorage.setItem(valorCloudRevKey(acc.id),String(row.rev));try{state=JSON.parse(JSON.stringify(row.data.state))}catch{}try{if(typeof stageRun!=='undefined')stageRun=row.data.stage?JSON.parse(JSON.stringify(row.data.stage)):null}catch{}valorAccountActivate(acc,row.data,false)}
+/* The server cut back an impossible value: load the corrected save. */
+async function valorCloudGuardFix(note){if(valorCloudBlocked||!valorAccountActive?.cloud)return;try{const row=await valorCloudLoad(valorAccountActive.id);if(!row)return;toast('Kaydın sunucu kurallarına göre düzeltildi.');setTimeout(()=>valorCloudApply(valorAccountActive,row),1200)}catch{}}
 async function valorCloudReloadLatest(){try{const row=await valorCloudLoad(valorAccountActive.id);if(!row)return location.reload();valorCloudApply(valorAccountActive,row)}catch(e){toast(e.message)}}
 function valorCloudForceLogin(){document.getElementById('valor-cloud-overlay')?.remove();valorCloudClearSession();valorAccountActive=null;sessionStorage.removeItem(VALOR_ACCOUNT_SESSION);valorAccountGate=true;valorAccountMessage='Oturumun sona erdi. Tekrar giriş yap.';render()}
 
