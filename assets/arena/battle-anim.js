@@ -30,7 +30,8 @@ function valorBattlePlay({left,right,battle,meFirst,onDone}){
  overlay.innerHTML='<section class="valor-item-dialog vba-dialog" role="dialog" aria-modal="true" aria-label="Savaş" aria-busy="true"><div class="vba-bars">'+bar(left,'L')+'<span class="vba-vs">VS</span>'+bar(right,'R')+'</div><div class="vba-round" data-round>1. tur</div><div class="vba-stage">'+fighter(left,'L')+'<span class="vba-swords" aria-hidden="true">⚔</span>'+fighter(right,'R')+'</div><div class="vba-actions"><button type="button" data-skip>Sonucu Göster</button><button type="button" onclick="valorArenaCancelPending()">Vazgeç</button></div></section>';
  document.body.appendChild(overlay);
  const pending={timer:null};valorArenaPendingBattle=pending;
- const log=battle.log||[],rounds=Math.max(1,log.length),total=Math.max(4000,Math.min(9000,rounds*320)),step=total/rounds;
+ /* About 1 second per round (both hits shown half a second apart); very long fights speed up to fit 35 seconds. */
+ const log=battle.log||[],rounds=Math.max(1,log.length),step=Math.max(600,Math.min(1000,35000/rounds)),total=rounds*step;
  const setHp=(side,hp,max)=>{const b=overlay.querySelector('.vba-bar[data-side="'+side+'"]');if(!b)return;b.querySelector('i').style.width=Math.max(0,hp/max*100)+'%';b.querySelector('[data-hp]').textContent=money(Math.max(0,hp))+' / '+money(max)};
  let finished=false;
  const finish=()=>{if(finished||valorArenaPendingBattle!==pending)return;finished=true;clearTimeout(pending.timer);valorArenaPendingBattle=null;overlay.remove();if(page==='Savaş'&&state.class)onDone()};
