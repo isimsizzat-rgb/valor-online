@@ -3,6 +3,17 @@
    Everything a server would provide goes through valorTeamRoomSource / valorTeamInviteCandidates. */
 const VALOR_TEAM_DAILY=15,VALOR_TEAM_WIN_GOLD=1000,VALOR_TEAM_WIN_FAME=5,VALOR_TEAM_RATING_WIN=20,VALOR_TEAM_RATING_LOSS=15;
 let valorArenaMode='solo',valorTeamInviteOpen=false,valorTeamJoinTarget=null,valorTeamNotice='';
+/* Open only 12.00-13.00 and 18.00-19.00 Istanbul time (UTC+3, no DST). */
+const VALOR_TEAM_WINDOWS=[[12,13],[18,19]];
+function valorTeamClock(now=Date.now()){
+ const ist=new Date(now+3*3600000),dayStart=Date.UTC(ist.getUTCFullYear(),ist.getUTCMonth(),ist.getUTCDate())-3*3600000,hour=ist.getUTCHours()+ist.getUTCMinutes()/60+ist.getUTCSeconds()/3600;
+ for(const [a,b] of VALOR_TEAM_WINDOWS)if(hour>=a&&hour<b)return {open:true,until:dayStart+b*3600000};
+ const next=VALOR_TEAM_WINDOWS.find(([a])=>hour<a);return {open:false,opensAt:next?dayStart+next[0]*3600000:dayStart+86400000+VALOR_TEAM_WINDOWS[0][0]*3600000};
+}
+function valorTeamOpen(){return valorTeamClock().open}
+function valorTeamCountdown(ms){const t=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),sec=t%60;return (h?h+' sa ':'')+String(m).padStart(2,'0')+' dk '+String(sec).padStart(2,'0')+' sn'}
+function valorTeamClosedNotice(){valorTeamNotice='Takım Arenası şu an kapalı. Açık saatler: 12.00–13.00 ve 18.00–19.00.';render()}
+function valorTeamCloseRoomsIfShut(){const d=state.teamArenaV1;if(d&&d.room&&!valorTeamOpen()){d.room=null;d.rooms=[];save();return true}return false}
 
 function valorTeamData(){
  let d=state.teamArenaV1,changed=false;
@@ -40,14 +51,16 @@ function valorTeamRoomSource(){
 }
 function valorTeamRefreshRooms(){const d=valorTeamData();d.rooms=[];valorTeamRoomSource();valorTeamNotice='Oda listesi yenilendi.';render()}
 function valorTeamCreateRoom(){
+ if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData();if(d.room)return;
  const name=(document.getElementById('vt-room-name')?.value||'').trim().slice(0,24)||((state.name||'Oyuncu')+' Odası');
  const capacity=Math.max(1,Math.min(3,Number(document.getElementById('vt-room-size')?.value)||3));
  const password=(document.getElementById('vt-room-pass')?.value||'').trim().slice(0,12);
  d.room={id:'own-'+Date.now(),name,capacity,password,own:true,members:[]};valorTeamInviteOpen=capacity>1;valorTeamNotice='Odan kuruldu.'+(capacity>1?' Takım arkadaşlarını davet et ya da tek başına savaşa gir.':'');save();render();
 }
-function valorTeamJoinStart(id){const room=valorTeamRoomSource().find(r=>r.id===id);if(!room)return;if(room.members.length>=room.capacity){valorTeamNotice='Bu oda dolu.';render();return}if(room.locked){valorTeamJoinTarget=id;render();return}valorTeamJoin(id,'')}
+function valorTeamJoinStart(id){if(!valorTeamOpen())return valorTeamClosedNotice();const room=valorTeamRoomSource().find(r=>r.id===id);if(!room)return;if(room.members.length>=room.capacity){valorTeamNotice='Bu oda dolu.';render();return}if(room.locked){valorTeamJoinTarget=id;render();return}valorTeamJoin(id,'')}
 function valorTeamJoin(id,password){
+ if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData();if(d.room)return;const room=valorTeamRoomSource().find(r=>r.id===id);if(!room)return;
  if(room.members.length>=room.capacity){valorTeamNotice='Bu oda dolu.';render();return}
  if(room.locked&&password!==room.password){valorTeamNotice='Şifre yanlış.';render();return}
@@ -57,6 +70,7 @@ function valorTeamJoin(id,password){
 function valorTeamLeave(){const d=valorTeamData();d.room=null;valorTeamInviteOpen=false;valorTeamNotice='Odadan çıktın.';save();render()}
 function valorTeamInviteCandidates(){const d=valorTeamData(),inRoom=new Set((d.room?.members||[]).map(m=>m.id));return valorTeamPool().filter(p=>!inRoom.has(p.id)).slice(0,12)}
 function valorTeamInvite(id){
+ if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData(),room=d.room;if(!room)return;
  if(1+room.members.length>=room.capacity){valorTeamNotice='Oda dolu.';render();return}
  const p=valorTeamPool().find(x=>x.id===id);if(!p||room.members.some(m=>m.id===id))return;
@@ -94,11 +108,13 @@ function valorTeamSimulate(teamA,teamB,rng=Math.random){
 }
 function valorTeamFight(){
  if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
+ if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData(),room=d.room;if(!room)return;
  if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
  valorArenaBeginWait(()=>valorArenaWithFury(()=>valorTeamResolve()));
 }
 function valorTeamResolve(){
+ if(!valorTeamOpen()){valorTeamCloseRoomsIfShut();valorTeamNotice='Takım Arenası kapandı; savaş başlatılamadı. Hakkın düşmedi.';render();return}
  const d=valorTeamData(),room=d.room;if(!room||valorTeamRemaining()<1)return;
  const size=1+room.members.length,mine=valorArenaStats();
  const teamA=[valorTeamUnit(state.name||'Sen',state.class,mine,'A',true),...room.members.map(m=>valorTeamUnit(m.name,m.cls,valorTeamBotStats(m.ratio,m.cls),'A'))];
@@ -134,6 +150,13 @@ function valorTeamPage(){
  const d=valorTeamData(),room=d.room,rows=valorTeamRanking(),rank=rows.findIndex(r=>r.me)+1,remaining=valorTeamRemaining();
  let html='<div class="arena-summary"><div><span>Günlük Hak</span><b>'+remaining+'<small>/'+VALOR_TEAM_DAILY+'</small></b></div><div><span>3v3 Puanı</span><b>'+money(d.rating)+'</b></div><div><span>Sıran</span><b>#'+rank+'</b></div></div>';
  if(valorTeamNotice){html+='<p class="vt-notice">'+escapeAttr(valorTeamNotice)+'</p>';valorTeamNotice=''}
+ const clock=valorTeamClock();
+ if(!clock.open){
+  valorTeamCloseRoomsIfShut();
+  return html+'<section class="vt-closed"><div class="vt-closed-icon">⏳</div><h2>Takım Arenası Kapalı</h2><p>Her gün <b>12.00–13.00</b> ve <b>18.00–19.00</b> arasında açılır (Türkiye saati).</p><p class="vt-clock">Açılışa <b data-vt-clock>'+valorTeamCountdown(clock.opensAt-Date.now())+'</b></p></section>'
+   +'<div class="arena-section-heading"><h2>3v3 Sıralaması</h2><span>İlk 10</span></div><div class="arena-ranking">'+rows.slice(0,10).map((p,i)=>'<div class="arena-rank-row '+(p.me?'arena-me':'')+'">'+valorArenaBadge(i+1)+'<div><b>'+escapeAttr(p.name)+(p.me?' <small>(Sen)</small>':'')+'</b><small>Sv. '+p.level+'</small></div><strong>'+money(p.rating)+'<small>Puan</small></strong></div>').join('')+'</div>';
+ }
+ html+='<p class="vt-open-clock">🟢 Arena açık · Kapanışa <b data-vt-clock>'+valorTeamCountdown(clock.until-Date.now())+'</b></p>';
  if(room){
   const size=1+room.members.length,full=size>=room.capacity;
   html+='<section class="vt-room"><div class="arena-section-heading"><h2>'+escapeAttr(room.name)+'</h2><span>'+(room.password?'🔒 Şifreli · ':'')+size+' / '+room.capacity+' kişi</span></div><div class="vt-slots">'
@@ -159,3 +182,12 @@ valorArenaPage=function(){
  return tabs+'<section class="valor-arena vt-page"><div class="arena-heading"><h1>Takım Arenası</h1></div>'+valorTeamPage()+'</section>';
 };
 if(state.class&&page==='Savaş')render();
+
+/* Live clock on the team tab; re-render when the arena opens or closes. */
+let valorTeamLastOpen=valorTeamOpen();
+setInterval(()=>{
+ if(!state.class)return;const clock=valorTeamClock();
+ if(!clock.open&&valorTeamCloseRoomsIfShut()){valorTeamLastOpen=false;valorTeamNotice='Takım Arenası kapandı; odan kapatıldı.';if(page==='Savaş'&&valorArenaMode==='team'&&!document.getElementById('valor-arena-result')&&!valorArenaPendingBattle)render();return}
+ if(clock.open!==valorTeamLastOpen){valorTeamLastOpen=clock.open;if(!clock.open)valorTeamCloseRoomsIfShut();if(page==='Savaş'&&valorArenaMode==='team'&&!document.getElementById('valor-arena-result')&&!valorArenaPendingBattle)render();return}
+ const el=document.querySelector('[data-vt-clock]');if(el)el.textContent=valorTeamCountdown((clock.open?clock.until:clock.opensAt)-Date.now());
+},1000);
