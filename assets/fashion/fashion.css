@@ -56,3 +56,4 @@ html body #main .vp-wrap .vp-scene.vf-eight-slots .vf-slot-caption{position:abso
 html body .vp-wrap .vp-scene .vp-slot.vfp-selected{border-color:#ffe082!important;box-shadow:0 0 12px #eeb64bb0,inset 0 0 8px #b88a3270!important}
 html body .vp-wrap .vp-scene .vfp-spacer{visibility:hidden;pointer-events:none;width:min(100%,76px);aspect-ratio:1}
 .vfp-wrap .vfw-collection{margin-top:12px}
+html body .vp-wrap .vp-scene .vf-wing-equipment img.vf-fashion-art{width:86%!important;height:auto!important;max-height:calc(100% - 18px)!important;object-fit:contain!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 2px 4px #000a)}

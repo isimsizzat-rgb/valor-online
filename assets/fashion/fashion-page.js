@@ -12,7 +12,10 @@ function valorFashionProfilePage(){
  const collection=slot==='Kanat'?(items.length?valorWingCards(true):'<p class="vfw-empty-note">Henüz bir kanadın yok.</p>'):(items.length?'<div class="vf-grid">'+items.map(it=>{const worn=String(equipped?.id)===String(it.id);return '<article class="vf-card"><div class="vf-art"><img src="'+valorFashionItemArt(it)+'" alt="'+escapeAttr(it.name)+'"></div><h3>'+escapeAttr(it.name)+'</h3><button type="button" onclick="'+(worn?"valorFashionRemovePiece('"+slot+"')":"valorFashionEquipPiece('"+slot+"','"+escapeAttr(String(it.id))+"')")+'">'+(worn?'Çıkar':'Kuşan')+'</button></article>'}).join('')+'</div>':'<p class="vfw-empty-note">Henüz bir '+slot.toLocaleLowerCase('tr-TR')+' fashionın yok.</p>');
  const back='<button type="button" class="vp-slot vf-wing-equipment" title="Ekipman" aria-label="Ekipman sayfasına dön" onclick="go(\'Profil\')"><span class="vp-empty">⚔</span><small class="vf-slot-caption">EKİPMAN</small></button>';
  const spacer='<div class="vfp-spacer" aria-hidden="true"></div>';
- return '<div class="vp-wrap vfp-wrap"><div class="vp-header"><strong>'+escapeAttr(state.name)+'</strong><span>Fashion · '+escapeAttr(state.class)+'</span></div>'
+ // Same bars as the profile (name, class/level, title rank), taken from the real profile page.
+ let bars='<div class="vp-header"><strong>'+escapeAttr(state.name)+'</strong><span>'+escapeAttr(state.class)+' · Sv. '+state.level+'</span></div>';
+ try{const m=(window.valorRealProfile||profile)().match(/^<div class="vp-wrap">([\s\S]*?)<div class="vp-scene/);if(m)bars=m[1]}catch(e){}
+ return '<div class="vp-wrap vfp-wrap">'+bars
   +'<div class="vp-scene vf-eight-slots"><div class="vp-hero valor-selected-profile-hero"><img src="'+valorCreationPortrait(state.class,state.gender)+'" alt="'+escapeAttr(state.class)+' karakteri"></div>'
   +'<div class="vp-gear vp-left">'+['Silah','Kıyafet','Kask'].map(valorFashionTile).join('')+back+'</div>'
   +'<div class="vp-gear vp-right">'+['Ayakkabı','Kanat'].map(valorFashionTile).join('')+spacer+spacer+'</div></div>'
@@ -24,7 +27,7 @@ function valorFashionProfilePage(){
  render=function(){
   if(page!=='Fashion'||!state.class){document.body.classList.remove('valor-fashion-page');return previousRender.apply(this,arguments)}
   // Draw through the profile pipeline so the same layout code and styles apply.
-  const realProfile=profile;profile=valorFashionProfilePage;page='Profil';
+  const realProfile=profile;window.valorRealProfile=realProfile;profile=valorFashionProfilePage;page='Profil';
   try{return previousRender.apply(this,arguments)}finally{page='Fashion';profile=realProfile;document.body.classList.add('valor-fashion-page')}
  };
  if(state.class&&page==='Fashion')render();
