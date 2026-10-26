@@ -112,8 +112,8 @@ function valorAccountPage(){
   const accounts=valorAccountRegistry(),register=valorAccountTab==='register',legacySave=valorAccountLegacySaved(),legacy=!!legacySave?.state?.class,legacyState=legacySave?.state;
   const cards=accounts.map(a=>{const hero=valorAccountRead(valorAccountStorageKey(a.id))?.state;return `<button type="button" class="vauth-account ${valorAccountNormalize(a.username)===valorAccountNormalize(valorAccountSelected)?'is-selected':''}" onclick="valorAccountChoose('${a.id}')"><img src="${valorCreationPortrait(hero?.class,hero?.gender)}" alt=""><span><b>${valorAccountEscape(a.username)}</b><small>${hero?.class?valorAccountEscape(hero.class)+' · Sv. '+Number(hero.level||1):'Karakter oluştur'}</small></span><i aria-hidden="true">›</i></button>`;}).join('');
   return `<section class="vauth-portal vauth-compact">
+    <header class="vauth-mythic-cover"><img src="assets/accounts/valor-mythic-cover.webp" width="1200" height="600" alt="Valor Online — büyücü, savaşçı ve okçu kale önünde savaşa hazırlanıyor" decoding="async" fetchpriority="high"></header>
     <div class="vauth-panel">
-      <div class="vauth-entry-wordmark" aria-label="Valor Online">VALOR <span>ONLINE</span></div>
       ${valorAccountActive?'<div class="vauth-back"><button type="button" class="vauth-text-button" onclick="valorAccountReturn()">‹ Oyuna dön</button></div>':''}
       <div class="vauth-tabs" role="tablist" aria-label="Hesap işlemi">
         <button type="button" role="tab" aria-selected="${!register}" class="${!register?'is-active':''}" onclick="valorAccountSetTab('login')">Giriş Yap</button>
@@ -135,7 +135,7 @@ function valorAccountPage(){
       <p class="vauth-storage-note">Kayıtlar bu tarayıcıda saklanır; veriler silinirse kaybolur.</p>
       ${valorAccountActive?'<button type="button" class="vauth-text-button vauth-logout" onclick="valorAccountLogout()">Çıkış yap</button>':''}
     </div>
-    <figure class="vauth-battle-cover"><img src="assets/accounts/battle-party-cover.webp" width="1200" height="402" alt="Büyücü, savaşçı ve okçu aynı kale önünde savaşa hazırlanıyor" decoding="async"></figure>
+    <footer class="vauth-story"><span aria-hidden="true">✦</span><h2>Hikâyen seni bekliyor.</h2><p>Kadim krallıklar karanlığa gömülürken yeni bir efsane doğuyor. Kılıcını kuşan, büyünü uyandır ya da yayını ger. Valor’da kaderini sen yaz.</p></footer>
   </section>`;
 }
 const valorCharacterDetails={
