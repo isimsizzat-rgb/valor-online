@@ -381,7 +381,7 @@ const marketProducts=[
 {id:'mountStone',name:'Binek Taşı',price:10,limit:50,icon:mountStoneGraphic(),description:'Binek eğitiminde kullanılan taş.'},
 {id:'expeditionPaper',name:'Sefer Kağıdı',price:99,limit:3,icon:'<img class="valor-consumable-art" src="assets/items/expedition-paper-v2.webp" alt="Sefer Kağıdı" style="width:100%;height:100%;object-fit:contain">',description:'Sahnelere bir ek giriş hakkı verir.'},
 {id:'energyBottle',name:'Enerji Şişesi',price:50,limit:5,icon:'<img class="valor-consumable-art" src="assets/items/energy-bottle-v2.webp" alt="Enerji Şişesi" style="width:100%;height:100%;object-fit:contain">',description:'Macera enerjini 50 artırır.'},
-{id:'anniversaryBox',name:'Yıldönümü Kutusu',price:20,limit:100,icon:anniversaryBoxGraphic(),description:'Binek ve taş ödülleri içeren özel kutu.'}
+{id:'anniversaryBox',name:'Yıldönümü Kutusu',price:25,limit:100,icon:anniversaryBoxGraphic(),description:'Binek ve taş ödülleri içeren özel kutu.'}
 ];
 function marketTodayKey(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v={};p.forEach(x=>{v[x.type]=x.value});return v.year+'-'+v.month+'-'+v.day}
 function marketDailyReset(){const day=marketTodayKey();if(state.marketDailyDate!==day){state.marketDailyDate=day;state.marketDailyPurchases={};save()}if(!state.marketDailyPurchases)state.marketDailyPurchases={};if(state.marketAnniversaryTapRepairDay!==day){if(state.marketDailyDate===day&&(Number(state.marketDailyPurchases.anniversaryBox)||0)>=100)state.marketDailyPurchases.anniversaryBox=0;state.marketAnniversaryTapRepairDay=day;save()}}
