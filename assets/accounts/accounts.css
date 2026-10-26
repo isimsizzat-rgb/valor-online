@@ -86,3 +86,45 @@ body.valor-account-screen{background:#0e0d11!important;color:#f0e4d0;min-height:
 .valor-cloud-status[data-state="pending"],.valor-cloud-status[data-state="saving"]{color:#c9b38a}
 .valor-cloud-status[data-state="offline"],.valor-cloud-status[data-state="error"]{color:#e3a08f}
 .vauth-profile-link{flex-wrap:wrap}
+
+/* Keep naming and the start action within easy reach on a phone. */
+.vcreate-description>p{font-size:12px;line-height:1.8;color:#b6a895;margin:0}
+@media(max-width:600px){
+ .vcreate-page .vcreate-header{padding:9px 18px 6px}
+ .vcreate-page .vcreate-tabs{padding-bottom:10px;margin-bottom:0}
+ .vcreate-page .vcreate-content{display:grid;grid-template-columns:minmax(0,1fr);padding:0 20px 22px}
+ .vcreate-page .vcreate-info{display:contents}
+ .vcreate-page .vcreate-gender{grid-row:1;margin:0 0 3px}
+ .vcreate-page .vcreate-gender legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .vcreate-page .vcreate-gender>div{gap:8px}
+ .vcreate-page .vcreate-gender button{min-height:38px;padding:7px 12px;font-size:12px}
+ .vcreate-page .vcreate-art{grid-row:2;height:clamp(190px,30svh,250px);width:auto;max-width:100%;max-height:none;aspect-ratio:2/3;justify-self:center;margin:0}
+ .vcreate-page .vcreate-art-label{display:none}
+ .vcreate-page .vcreate-info>.vauth-form{grid-row:3;gap:7px}
+ .vcreate-page .vcreate-info>.vauth-form>label{margin-top:0;font-size:12px}
+ .vcreate-page .vcreate-info>.vauth-form input{min-height:46px}
+ .vcreate-page .vcreate-info>.vauth-form .vauth-primary{min-height:48px;margin-top:2px}
+ .vcreate-page .vcreate-info>.vauth-form .vauth-error:empty{display:none}
+ .vcreate-page .vcreate-description{grid-row:4;padding-top:20px;text-align:center}
+ .vcreate-page .vcreate-description>.vauth-eyebrow{font-size:8px}
+ .vcreate-page .vcreate-description h2{font-size:26px;margin:7px 0 4px}
+ .vcreate-page .vcreate-description h3{font-size:17px;margin:4px 0 7px}
+ .vcreate-page .vcreate-description>p{font-size:11px;line-height:1.65}
+ .vcreate-page .vcreate-description .vcreate-divider{display:none}
+ .vcreate-page .vcreate-info>.vcreate-account-label{grid-row:5;margin:14px 0 0;text-align:center;font-size:10px;color:#99876b}
+}
+
+/* Gender controls float over the portrait instead of using a separate row. */
+.vcreate-page .vcreate-art .vcreate-gender{position:absolute;z-index:3;top:14px;right:14px;margin:0;padding:4px;border:1px solid #95774d66;border-radius:24px;background:#100e17cc;box-shadow:0 4px 16px #0005}
+.vcreate-page .vcreate-art .vcreate-gender legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.vcreate-page .vcreate-art .vcreate-gender>div{display:flex;gap:4px}
+.vcreate-page .vcreate-art .vcreate-gender button{display:grid;place-items:center;width:38px;min-height:38px;padding:0;border:1px solid transparent;border-radius:50%;font:25px/1 Arial,sans-serif;color:#b5a792;background:transparent}
+.vcreate-page .vcreate-art .vcreate-gender button.is-active{color:#fff0d0;border-color:var(--class-accent);background:#5d493955;box-shadow:inset 0 0 10px #d9b67c22,0 0 8px #d9b67c22}
+@media(max-width:600px){
+ .vcreate-page .vcreate-art{grid-row:1;width:100%;aspect-ratio:auto}
+ .vcreate-page .vcreate-art>img{width:auto;max-width:100%;height:100%;margin-inline:auto;object-fit:contain}
+ .vcreate-page .vcreate-art .vcreate-gender{top:7px;right:0}
+ .vcreate-page .vcreate-info>.vauth-form{grid-row:2}
+ .vcreate-page .vcreate-description{grid-row:3}
+ .vcreate-page .vcreate-info>.vcreate-account-label{grid-row:4}
+}
