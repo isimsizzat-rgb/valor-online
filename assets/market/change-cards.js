@@ -1,8 +1,7 @@
 /* Single-use identity cards. Cloud changes and card consumption commit in one revision. */
 function valorChangeCardArt(kind){
- const color={gender:'#bb99e5',nick:'#79c4dd',guild:'#e2b367'}[kind];
- const symbol={gender:'<circle cx="68" cy="70" r="15"/><path d="M79 59l18-18M84 41h13v13M68 85v26M57 101h22"/>',nick:'<path d="M53 105l8-29 36-34c8-5 15 2 10 10L73 88l-20 17zM61 76l12 12M75 65l12 12M50 115h54"/>',guild:'<path d="M56 116V42M58 46h45l-10 18 10 18H58M48 116h19"/><path d="M69 57h20M69 68h13"/>'}[kind];
- return '<svg class="valor-change-card-art" viewBox="0 0 160 160" role="img" aria-label="'+({gender:'Cinsiyet',nick:'Nick',guild:'Birlik ismi'}[kind])+' değiştirme kartı"><defs><linearGradient id="vcc-'+kind+'" x2="1" y2="1"><stop stop-color="#463347"/><stop offset="1" stop-color="#11121e"/></linearGradient></defs><path d="M41 14h78l13 13v106l-13 13H41l-13-13V27z" fill="url(#vcc-'+kind+')" stroke="#c4a56d" stroke-width="3"/><path d="M44 23h72l7 7v100l-7 7H44l-7-7V30z" fill="none" stroke="'+color+'" stroke-opacity=".55"/><path d="M80 20l5 6-5 6-5-6zM80 128l5 6-5 6-5-6z" fill="'+color+'"/><g fill="none" stroke="'+color+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">'+symbol+'</g></svg>';
+ const names={gender:'Cinsiyet Değiştirme Kartı',nick:'Nick Değiştirme Kartı',guild:'Birlik İsmi Değiştirme Kartı'};
+ return '<img class="valor-change-card-art" src="assets/items/change-cards/'+kind+'.webp" alt="'+names[kind]+'" width="512" height="512" decoding="async">';
 }
 const VALOR_CHANGE_CARDS=[
  {id:'genderChangeCard',name:'Cinsiyet Değiştirme Kartı',price:149,kind:'gender',description:'Karakterinin cinsiyetini değiştirir.'},

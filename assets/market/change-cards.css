@@ -1,4 +1,4 @@
-.valor-change-card-art{display:block;width:100%;height:100%;max-width:160px;margin:auto;filter:drop-shadow(0 5px 8px #0006)}
+.valor-change-card-art{display:block;width:100%;height:100%;max-width:none;aspect-ratio:1;object-fit:cover;margin:0}
 .vcc-dialog{width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 30px);overflow:auto}
 .vcc-dialog .vcc-art{width:100px;height:100px;margin:0 auto 12px}
 .vcc-dialog h3{text-align:center;margin:8px 0 20px;color:#eed6a6}
@@ -13,3 +13,12 @@
 .vcc-submit{min-height:46px}.vcc-cancel{min-height:42px;background:transparent;border:1px solid #645039;box-shadow:none;color:#caba9d}
 @media(min-width:601px){#main .vm-market-categories:has([data-category=cards]){grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media(max-width:600px){#main .vm-market-categories:has([data-category=cards]) .vm-market-category:nth-child(4),#main .vm-market-categories:has([data-category=cards]) .vm-market-category:nth-child(5){grid-column:span 2}}
+
+/* Generated square art fills the usable area of each existing item frame. */
+.vm-market-body .vm-limited-art:has(.valor-change-card-art)>span{inset:7%}
+.vm-market-body .vm-limited-art>span>img.valor-change-card-art{width:100%!important;height:100%!important;object-fit:cover!important;mix-blend-mode:normal}
+.bag-slot:has(.valor-change-card-art) .bag-item-glyph{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+.bag-slot .bag-item-glyph img.valor-change-card-art{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;max-width:none;max-height:none;object-fit:cover!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;transform:none!important;background:transparent!important}
+.market-item-detail:has(.valor-change-card-art)>span{display:block;width:100%;height:100%}
+.market-item-detail img.valor-change-card-art,.vm-market-purchase-art img.valor-change-card-art{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover}
+.market-item-detail:has(.valor-change-card-art){width:140px!important;height:140px!important;min-height:0!important;aspect-ratio:1!important;padding:0!important;overflow:hidden}
