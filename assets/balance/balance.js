@@ -105,10 +105,10 @@ if(state.class&&['Zindan','Sahne Macerası','Sahneler'].includes(page))render();
 
 /* ---------- Refah (catch-up EXP) ----------
    Every day after 00.00 (Istanbul) the ranking's top level is recorded and stays fixed for that day.
-   Bonus = 10% per level below that reference, max +100%; it fades 10% with every level gained near
-   the top and reaches 0 at the reference level, so it never carries a player past the leader.
+   Only players more than 10 levels below that reference get a bonus: 10% per level below
+   (reference - 10), max +100%. With a top of Sv.50, Sv.30 and below get +100%, Sv.39 +10%, Sv.40+ nothing.
    valorRankRows() holds the sample players until a server provides real rankings. */
-const VALOR_WELFARE_STEP=.10,VALOR_WELFARE_MAX=1;
+const VALOR_WELFARE_STEP=.10,VALOR_WELFARE_MAX=1,VALOR_WELFARE_CUTOFF=10;
 function valorWelfareToday(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v={};p.forEach(x=>v[x.type]=x.value);return v.year+'-'+v.month+'-'+v.day}
 function valorWelfareReferenceLevel(){
  const day=valorWelfareToday(),ref=state.welfareRef;
@@ -116,7 +116,7 @@ function valorWelfareReferenceLevel(){
  let level=Number(state.level)||1;try{level=Math.max(...valorRankRows().map(r=>Number(r.level)||1))}catch(e){}
  state.welfareRef={day,level};try{save()}catch(e){}return level;
 }
-function valorWelfareBonus(){if(!state?.class)return 0;const gap=valorWelfareReferenceLevel()-(Number(state.level)||1);return gap>0?Math.min(VALOR_WELFARE_MAX,gap*VALOR_WELFARE_STEP):0}
+function valorWelfareBonus(){if(!state?.class)return 0;const gap=valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF-(Number(state.level)||1);return gap>0?Math.min(VALOR_WELFARE_MAX,gap*VALOR_WELFARE_STEP):0}
 function valorWelfareXp(base){return Math.round((Number(base)||0)*(1+valorWelfareBonus()))}
 const valorWelfarePreviousEarnXP=earnXP;
 earnXP=function(amount){const gained=valorWelfareXp(amount);window.valorLastXpGain=gained;return valorWelfarePreviousEarnXP(gained)};
@@ -125,7 +125,7 @@ function valorWelfareBadge(){
  let badge=document.getElementById('valor-welfare-badge');const bonus=valorWelfareBonus();
  if(!bonus){badge?.remove();return}
  if(!badge){badge=document.createElement('span');badge.id='valor-welfare-badge';badge.style.cssText='margin-left:8px;padding:1px 7px;border:1px solid #7fc99a;border-radius:999px;color:#bff0cf;background:#173326cc;font-size:10px;white-space:nowrap';anchor.parentElement.appendChild(badge)}
- badge.textContent='Refah +%'+Math.round(bonus*100)+' EXP';badge.title='Bugünün referansı (00.00 sıralaması): Sv.'+valorWelfareReferenceLevel()+'. Aradaki her seviye için +%10 EXP (en fazla +%100); o seviyeye ulaşınca bonus biter.';
+ badge.textContent='Refah +%'+Math.round(bonus*100)+' EXP';badge.title='Bugünün referansı (00.00 sıralaması): Sv.'+valorWelfareReferenceLevel()+'. Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' altındaki her seviye için +%10 EXP (en fazla +%100); Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' ve üstü bonus almaz.';
 }
 const valorWelfarePreviousRender=render;
 render=function(){const result=valorWelfarePreviousRender.apply(this,arguments);try{valorWelfareBadge()}catch(e){}return result};
