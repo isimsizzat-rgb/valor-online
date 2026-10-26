@@ -16,5 +16,22 @@
   hero.replaceWith(portrait);
   return template.innerHTML;
  };
+ const previousRender=render;
+ render=function(){
+  const result=previousRender.apply(this,arguments);
+  const image=document.getElementById('valor-hud-portrait');
+  if(state.class&&image){
+   const source=valorCreationPortrait(state.class,state.gender);
+   if(image.getAttribute('src')!==source)image.src=source;
+   image.alt=(state.gender==='female'?'Kadın ':'Erkek ')+state.class+' portresi';
+   if(!image.parentElement.classList.contains('valor-hud-portrait-crop')){
+    const crop=document.createElement('span');
+    crop.className='valor-hud-portrait-crop';
+    image.replaceWith(crop);
+    crop.appendChild(image);
+   }
+  }
+  return result;
+ };
  render();
 })();
