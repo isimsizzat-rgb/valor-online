@@ -52,3 +52,7 @@ html body #main .vp-wrap .vp-scene.vf-eight-slots .vf-slot-caption{position:abso
 .vfw-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .vfw-actions button{flex:1;min-height:44px;font-size:12px;border:1px solid #8b693c;border-radius:6px;color:#e3ca9d;background:linear-gradient(#3a2b1f,#20171a)}
 @media(max-width:600px){.vfw-heading{padding:12px}.vfw-heading h1{font-size:21px}.vfw-heading>span{font-size:10px}.vfw-scene{min-height:350px;aspect-ratio:4/4.9}.vfw-slots{width:19%;gap:10px;top:6%;bottom:6%}.vfw-left{left:2%}.vfw-right{right:2%}.vfw-slot-wrap{gap:5px}.vfw-slot-label{font-size:10px}.vfw-empty-icon{font-size:24px}.vfw-level{font-size:8px;padding:2px}.vfw-collection{padding:12px}}
+/* Fashion as the profile's second page */
+html body .vp-wrap .vp-scene .vp-slot.vfp-selected{border-color:#ffe082!important;box-shadow:0 0 12px #eeb64bb0,inset 0 0 8px #b88a3270!important}
+html body .vp-wrap .vp-scene .vfp-spacer{visibility:hidden;pointer-events:none;width:min(100%,76px);aspect-ratio:1}
+.vfp-wrap .vfw-collection{margin-top:12px}
