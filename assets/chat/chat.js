@@ -51,12 +51,26 @@ chatPage=function(){
  if(!valorChatOnline())return '<section class="vch-page"><h1>💬 Sohbet</h1><p class="vch-empty">Sohbet için hesabınla giriş yapmalısın.</p></section>';
  const ch=valorChatCurrent(),guild=valorChatGuildChannel(),blocked=valorChatBlocked();
  setTimeout(()=>{valorChatPaint();if(!valorChat.msgs[ch])valorChatFetch()},0);
- return '<section class="vch-page"><nav class="vch-tabs"><button type="button" aria-pressed="'+(ch==='world')+'" onclick="valorChatSwitch(\'world\')">🌍 Dünya</button><button type="button" aria-pressed="'+(ch!=='world')+'" '+(guild?'':'disabled title="Birliğe katılınca açılır"')+' onclick="valorChatSwitch(\''+(guild||'')+'\')">🛡 Birlik'+(state.guild?.name&&guild?' · '+escapeAttr(state.guild.name):'')+'</button></nav>'
+ return '<section class="vch-page">'+(ch!=='world'&&state.guild?.name?'<p class="vch-channel">🛡 '+escapeAttr(state.guild.name)+' · birlik sohbeti</p>':'')
   +(valorChat.error?'<p class="vch-error">'+escapeAttr(valorChat.error)+'</p>':'')
   +'<div id="vch-list" class="vch-list" aria-live="polite">'+valorChatListHtml(ch)+'</div>'
   +'<form class="vch-form" onsubmit="event.preventDefault();valorChatSend()"><input id="vch-input" maxlength="'+VALOR_CHAT_MAX+'" autocomplete="off" placeholder="'+(ch==='world'?'Herkese yaz…':'Birliğine yaz…')+'" oninput="valorChatCount()"><button type="submit">Gönder</button></form><small id="vch-count" class="vch-count">0 / '+VALOR_CHAT_MAX+'</small>'
   +(blocked.length?'<details class="vch-blocked"><summary>Engellenenler ('+blocked.length+')</summary>'+blocked.map(n=>'<div><span>'+escapeAttr(n)+'</span><button type="button" onclick="valorChatUnblock(\''+escapeAttr(String(n).replace(/\'/g,''))+'\')">Kaldır</button></div>').join('')+'</details>':'')
   +'<p class="vch-rules">Saygılı ol. Küfür, hakaret ve reklam yasaktır; kurallara uymayanlar sohbetten uzaklaştırılır.</p></section>';
 };
+/* One tab row: Sohbet (world) · Haberler · Birlik (guild chat). "Birlik" is added next to the existing
+   Sohbet / Haberler tabs; Sohbet always opens the world channel. */
+function valorChatOpenGuild(){const g=valorChatGuildChannel();if(!g)return toast('Birlik sohbeti için önce bir birliğe katılmalısın.');valorChat.channel=g;if(typeof window.valorSocialSelectTab==='function')window.valorSocialSelectTab('chat');else render();valorChatFetch()}
+function valorChatDecorateTabs(){
+ if(page!=='Sohbet')return;const bar=document.querySelector('.valor-social-tabs');if(!bar)return;
+ const sel=window.valorSocialSelectTab;if(typeof sel==='function'&&!sel.valorChatWrapped){const wrapped=function(tab){if(tab==='chat'&&!wrapped.keepGuild)valorChat.channel='world';wrapped.keepGuild=false;return sel.apply(this,arguments)};wrapped.valorChatWrapped=true;window.valorSocialSelectTab=wrapped}
+ let btn=document.getElementById('valor-guild-chat-tab');
+ if(!btn){btn=document.createElement('button');btn.type='button';btn.id='valor-guild-chat-tab';btn.setAttribute('role','tab');btn.textContent='Birlik';btn.addEventListener('click',()=>{if(window.valorSocialSelectTab)window.valorSocialSelectTab.keepGuild=true;valorChatOpenGuild()});bar.appendChild(btn)}
+ bar.style.gridTemplateColumns='repeat(3,1fr)';
+ const chatTab=document.getElementById('valor-chat-tab'),onChat=chatTab?.getAttribute('aria-selected')==='true',guildOn=onChat&&valorChat.channel!=='world';
+ btn.setAttribute('aria-selected',String(guildOn));btn.classList.toggle('vch-tab-off',!valorChatGuildChannel());btn.title=valorChatGuildChannel()?'Birlik sohbeti':'Birliğe katılınca açılır';
+ if(guildOn&&chatTab)chatTab.setAttribute('aria-selected','false');
+}
+(function(){const prev=render;render=function(){const r=prev.apply(this,arguments);try{valorChatDecorateTabs()}catch(e){}return r}})();
 setInterval(()=>{if(page==='Sohbet'&&!document.hidden&&valorChatOnline()&&state.class)valorChatFetch()},VALOR_CHAT_POLL);
 if(state.class&&page==='Sohbet')render();

@@ -19,3 +19,5 @@
 .vch-blocked{font-size:12px;color:#bca98c}.vch-blocked div{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
 .vch-blocked button{min-height:28px;padding:0 10px;font-size:11px}
 .vch-rules{margin:0;font-size:10.5px;color:#8f7d62;line-height:1.5}
+.vch-channel{margin:0;font-size:12px;color:#d9bf8c}
+.valor-social-tabs button.vch-tab-off{opacity:.45}
