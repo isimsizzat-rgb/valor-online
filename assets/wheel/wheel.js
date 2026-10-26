@@ -2,18 +2,18 @@
 (function(){
  const PRICE=99,DURATION=6200,NAME='Şans Çarkı';
  const prizes=[
-  {id:'mosaic',name:'Mozaik Çantası',weight:1443},
-  {id:'gold',name:'100K Altın',weight:1154},
-  {id:'crystal',name:'25K Kristal',weight:962},
-  {id:'mountStone',name:'Binek Taşı ×50',weight:481},
-  {id:'king',name:'Kral Bineği · +100',weight:400},
-  {id:'luck',name:'Şans Taşı Çantası',weight:1539},
-  {id:'epic',name:'Epik Taşı ×2',weight:1731},
-  {id:'wing',name:'Rastgele Kanat',weight:192},
-  {id:'energy',name:'Enerji Şişesi ×2',weight:1154},
-  {id:'food',name:'Pet Yemi ×5',weight:645},
-  {id:'health',name:'Sv.10 Can Taşı',weight:10},
-  {id:'fashion',name:'Fashion Çantası',weight:289}
+  {id:'mosaic',name:'Mozaik Çantası',weight:1534},
+  {id:'gold',name:'100K Altın',weight:1227},
+  {id:'crystal',name:'25K Kristal',weight:1023},
+  {id:'mountStone',name:'Binek Taşı ×50',weight:511},
+  {id:'king',name:'Kral Bineği · +100',weight:50},
+  {id:'luck',name:'Şans Taşı Çantası',weight:1636},
+  {id:'epic',name:'Epik Taşı ×2',weight:1841},
+  {id:'wing',name:'Rastgele Kanat',weight:204},
+  {id:'energy',name:'Enerji Şişesi ×2',weight:1227},
+  {id:'food',name:'Pet Yemi ×5',weight:686},
+  {id:'health',name:'Sv.10 Can Taşı',weight:11},
+  {id:'fashion',name:'Fashion Çantası',weight:50}
  ];
  const king={id:'wheelKing',name:'Kral Bineği',kind:'griffin',color:'#e8bf67',stats:[100,100,100,100],spirit:500,boxOnly:true};
  if(!valorMounts.some(m=>m.id===king.id))valorMounts.push(king);
