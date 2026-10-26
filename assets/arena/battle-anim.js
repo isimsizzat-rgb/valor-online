@@ -31,7 +31,9 @@ function valorBattlePlay({left,right,battle,meFirst,onDone}){
  document.body.appendChild(overlay);
  const pending={timer:null};valorArenaPendingBattle=pending;
  /* About 1 second per round (both hits shown half a second apart); very long fights speed up to fit 35 seconds. */
- const log=battle.log||[],rounds=Math.max(1,log.length),step=Math.max(600,Math.min(1000,35000/rounds)),total=rounds*step;
+ /* Rounds 1-15 take 1 second each; from round 16 every round is 7% quicker, down to 0.35 seconds. */
+ const log=battle.log||[],rounds=Math.max(1,log.length),stepOf=i=>i<15?1000:Math.max(350,1000*Math.pow(.93,i-14)),starts=[];let total=0;
+ for(let i=0;i<rounds;i++){starts.push(total);total+=stepOf(i)}
  const setHp=(side,hp,max)=>{const b=overlay.querySelector('.vba-bar[data-side="'+side+'"]');if(!b)return;b.querySelector('i').style.width=Math.max(0,hp/max*100)+'%';b.querySelector('[data-hp]').textContent=money(Math.max(0,hp))+' / '+money(max)};
  let finished=false;
  const finish=()=>{if(finished||valorArenaPendingBattle!==pending)return;finished=true;clearTimeout(pending.timer);valorArenaPendingBattle=null;overlay.remove();if(page==='Savaş'&&state.class)onDone()};
@@ -41,8 +43,8 @@ function valorBattlePlay({left,right,battle,meFirst,onDone}){
   overlay.querySelector('[data-round]').textContent=r.round+'. tur'+(r.myHit?.fury?' · Öfke +%'+Math.round(r.myHit.fury*100):'');
   const mine=()=>{for(const [t,k] of valorBattleHitTexts(r.myHit,r.mine))valorBattleFloat('R',t,k);if(r.myHit?.healed)valorBattleFloat('R','+'+money(r.myHit.healed),'heal');setHp('R',r.enemyHp,right.maxHp)};
   const theirs=()=>{for(const [t,k] of valorBattleHitTexts(r.enemyHit,r.theirs))valorBattleFloat('L',t,k);if(r.enemyHit?.healed)valorBattleFloat('L','+'+money(r.enemyHit.healed),'heal');setHp('L',r.myHp,left.maxHp)};
-  const [a,b]=meFirst?[mine,theirs]:[theirs,mine];a();if(r.mine||r.theirs)setTimeout(()=>{if(valorArenaPendingBattle===pending)b()},step/2);else b();
- },i*step));
+  const [a,b]=meFirst?[mine,theirs]:[theirs,mine];a();if(r.mine||r.theirs)setTimeout(()=>{if(valorArenaPendingBattle===pending)b()},stepOf(i)/2);else b();
+ },starts[i]));
  pending.timer=setTimeout(finish,total+900);
  overlay.querySelector('[data-skip]')?.focus();
  return true;
