@@ -94,14 +94,15 @@ async function valorCloudLocalPasswordOk(local,password){if(!local?.salt||!local
 
 valorAccountSubmit=async function(event){
  event?.preventDefault();if(valorAccountBusy)return;
- const username=document.getElementById('valor-account-username')?.value.trim()||'',password=document.getElementById('valor-account-password')?.value||'',confirm=document.getElementById('valor-account-confirm')?.value||'',attach=!!document.getElementById('valor-account-attach')?.checked;
+ let username=document.getElementById('valor-account-username')?.value.trim()||'';const password=document.getElementById('valor-account-password')?.value||'',confirm=document.getElementById('valor-account-confirm')?.value||'',attach=!!document.getElementById('valor-account-attach')?.checked;
  valorAccountSelected=username;valorAccountError('');
- if(!/^[a-zA-Z0-9ğüşöçıİĞÜŞÖÇ_]{3,20}$/.test(username))return valorAccountError('Kullanıcı adı 3–20 harf, rakam veya alt çizgi içermeli.');
+ const loginTab=valorAccountTab!=='register';
+ if(loginTab?!/^[a-zA-Z0-9ğüşöçıİĞÜŞÖÇ_ ]{3,20}$/.test(username):!/^[a-zA-Z0-9ğüşöçıİĞÜŞÖÇ_]{3,20}$/.test(username))return valorAccountError(loginTab?'Kullanıcı adını ya da karakter adını yaz (3–20 karakter).':'Kullanıcı adı 3–20 harf, rakam veya alt çizgi içermeli.');
  if(password.length<8||password.length>72)return valorAccountError('Şifren 8–72 karakter olmalı.');
  const register=valorAccountTab==='register';if(register&&password!==confirm)return valorAccountError('Şifreler birbiriyle eşleşmiyor.');
  valorAccountSetBusy(true);
  try{
-  const norm=valorAccountNormalize(username),local=valorAccountRegistry().find(a=>!a.cloud&&valorAccountNormalize(a.username)===norm);
+  let norm=valorAccountNormalize(username),local=valorAccountRegistry().find(a=>!a.cloud&&valorAccountNormalize(a.username)===norm);
   let user,snapshot=null,row=null,migrated=false;
   if(register){
    user=await valorCloudAuth('signup',username,password);
@@ -109,12 +110,19 @@ valorAccountSubmit=async function(event){
    if(attach&&previous){snapshot=previous;localStorage.setItem(key+'-before-accounts-v1',JSON.stringify(previous));localStorage.setItem(key+'-legacy-linked',user.id)}
    else snapshot={state:valorAccountFreshState(),stage:null};
   }else{
-   try{user=await valorCloudAuth('login',username,password)}
+   try{if(/\s/.test(username))throw Error('Kullanıcı adı veya şifre hatalı.');user=await valorCloudAuth('login',username,password)}
    catch(e){
+    // The player may have typed their character name: look up the account it belongs to and sign in with that.
+    let resolved=null;
+    if(e.message==='Kullanıcı adı veya şifre hatalı.'){try{resolved=await valorCloudFetch('/rest/v1/rpc/login_username_for',{method:'POST',body:JSON.stringify({character_name:username})},false)}catch{}}
+    if(typeof resolved==='string'&&resolved&&valorAccountNormalize(resolved)!==norm){
+     user=await valorCloudAuth('login',resolved,password);username=resolved;valorAccountSelected=resolved;norm=valorAccountNormalize(resolved);local=valorAccountRegistry().find(a=>!a.cloud&&valorAccountNormalize(a.username)===norm);
+    }else{
     // A device-only account from before the server: move it to the cloud with the same name and password.
     if(e.message!=='Kullanıcı adı veya şifre hatalı.'||!local||!await valorCloudLocalPasswordOk(local,password))throw e;
     try{user=await valorCloudAuth('signup',username,password)}catch(e2){if(/alınmış/.test(e2.message))throw Error('Bu kullanıcı adı sunucuda başka bir oyuncuya ait. “Kayıt Ol” sekmesinden yeni bir adla kaydol; bu cihazdaki karakterin korunur.');throw e2}
     snapshot=valorAccountRead(valorAccountStorageKey(local.id));migrated=true;
+    }
    }
    if(!snapshot){row=await valorCloudLoad(user.id);
     if(row){snapshot=row.data;localStorage.setItem(valorCloudRevKey(user.id),String(row.rev))}
@@ -156,7 +164,7 @@ let valorCloudClaiming=false;
  const prevLogout=valorAccountLogout;
  valorAccountLogout=function(){if(valorAccountBusy)return;const was=valorAccountActive?.cloud;if(was){valorAccountPersist();const s=valorCloudSession();valorCloudFlush(true).catch(()=>{}).finally(()=>{if(s?.access_token)fetch(VALOR_CLOUD_URL+'/auth/v1/logout',{method:'POST',keepalive:true,headers:{apikey:VALOR_CLOUD_KEY,Authorization:'Bearer '+s.access_token}}).catch(()=>{})});valorCloudClearSession()}return prevLogout.apply(this,arguments)};
  const prevPage=valorAccountPage;
- valorAccountPage=function(){return prevPage.apply(this,arguments).replace('Kayıtlar bu tarayıcıda saklanır; veriler silinirse kaybolur.','Hesabın ve karakterin sunucuda saklanır; istediğin cihazdan giriş yapabilirsin.')};
+ valorAccountPage=function(){let html=prevPage.apply(this,arguments).replace('Kayıtlar bu tarayıcıda saklanır; veriler silinirse kaybolur.','Hesabın ve karakterin sunucuda saklanır; istediğin cihazdan giriş yapabilirsin.');if(valorAccountTab!=='register')html=html.replace('<label for="valor-account-username">Kullanıcı adı</label>','<label for="valor-account-username">Kullanıcı adı veya karakter adı</label>').replace('placeholder="Kullanıcı adın"','placeholder="Kullanıcı adın ya da karakter adın"');return html};
  const prevProfile=profile;
  profile=function(){const html=prevProfile.apply(this,arguments);return valorAccountActive?.cloud?html.replace('<div class="vauth-profile-link">','<div class="vauth-profile-link"><small id="valor-cloud-status" class="valor-cloud-status" data-state="'+valorCloudStatus+'">'+valorCloudStatusText()+'</small>'):html};
  addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&(valorCloudTimer||valorCloudDirty))valorCloudFlush(true)});
