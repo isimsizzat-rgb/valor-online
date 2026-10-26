@@ -102,3 +102,24 @@ function valorStageSimulateRun(area,diff,stats,cls=state.class,rng=Math.random){
 /* Saved runs created with the old foe formula get real stats once. */
 if(stageRun?.enemy&&!stageRun.enemy.stats&&stageRun.step%2===1){const ratio=stageRun.enemy.max?stageRun.enemy.hp/stageRun.enemy.max:1;stageNewEnemy(stageRun);stageRun.enemy.hp=Math.max(1,Math.round(stageRun.enemy.max*ratio));stageRunSave()}
 if(state.class&&['Zindan','Sahne Macerası','Sahneler'].includes(page))render();
+
+/* ---------- Refah (catch-up EXP) ----------
+   Players behind the ranking's top level earn +5% EXP per level of gap (max +100%).
+   The bonus switches off within 2 levels of the top, so it helps close the gap but never catches up.
+   Reference level comes from the ranking; with a server, valorRankRows() will hold real players. */
+const VALOR_WELFARE_STEP=.05,VALOR_WELFARE_MAX=1,VALOR_WELFARE_FREE_GAP=2;
+function valorWelfareReferenceLevel(){try{return Math.max(...valorRankRows().map(r=>Number(r.level)||1))}catch(e){return Number(state.level)||1}}
+function valorWelfareBonus(){if(!state?.class)return 0;const gap=valorWelfareReferenceLevel()-(Number(state.level)||1);return gap>VALOR_WELFARE_FREE_GAP?Math.min(VALOR_WELFARE_MAX,gap*VALOR_WELFARE_STEP):0}
+function valorWelfareXp(base){return Math.round((Number(base)||0)*(1+valorWelfareBonus()))}
+const valorWelfarePreviousEarnXP=earnXP;
+earnXP=function(amount){const gained=valorWelfareXp(amount);window.valorLastXpGain=gained;return valorWelfarePreviousEarnXP(gained)};
+function valorWelfareBadge(){
+ const anchor=document.getElementById('valor-xp-current');if(!anchor)return;
+ let badge=document.getElementById('valor-welfare-badge');const bonus=valorWelfareBonus();
+ if(!bonus){badge?.remove();return}
+ if(!badge){badge=document.createElement('span');badge.id='valor-welfare-badge';badge.style.cssText='margin-left:8px;padding:1px 7px;border:1px solid #7fc99a;border-radius:999px;color:#bff0cf;background:#173326cc;font-size:10px;white-space:nowrap';anchor.parentElement.appendChild(badge)}
+ badge.textContent='Refah +%'+Math.round(bonus*100)+' EXP';badge.title='Sıralamanın 1.si Sv.'+valorWelfareReferenceLevel()+'. Aradaki her seviye için +%5 EXP (en fazla +%100). 2 seviye yakına gelince bonus kapanır.';
+}
+const valorWelfarePreviousRender=render;
+render=function(){const result=valorWelfarePreviousRender.apply(this,arguments);try{valorWelfareBadge()}catch(e){}return result};
+render();

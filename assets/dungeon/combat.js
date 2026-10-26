@@ -27,7 +27,7 @@ function valorDungeonFinishFight(pending){
  if(battle.win){
   const gems=new Map((state.gemInventory||[]).map(g=>[g.type+':'+g.level,Number(g.count)||0])),coins=d.coins;
   d.cleared=pending.floor;d.best=Math.max(d.best,pending.floor);
-  vsReward(pending.floor);rewards.xp=valorDungeonFloorXp(pending.floor);rewards.coins=d.coins-coins;
+  vsReward(pending.floor);rewards.xp=window.valorLastXpGain||valorDungeonFloorXp(pending.floor);rewards.coins=d.coins-coins;
   for(const g of state.gemInventory||[]){const count=(Number(g.count)||0)-(gems.get(g.type+':'+g.level)||0);if(count>0){rewards.gem={type:g.type,level:g.level,count};break}}
  }
  const result={...battle,floor:pending.floor,opponent:vsBoss(pending.floor),rewards,owner:state};

@@ -117,12 +117,12 @@ function valorAdventureFight(i){
   state.adventureZoneWins=state.adventureZoneWins||{};
   state.adventureZoneWins[i]=(Number(state.adventureZoneWins[i])||0)+1;
  }
- const msg=(won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+zone.name+': '+(won?'+'+money(zone.gold)+' Altın, +'+zone.xp+' EXP'+(stone?', +1 Binek Taşı':''):'Ödül yok')+' · −10 Enerji';
+ const msg=(won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+zone.name+': '+(won?'+'+money(zone.gold)+' Altın, +'+(window.valorLastXpGain||zone.xp)+' EXP'+(stone?', +1 Binek Taşı':''):'Ödül yok')+' · −10 Enerji';
  state.logs=state.logs||[];
  state.logs.unshift(msg);
  state.logs=state.logs.slice(0,30);
  save();
  render();
- valorAdventureShowResult(zone,won,won?zone.gold:0,won?zone.xp:0,stone);
+ valorAdventureShowResult(zone,won,won?zone.gold:0,won?(window.valorLastXpGain||zone.xp):0,stone);
 }
 battle=valorAdventurePage;
