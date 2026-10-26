@@ -1,0 +1,12 @@
+/* Online guilds */
+.vgo-mini{min-height:30px!important;padding:3px 10px!important;font-size:11px!important;white-space:nowrap}
+.vgo-primary{border-color:#e0b863!important;background:linear-gradient(#8a6330,#4a3219)!important;color:#fbe3ae!important}
+.vgo-kick{margin-left:8px;border-color:#a0574c!important;color:#e3a08f!important}
+.vgo-req{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #806b4433}
+.vgo-req:last-of-type{border-bottom:0}
+.vgo-req>span:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vgo-req b{color:#ecd7b4;font-size:13px}.vgo-req small{color:#a9967a;font-size:11px}
+.vgo-req-actions{display:flex;gap:6px}
+.vgo-requests h3 small{margin-left:6px;padding:1px 7px;border-radius:9px;background:#a0574c;color:#fff;font-size:11px}
+.vgo-leave{display:block;width:100%;min-height:40px;margin-top:14px;border-color:#a0574c!important;background:#2a1717!important;color:#e3a08f!important}
+.vgh-member strong{display:flex;align-items:center;justify-content:flex-end}
