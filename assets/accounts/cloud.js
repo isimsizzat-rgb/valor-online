@@ -7,7 +7,7 @@ const VALOR_CLOUD_KEY='sb_publishable_ObO87ufTLmG9wmgmLITLIA_pMPH_hUu';
 const VALOR_CLOUD_SESSION='valor-cloud-session-v1';
 const VALOR_CLOUD_DOMAIN='@players.valor-online.app';
 const valorCloudRevKey=id=>'valor-cloud-rev-'+id;
-let valorCloudStatus='idle',valorCloudTimer=null,valorCloudFirstDirty=0,valorCloudBusy=null,valorCloudDirty=false,valorCloudBlocked=false;
+let valorCloudLastError='',valorCloudStatus='idle',valorCloudTimer=null,valorCloudFirstDirty=0,valorCloudBusy=null,valorCloudDirty=false,valorCloudBlocked=false;
 
 /* Turkish letters are spelled out so every username maps to one valid, unique e-mail address. */
 function valorCloudEmail(username){const map={'ç':'c-','ğ':'g-','ı':'i-','ö':'o-','ş':'s-','ü':'u-'};return valorAccountNormalize(username).replace(/[çğıöşü]/g,c=>map[c]).replace(/[^a-z0-9_-]/g,'')+VALOR_CLOUD_DOMAIN}
@@ -23,7 +23,7 @@ function valorCloudErrorText(status,body,fallback){
  if(code==='signup_disabled')return 'Yeni kayıtlar şu an kapalı.';
  if(status===429||/rate limit/i.test(code+msg))return 'Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar dene.';
  if(code==='email_address_invalid')return 'Bu kullanıcı adı kullanılamıyor. Başka bir ad dene.';
- return fallback||'Sunucu hatası ('+status+'). Biraz sonra tekrar dene.';
+ return fallback||'Sunucu hatası ('+status+(msg?': '+msg.slice(0,120):'')+'). Biraz sonra tekrar dene.';
 }
 async function valorCloudFetch(path,opt={},auth=true){
  const headers={apikey:VALOR_CLOUD_KEY,'Content-Type':'application/json',...(opt.headers||{})};
@@ -96,7 +96,7 @@ async function valorCloudFlush(keepalive=false){
  if(!valorAccountActive?.cloud||valorCloudBlocked)return;
  if(valorCloudBusy){valorCloudDirty=true;return valorCloudBusy}
  valorCloudDirty=false;valorCloudFirstDirty=0;valorCloudSetStatus('saving');
- valorCloudBusy=(async()=>{try{const ok=await valorCloudUpload(keepalive);if(!ok)return valorCloudConflict();valorCloudSetStatus('saved')}catch(e){valorCloudSetStatus(e.code==='offline'?'offline':'error');if(e.code==='no_session')return valorCloudExpired();clearTimeout(valorCloudTimer);valorCloudTimer=setTimeout(valorCloudFlush,30000);return}finally{valorCloudBusy=null}if(valorCloudDirty)valorCloudSchedule()})();
+ valorCloudBusy=(async()=>{try{const ok=await valorCloudUpload(keepalive);if(!ok)return valorCloudConflict();valorCloudLastError='';valorCloudSetStatus('saved')}catch(e){valorCloudLastError=String(e.message||e.code||'').slice(0,140);console.warn('Cloud save failed',e.status,e.code,e.message);valorCloudSetStatus(e.code==='offline'?'offline':'error');if(e.code==='no_session')return valorCloudExpired();clearTimeout(valorCloudTimer);valorCloudTimer=setTimeout(valorCloudFlush,30000);return}finally{valorCloudBusy=null}if(valorCloudDirty)valorCloudSchedule()})();
  return valorCloudBusy;
 }
 function valorCloudSchedule(){
@@ -106,7 +106,7 @@ function valorCloudSchedule(){
  clearTimeout(valorCloudTimer);valorCloudTimer=setTimeout(valorCloudFlush,now-valorCloudFirstDirty>20000?0:4000);
 }
 function valorCloudSetStatus(s){valorCloudStatus=s;const el=document.getElementById('valor-cloud-status');if(el){el.textContent=valorCloudStatusText();el.dataset.state=s}}
-function valorCloudStatusText(){return {idle:'☁ Bulut kayıt',pending:'☁ Kaydedilecek…',saving:'☁ Kaydediliyor…',saved:'☁ Buluta kaydedildi',offline:'☁ Çevrimdışı · bağlanınca kaydedilecek',error:'☁ Kaydedilemedi · tekrar denenecek'}[valorCloudStatus]||''}
+function valorCloudStatusText(){return {idle:'☁ Bulut kayıt',pending:'☁ Kaydedilecek…',saving:'☁ Kaydediliyor…',saved:'☁ Buluta kaydedildi',offline:'☁ Çevrimdışı · bağlanınca kaydedilecek',error:'☁ Kaydedilemedi · tekrar denenecek'+(valorCloudLastError?' ('+valorCloudLastError+')':'')}[valorCloudStatus]||''}
 function valorCloudOverlay(title,text,button,action){document.getElementById('valor-cloud-overlay')?.remove();const o=document.createElement('div');o.id='valor-cloud-overlay';o.className='vr-overlay';o.innerHTML='<div class="vr-dialog" role="alertdialog" aria-modal="true"><span class="vr-eyebrow">HESAP</span><h2>'+title+'</h2><p class="vr-lead">'+text+'</p><button type="button" class="vr-claim" onclick="'+action+'">'+button+'</button></div>';document.body.appendChild(o)}
 /* Another device saved a newer version: stop uploading and offer to load it. */
 function valorCloudConflict(){valorCloudBlocked=true;valorCloudSetStatus('error');valorCloudOverlay('Hesabın başka bir yerde açık','Bu karakter başka bir cihazda ya da sekmede daha yeni kaydedilmiş. Kayıtların karışmaması için en güncel kaydı yüklemen gerekiyor.','Güncel Kaydı Yükle','valorCloudReloadLatest()')}

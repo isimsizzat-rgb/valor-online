@@ -22,7 +22,11 @@ function valorRankOnlineRows(kind){
  const cur=valorRankOnline[kind];if(!cur?.rows)return null;
  const mine=valorRankMine();let found=false;
  const rows=cur.rows.map(r=>{const row={name:r.name,class:r.class,level:r.level,power:Number(r.power)||0,xp:Number(r.xp)||0,spirit:Number(r.spirit)||0,fame:Number(r.fame)||0,profile:r.profile,rank:Number(r.rank)};if(r.is_me){found=true;return {...row,...mine,rank:row.rank}}return row});
- if(!found&&cur.myRank)rows.push({...mine,rank:cur.myRank,outside:true});
+ // My row uses live values, so the list is re-sorted and numbered again; a stale server value can't put me in the wrong place.
+ if(found){rows.sort((a,b)=>(Number(b[kind])||0)-(Number(a[kind])||0)||(b.level-a.level));rows.forEach((r,i)=>r.rank=i+1)}
+ else if(cur.myRank){const lastShown=rows.length?rows[rows.length-1]:null;
+  if(lastShown&&(Number(mine[kind])||0)>(Number(lastShown[kind])||0)){rows.push({...mine});rows.sort((a,b)=>(Number(b[kind])||0)-(Number(a[kind])||0)||(b.level-a.level));rows.forEach((r,i)=>r.rank=i+1);if(rows.length>VALOR_RANK_LIMIT)rows.length=VALOR_RANK_LIMIT}
+  else rows.push({...mine,rank:cur.myRank,outside:true})}
  return rows;
 }
 const valorRankOfflinePage=valorLeaderboardPage;
