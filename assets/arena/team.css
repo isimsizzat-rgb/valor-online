@@ -1,0 +1,40 @@
+/* Takım Arenası */
+.vt-mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.vt-mode button{min-height:42px;font-size:13px;border-color:#786344;background:#231c1c;color:#b7a58a}
+.vt-mode button[aria-pressed=true]{border-color:#c9a36b;color:#f0d5a5;background:linear-gradient(#634a2c,#30241e);box-shadow:inset 0 -2px #d0aa65}
+.vt-page .arena-section-heading{flex-wrap:wrap}
+.vt-notice{margin:12px 0 0;padding:9px 12px;border:1px solid #7fc99a66;border-radius:7px;background:#173326aa;color:#cdebd6;font-size:12px}
+.vt-room,.vt-create,.vt-list{margin-top:8px}
+.vt-slots,.vt-invite{display:grid;gap:7px}
+.vt-slot,.vt-room-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:11px 12px;border:1px solid #9d7b4655;border-radius:7px;background:#17141188}
+.vt-slot>b,.vt-room-row>div>b{flex:1 1 auto;color:#ecd7b4;font-size:13px}
+.vt-slot>small{flex:1 0 100%;order:3;color:#a9967a;font-size:11px}
+.vt-slot b small{color:#c9b38a;font-weight:400}
+.vt-slot.vt-me{border-color:#c9a36b;box-shadow:inset 3px 0 #c9a36b}
+.vt-slot.vt-empty{justify-content:center;color:#7d6e58;border-style:dashed;font-size:12px}
+.vt-room-row>div{flex:1 1 160px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.vt-room-row small{color:#a9967a;font-size:11px}
+.vt-mini{min-height:32px;padding:5px 12px;font-size:12px}
+.vt-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
+.vt-actions button{min-height:42px;font-size:13px}
+.vt-primary{background:linear-gradient(#8a6330,#4a3219);border-color:#e0b863;color:#fbe3ae}
+.vt-invite{margin-top:12px;padding:10px;border:1px solid #6d5a3d;border-radius:8px;background:#120f0d99}
+.vt-invite>p{margin:0 0 2px;font-size:12px;color:#c9b38a}
+.vt-hint{font-size:11px;color:#a9967a;line-height:1.6}
+.vt-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.vt-form input,.vt-form select{min-height:42px;min-width:0;box-sizing:border-box}
+.vt-form button{min-height:42px}
+.vt-list .vt-room-row{margin-bottom:7px}
+.vt-pass{display:flex;gap:6px}
+.vt-pass input{width:110px;min-height:32px}
+.vt-result{max-width:640px;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+.vt-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;text-align:left}
+.vt-sides h3{margin:0 0 6px;font-size:13px;color:#d9bf8c}
+.vt-unit{display:grid;gap:3px;margin-bottom:6px;padding:6px 7px;border:1px solid #806b4444;border-radius:6px;background:#0d0b0e88}
+.vt-unit b{font-size:12px;color:#ecd7b4}.vt-unit small{display:block;font-size:10px;color:#a9967a}
+.vt-unit>span{font-size:10px;color:#c9b38a}
+.vt-unit.vt-me{border-color:#c9a36b}
+.vt-unit.vt-down{opacity:.5}
+.vt-hp{height:6px;border-radius:3px;background:#2a2020;overflow:hidden}
+.vt-hp i{display:block;height:100%;background:linear-gradient(90deg,#3fa865,#8be0a3)}
+@media(max-width:520px){.vt-sides{gap:6px}.vt-unit b{font-size:11px}.vt-unit small,.vt-unit>span{font-size:9px}.vt-result h2{margin:4px 0}.vt-result .arena-result-emblem{font-size:28px}}
