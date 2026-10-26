@@ -44,10 +44,16 @@ function valorTeamCheckResult(room,prevId){
  if(!seen||seen.split(':')[0]!==room.id||prevId!==room.id&&!seen){d.seenResult=key;return}
  if(seen===key||!room.result||room.result.reporter===me){d.seenResult=key;return}
  d.seenResult=key;
- const prep=JSON.parse(JSON.stringify(room.result));prep.start.forEach(u=>u.me=u.uid===me);(prep.battle.units||[]).forEach(u=>u.me=u.uid===me);
+ const prep=valorTeamFillPrep(JSON.parse(JSON.stringify(room.result)));
  if(!prep.start.some(u=>u.me))return; // I joined after this fight started
  const finish=()=>valorTeamApplyResult(prep);
  if(!(typeof valorTeamPlay==='function'&&page==='Savaş'&&valorTeamPlay(prep,finish)))finish();
+}
+/* Server results carry no portraits; add them (and mark which fighter is me). */
+function valorTeamFillPrep(prep){
+ const me=valorAccountActive.id,mine=document.getElementById('valor-hud-portrait')?.src;
+ const fill=u=>{u.me=u.uid===me;u.portrait=u.portrait||(u.me&&mine)||valorArenaPortrait(u.cls,u.gender)};
+ (prep.start||[]).forEach(fill);(prep.battle?.units||[]).forEach(fill);return prep;
 }
 function valorTeamApplyResult(prep){
  const d=valorTeamData(),battle=prep.battle;d.used++;let gold=0,fame=0,delta=0;
@@ -96,6 +102,15 @@ function valorTeamApplyResult(prep){
   if(valorTeamNet.busy)return;valorTeamNet.busy=true;
   try{
    if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{});
+   // The server picks the rivals and computes the fight (arena-fight function); local only if it is not deployed yet.
+   const srv=typeof valorFightCall==='function'?await valorFightCall({mode:'team'}):{missing:true};
+   if(!srv.missing){
+    if(!srv.prep){valorTeamNotice=valorFightError(srv.error);render();return}
+    const prep=valorTeamFillPrep(srv.prep);
+    const done=()=>valorTeamApplyResult(prep);
+    if(!(typeof valorTeamPlay==='function'&&valorTeamPlay(prep,done)))done();
+    return;
+   }
    const me=valorAccountActive.id,size=1+room.members.length,rivalSize=Math.random()<VALOR_TEAM_RIVAL3_CHANCE?3:2;
    let rivals=await valorTeamRpc('team_rivals',{n:rivalSize});rivals=(Array.isArray(rivals)?rivals:[]).filter(r=>r.combat&&classes.includes(r.class));
    const teamA=[valorTeamUnit(state.name||'Sen',state.class,valorArenaStats(),'A',true,document.getElementById('valor-hud-portrait')?.src,state.level),...room.members.map(m=>valorTeamUnit(m.name,m.cls,m.combat?{...m.combat}:valorTeamBotStats(Math.max(.1,m.ratio),m.cls),'A',false,m.portrait,m.level))];

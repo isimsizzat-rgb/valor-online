@@ -57,21 +57,44 @@ valorArenaPage=function(){
 };
 
 /* Rewards are the same as before: +5 fame, +500 gold, 10% luck stone on a win. */
-function valorArenaOnlineFinish(rival,battle){
+function valorArenaOnlineFinish(rival,battle,serverStored){
  const d=valorArenaData();d.used++;let gold=0,stone=0;
  if(battle.win){d.wins++;state.fame=(Number(state.fame)||0)+5;gold=500;state.gold+=gold;if(Math.random()<.10){const roll=Math.random();stone=roll<.60?1:roll<.90?2:3;addLuckStoneStack(stone,1)}}
  else if(battle.draw)d.draws=(d.draws||0)+1;else d.losses++;
  const result={...battle,opponent:rival.name,gold,stone,fame:battle.win?5:0,rank:null,oldRank:null,at:Date.now()};
  d.last=result;d.history.unshift({...result,log:undefined});d.history=d.history.slice(0,20);save();render();valorArenaResult(result);
- valorArenaRpc('arena_report',{target:rival.uid,won:!!battle.win,was_draw:!!battle.draw,fight_rounds:battle.rounds|0}).then(r=>{if(r==='limit')toast('Sunucu: bugünkü 10 savaş hakkın dolmuş.')}).catch(()=>{});
+ if(!serverStored)valorArenaRpc('arena_report',{target:rival.uid,won:!!battle.win,was_draw:!!battle.draw,fight_rounds:battle.rounds|0}).then(r=>{if(r==='limit')toast('Sunucu: bugünkü 10 savaş hakkın dolmuş.')}).catch(()=>{});
  valorArenaOnline.at=0; // refresh rivals, ranking and my position next time
 }
 const valorArenaOfflineFight=valorArenaFight;
-valorArenaFight=function(id){
+/* Fights are computed by the arena-fight server function so the result cannot be changed on the device.
+   Until that function is deployed (404) the fight runs locally as before. */
+let valorFightServerMissing=false;
+async function valorFightCall(body){
+ if(valorFightServerMissing)return {missing:true};
+ const s=typeof valorCloudFreshSession==='function'?await valorCloudFreshSession():null;if(!s)return {error:'Oturumun sona erdi. Tekrar giriş yap.'};
+ let res;try{res=await fetch(VALOR_CLOUD_URL+'/functions/v1/arena-fight',{method:'POST',headers:{apikey:VALOR_CLOUD_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)})}catch{return {error:'Sunucuya bağlanılamadı.'}}
+ if(res.status===404){valorFightServerMissing=true;return {missing:true}}
+ let data=null;try{data=await res.json()}catch{}
+ if(!res.ok&&!data?.error)return {error:'Sunucu hatası ('+res.status+')'};
+ return data||{error:'Sunucu hatası'};
+}
+function valorFightError(code){return {limit:'Bugünkü 10 savaş hakkını kullandın.',invalid:'Bu rakiple şu an savaşılamıyor. Listeyi yenile.',banned:'Hesabın yasaklı.',auth:'Oturumun sona erdi. Tekrar giriş yap.',closed:'Takım Arenası şu an kapalı.',not_leader:'Savaşı oda lideri başlatır.',no_rivals:'Şu an savaşacak rakip takım bulunamadı.'}[code]||String(code||'Savaş başlatılamadı.').replace(/^limit:(.*)$/,'$1 bugünkü takım savaşı hakkını doldurdu.')}
+let valorArenaFighting=false;
+valorArenaFight=async function(id){
  if(!valorArenaIsOnline())return valorArenaOfflineFight.apply(this,arguments);
- if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
+ if(page!=='Savaş'||!state.class||valorArenaPendingBattle||valorArenaFighting||document.getElementById('valor-arena-result'))return;
  if(valorArenaData().used>=10)return toast('Bugünkü 10 savaş hakkını kullandın');
  const rival=(valorArenaOnline.rivals||[]).find(p=>p.id===id);if(!rival)return;
+ valorArenaFighting=true;let r;
+ try{if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{});r=await valorFightCall({mode:'solo',target:rival.uid})}finally{valorArenaFighting=false}
+ if(r&&!r.missing){
+  if(!r.battle){valorArenaOnline.at=0;return toast(valorFightError(r.error))}
+  const battle=r.battle;
+  valorBattlePlay({left:{name:state.name||'Sen',portrait:valorBattlePortraitMine(),sub:state.class+' · Sv. '+state.level,maxHp:battle.myMaxHp},right:{name:rival.name,portrait:rival.portrait,sub:rival.cls+' · Sv. '+rival.level,maxHp:battle.enemyMaxHp},battle,meFirst:(battle.log?.[0]?.events?.[0]?.side||'me')==='me',
+   onDone:()=>valorArenaOnlineFinish(rival,battle,true)});
+  return;
+ }
  const mine=valorArenaStats(),battle=valorArenaWithFury(()=>valorBattleAnimPrevSimulate(mine,state.class,{...rival.combatStats},rival.cls));
  valorBattlePlay({left:{name:state.name||'Sen',portrait:valorBattlePortraitMine(),sub:state.class+' · Sv. '+state.level,maxHp:battle.myMaxHp},right:{name:rival.name,portrait:rival.portrait,sub:rival.cls+' · Sv. '+rival.level,maxHp:battle.enemyMaxHp},battle,meFirst:(battle.log?.[0]?.events?.[0]?.side||'me')==='me',
   onDone:()=>valorArenaOnlineFinish(rival,battle)});
