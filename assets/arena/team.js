@@ -2,6 +2,9 @@
    Local version: other room members and rivals are computer-controlled players from the arena list.
    Everything a server would provide goes through valorTeamRoomSource / valorTeamInviteCandidates. */
 const VALOR_TEAM_DAILY=15,VALOR_TEAM_WIN_GOLD=1000,VALOR_TEAM_WIN_FAME=5,VALOR_TEAM_RATING_WIN=20,VALOR_TEAM_RATING_LOSS=15;
+/* Rooms always hold 3. A team may enter with 1, 2 or 3 members; the rival team is 2 or 3 fighters picked
+   completely at random from the arena player pool with their own power (not matched to yours). */
+const VALOR_TEAM_CAPACITY=3,VALOR_TEAM_RIVAL3_CHANCE=.7;
 let valorArenaMode='solo',valorTeamInviteOpen=false,valorTeamJoinTarget=null,valorTeamNotice='';
 /* Open only 12.00-13.00 and 18.00-19.00 Istanbul time (UTC+3, no DST). */
 const VALOR_TEAM_WINDOWS=[[12,13],[18,19]];
@@ -22,12 +25,14 @@ function valorTeamData(){
  for(const [k,v] of [['wins',0],['losses',0],['draws',0],['rating',1000]])if(!Number.isFinite(d[k])){d[k]=v;changed=true}
  if(!Array.isArray(d.history)){d.history=[];changed=true}
  if(!Array.isArray(d.rooms)){d.rooms=[];changed=true}
+ if(d.room&&d.room.capacity!==VALOR_TEAM_CAPACITY){d.room.capacity=VALOR_TEAM_CAPACITY;changed=true}
+ if(d.rooms.some(r=>r.capacity!==VALOR_TEAM_CAPACITY)){d.rooms.forEach(r=>r.capacity=VALOR_TEAM_CAPACITY);changed=true}
  if(changed)save();return d;
 }
 function valorTeamRemaining(){return Math.max(0,VALOR_TEAM_DAILY-valorTeamData().used)}
 
 /* Computer-controlled players: names/classes from the arena list, power relative to the player. */
-function valorTeamPool(){return valorArenaPlayers().map(p=>({id:'npc-'+p.id,name:p.name,cls:p.cls,level:p.level,portrait:p.portrait}))}
+function valorTeamPool(){return valorArenaPlayers().map(p=>({id:'npc-'+p.id,name:p.name,cls:p.cls,level:p.level,portrait:p.portrait,power:p.power,combatStats:p.combatStats}))}
 function valorTeamPortrait(p){return p?.portrait||heroImages[Math.max(0,classes.indexOf(p?.cls))]}
 function valorTeamBotStats(ratio,cls){
  const snap=valorArenaStats(),mine=state.class==='Büyücü'?'Sihir':'Saldırı',primary=cls==='Büyücü'?'Sihir':'Saldırı',out={};
@@ -44,7 +49,7 @@ function valorTeamRoomSource(){
  const d=valorTeamData();
  if(d.roomsDay!==d.day||!d.rooms.length){
   const names=VALOR_TEAM_ROOM_NAMES.slice().sort(()=>Math.random()-.5).slice(0,7);
-  d.rooms=names.map((name,i)=>{const capacity=1+Math.floor(Math.random()*3),count=Math.max(1,Math.min(capacity,1+Math.floor(Math.random()*capacity))),members=valorTeamPick(count).map(p=>valorTeamMember(p,.8+Math.random()*.4));
+  d.rooms=names.map((name,i)=>{const capacity=VALOR_TEAM_CAPACITY,count=1+Math.floor(Math.random()*3),members=valorTeamPick(count).map(p=>valorTeamMember(p,.8+Math.random()*.4));
    return {id:'room-'+Date.now()+'-'+i,name,capacity,members,locked:Math.random()<.3,password:Math.random()<.3?String(1000+Math.floor(Math.random()*9000)):''}}).map(r=>({...r,locked:!!r.password}));
   d.roomsDay=d.day;save();
  }
@@ -55,9 +60,9 @@ function valorTeamCreateRoom(){
  if(!valorTeamOpen())return valorTeamClosedNotice();
  const d=valorTeamData();if(d.room)return;
  const name=(document.getElementById('vt-room-name')?.value||'').trim().slice(0,24)||((state.name||'Oyuncu')+' Odası');
- const capacity=Math.max(1,Math.min(3,Number(document.getElementById('vt-room-size')?.value)||3));
+ const capacity=VALOR_TEAM_CAPACITY;
  const password=(document.getElementById('vt-room-pass')?.value||'').trim().slice(0,12);
- d.room={id:'own-'+Date.now(),name,capacity,password,own:true,members:[]};valorTeamInviteOpen=capacity>1;valorTeamNotice='Odan kuruldu.'+(capacity>1?' Takım arkadaşlarını davet et ya da tek başına savaşa gir.':'');save();render();
+ d.room={id:'own-'+Date.now(),name,capacity,password,own:true,members:[]};valorTeamInviteOpen=capacity>1;valorTeamNotice='Odan kuruldu. Takım arkadaşlarını davet et ya da kendine güveniyorsan tek başına savaşa gir.';save();render();
 }
 function valorTeamJoinStart(id){if(!valorTeamOpen())return valorTeamClosedNotice();const room=valorTeamRoomSource().find(r=>r.id===id);if(!room)return;if(room.members.length>=room.capacity){valorTeamNotice='Bu oda dolu.';render();return}if(room.locked){valorTeamJoinTarget=id;render();return}valorTeamJoin(id,'')}
 function valorTeamJoin(id,password){
@@ -119,21 +124,21 @@ function valorTeamFight(){
 function valorTeamPrepare(){
  const room=valorTeamData().room,size=1+room.members.length,mine=valorArenaStats();
  const teamA=[valorTeamUnit(state.name||'Sen',state.class,mine,'A',true,document.getElementById('valor-hud-portrait')?.src,state.level),...room.members.map(m=>valorTeamUnit(m.name,m.cls,valorTeamBotStats(m.ratio,m.cls),'A',false,valorTeamPortrait(m),m.level))];
- const avg=(1+room.members.reduce((s,m)=>s+m.ratio,0))/size,rivals=valorTeamPick(size,room.members.map(m=>m.id));
- const teamB=rivals.map(p=>{const ratio=avg*(.9+Math.random()*.2);return valorTeamUnit(p.name,p.cls,valorTeamBotStats(ratio,p.cls),'B',false,valorTeamPortrait(p),p.level)});
+ const rivalSize=Math.random()<VALOR_TEAM_RIVAL3_CHANCE?3:2,rivals=valorTeamPick(rivalSize,room.members.map(m=>m.id));
+ const teamB=rivals.map(p=>valorTeamUnit(p.name,p.cls,p.combatStats?{...p.combatStats}:valorTeamBotStats(.3+Math.random()*2.7,p.cls),'B',false,valorTeamPortrait(p),p.level));
  const start=[...teamA,...teamB].map(u=>({name:u.name,cls:u.cls,side:u.side,me:u.me,maxHp:u.maxHp,portrait:u.portrait,level:u.level}));
- return {size,start,battle:valorArenaWithFury(()=>valorTeamSimulate(teamA,teamB))};
+ return {size,rivalSize,label:size+'v'+rivalSize,start,battle:valorArenaWithFury(()=>valorTeamSimulate(teamA,teamB))};
 }
 function valorTeamResolve(prep){
  if(!valorTeamOpen()){valorTeamCloseRoomsIfShut();valorTeamNotice='Takım Arenası kapandı; savaş başlatılamadı. Hakkın düşmedi.';render();return}
  const d=valorTeamData(),room=d.room;if(!room||valorTeamRemaining()<1)return;
- prep=prep||valorTeamPrepare();const size=prep.size,battle=prep.battle;d.used++;
+ prep=prep||valorTeamPrepare();const size=prep.size,label=prep.label,battle=prep.battle;d.used++;
  let gold=0,fame=0,delta=0;
  if(battle.win){d.wins++;gold=VALOR_TEAM_WIN_GOLD;fame=VALOR_TEAM_WIN_FAME;state.gold+=gold;state.fame=(Number(state.fame)||0)+fame;delta=VALOR_TEAM_RATING_WIN}
  else if(battle.draw)d.draws++;else{d.losses++;delta=-Math.min(d.rating,VALOR_TEAM_RATING_LOSS)}
  d.rating+=delta;
- const result={...battle,size,gold,fame,delta,rating:d.rating,room:room.name,at:Date.now()};
- d.history.unshift({win:battle.win,draw:battle.draw,size,rounds:battle.rounds,delta,at:result.at});d.history=d.history.slice(0,20);
+ const result={...battle,size,label,gold,fame,delta,rating:d.rating,room:room.name,at:Date.now()};
+ d.history.unshift({win:battle.win,draw:battle.draw,size,label,rounds:battle.rounds,delta,at:result.at});d.history=d.history.slice(0,20);
  save();render();valorTeamShowResult(result);
 }
 function valorTeamShowResult(r){
@@ -142,7 +147,7 @@ function valorTeamShowResult(r){
  const side=s=>r.units.filter(u=>u.side===s).map(bar).join('');
  const rounds=r.log.slice(0,80).map(l=>'<div class="arena-turn"><b>'+l.round+'. tur</b>'+l.acts.map(x=>'<p>'+escapeAttr(x.a)+' → '+escapeAttr(x.b)+': '+money(x.dmg)+(x.hit?valorArenaHitLabel(x.hit):'')+(x.ko?' <strong class="arena-critical">Düştü!</strong>':'')+'</p>').join('')+'</div>').join('');
  const overlay=document.createElement('div');overlay.id='valor-arena-result';overlay.className='valor-item-overlay';
- overlay.innerHTML='<section class="valor-item-dialog arena-result-dialog vt-result" role="dialog" aria-modal="true" aria-labelledby="vt-result-title"><div class="arena-result-emblem">'+(r.win?'✦':'⚔')+'</div><h2 id="vt-result-title">'+(r.draw?'BERABERLİK':r.win?'ZAFER':'MAĞLUBİYET')+'</h2><p>'+r.size+'v'+r.size+' · '+r.rounds+' tur</p><div class="vt-sides"><div><h3>Takımın</h3>'+side('A')+'</div><div><h3>Rakip Takım</h3>'+side('B')+'</div></div><details class="arena-combat-log"><summary>Tur detayları</summary>'+rounds+(r.log.length>80?'<p>… ilk 80 tur gösteriliyor</p>':'')+'</details><div class="arena-result-rewards">'+(r.win?'<b>+'+money(r.gold)+' Altın</b><b>+'+r.fame+' Şöhret</b>':'<span>Altın ve şöhret kaybetmedin.</span>')+'<b>3v3 Puanı '+(r.delta>=0?'+':'')+r.delta+' → '+r.rating+'</b></div><p class="arena-result-remaining">Kalan takım hakkı: '+valorTeamRemaining()+'/'+VALOR_TEAM_DAILY+'</p><button type="button" onclick="document.getElementById(\'valor-arena-result\').remove()">Devam Et</button></section>';
+ overlay.innerHTML='<section class="valor-item-dialog arena-result-dialog vt-result" role="dialog" aria-modal="true" aria-labelledby="vt-result-title"><div class="arena-result-emblem">'+(r.win?'✦':'⚔')+'</div><h2 id="vt-result-title">'+(r.draw?'BERABERLİK':r.win?'ZAFER':'MAĞLUBİYET')+'</h2><p>'+(r.label||r.size+'v'+r.size)+' · '+r.rounds+' tur</p><div class="vt-sides"><div><h3>Takımın</h3>'+side('A')+'</div><div><h3>Rakip Takım</h3>'+side('B')+'</div></div><details class="arena-combat-log"><summary>Tur detayları</summary>'+rounds+(r.log.length>80?'<p>… ilk 80 tur gösteriliyor</p>':'')+'</details><div class="arena-result-rewards">'+(r.win?'<b>+'+money(r.gold)+' Altın</b><b>+'+r.fame+' Şöhret</b>':'<span>Altın ve şöhret kaybetmedin.</span>')+'<b>3v3 Puanı '+(r.delta>=0?'+':'')+r.delta+' → '+r.rating+'</b></div><p class="arena-result-remaining">Kalan takım hakkı: '+valorTeamRemaining()+'/'+VALOR_TEAM_DAILY+'</p><button type="button" onclick="document.getElementById(\'valor-arena-result\').remove()">Devam Et</button></section>';
  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);
 }
 
@@ -170,11 +175,11 @@ function valorTeamPage(){
    +'<div class="vt-slot vt-me"><b>'+escapeAttr(state.name||'Sen')+' <small>(Sen'+(room.own?' · Lider':'')+')</small></b><small>'+escapeAttr(state.class)+' · Sv. '+state.level+' · '+money(combatPower())+' güç</small></div>'
    +room.members.map(m=>'<div class="vt-slot"><b>'+escapeAttr(m.name)+(!room.own&&m===room.members[0]?' <small>(Lider)</small>':'')+'</b><small>'+escapeAttr(m.cls)+' · Sv. '+m.level+' · '+money(Math.round(combatPower()*m.ratio))+' güç</small>'+(room.own?'<button type="button" class="vt-mini" onclick="valorTeamKick(\''+m.id+'\')">Çıkar</button>':'')+'</div>').join('')
    +Array.from({length:room.capacity-size},()=>'<div class="vt-slot vt-empty">Boş yer'+(room.own?'':'')+'</div>').join('')+'</div>'
-   +'<div class="vt-actions">'+(room.own&&!full?'<button type="button" onclick="valorTeamInviteOpen=!valorTeamInviteOpen;render()">'+(valorTeamInviteOpen?'Daveti Kapat':'Oyuncu Davet Et')+'</button>':'')+'<button type="button" class="vt-primary" '+(remaining<1?'disabled':'')+' onclick="valorTeamFight()">'+size+'v'+size+' Savaşa Gir</button><button type="button" onclick="valorTeamLeave()">Odadan Çık</button></div>';
+   +'<div class="vt-actions">'+(room.own&&!full?'<button type="button" onclick="valorTeamInviteOpen=!valorTeamInviteOpen;render()">'+(valorTeamInviteOpen?'Daveti Kapat':'Oyuncu Davet Et')+'</button>':'')+'<button type="button" class="vt-primary" '+(remaining<1?'disabled':'')+' onclick="valorTeamFight()">'+(size===1?'Tek Başına':size+' Kişiyle')+' Savaşa Gir</button><button type="button" onclick="valorTeamLeave()">Odadan Çık</button></div>';
   if(room.own&&valorTeamInviteOpen&&!full)html+='<div class="vt-invite"><p>Davet edilebilecek oyuncular</p>'+valorTeamInviteCandidates().map(p=>'<div class="vt-slot"><b>'+escapeAttr(p.name)+'</b><small>'+escapeAttr(p.cls)+' · Sv. '+p.level+'</small><button type="button" class="vt-mini" onclick="valorTeamInvite(\''+p.id+'\')">Davet Et</button></div>').join('')+'</div>';
-  html+='<p class="vt-hint">Savaşta herkes sırayla rastgele bir rakibe saldırır. Rakip takım, takımınla aynı sayıda ve benzer güçte oyunculardan oluşur.</p></section>';
+  html+='<p class="vt-hint">Savaşa 1, 2 ya da 3 kişiyle girebilirsin. Karşına rastgele 2 ya da 3 kişilik bir takım çıkar; rakipler senden çok zayıf da olabilir, çok güçlü de. Eksik girersen sayıca az savaşırsın. Herkes sırayla rastgele bir rakibe saldırır.</p></section>';
  }else{
-  html+='<section class="vt-create"><div class="arena-section-heading"><h2>Oda Kur</h2><span>1, 2 veya 3 kişilik</span></div><div class="vt-form"><input id="vt-room-name" maxlength="24" placeholder="Oda adı"><select id="vt-room-size" aria-label="Oda kapasitesi"><option value="3">3 kişi (3v3)</option><option value="2">2 kişi (2v2)</option><option value="1">1 kişi (1v1)</option></select><input id="vt-room-pass" maxlength="12" placeholder="Şifre (isteğe bağlı)" autocomplete="off"><button type="button" class="vt-primary" onclick="valorTeamCreateRoom()">Oda Kur</button></div></section>'
+  html+='<section class="vt-create"><div class="arena-section-heading"><h2>Oda Kur</h2><span>3 kişilik</span></div><div class="vt-form"><input id="vt-room-name" maxlength="24" placeholder="Oda adı"><input id="vt-room-pass" maxlength="12" placeholder="Şifre (isteğe bağlı)" autocomplete="off"><button type="button" class="vt-primary" onclick="valorTeamCreateRoom()">Oda Kur</button></div></section>'
    +'<section class="vt-list"><div class="arena-section-heading"><h2>Açık Odalar</h2><button type="button" class="vt-mini" onclick="valorTeamRefreshRooms()">Yenile</button></div>'
    +valorTeamRoomSource().map(r=>{const full=r.members.length>=r.capacity;return '<div class="vt-room-row"><div><b>'+(r.locked?'🔒 ':'')+escapeAttr(r.name)+'</b><small>Lider: '+escapeAttr(r.members[0]?.name||'-')+' · '+r.members.length+' / '+r.capacity+' kişi</small></div>'+(valorTeamJoinTarget===r.id?'<div class="vt-pass"><input id="vt-join-pass" maxlength="12" placeholder="Şifre" autocomplete="off"><button type="button" class="vt-mini" onclick="valorTeamJoin(\''+r.id+'\',document.getElementById(\'vt-join-pass\').value.trim())">Gir</button></div>':'<button type="button" class="vt-mini" '+(full?'disabled':'')+' onclick="valorTeamJoinStart(\''+r.id+'\')">'+(full?'Dolu':'Katıl')+'</button>')+'</div>'}).join('')+'</section>';
  }
