@@ -7,7 +7,7 @@ const VALOR_STARTER_NAMES={
  'Okçu':['Acemi Yayı','Yıpranmış Avcı Yeleği','Eski Deri Başlık','Yıpranmış Çizmeler','Ahşap Boncuklu Kolye','Bakır Halkalar']
 };
 function valorStarterItem(slot,cls){const i=VALOR_STARTER_SLOTS.indexOf(slot);return {id:valorUniqueItemId(),slot,cls,name:VALOR_STARTER_NAMES[cls][i],level:1,plus:0,epic:false,affixes:[],starterSet:'starter-v1'};}
-function valorStarterHero(){return state.equipped?.Zırh?.starterSet==='starter-v1'&&!state.equipped?.Kanat?.wingId?VALOR_STARTER_ART[VALOR_STARTER_CLASS_IDS[state.class]]?.hero:null;}
+function valorStarterHero(){if(state.gender==='male'||state.gender==='female')return valorCreationPortrait(state.class,state.gender);return state.equipped?.Zırh?.starterSet==='starter-v1'&&!state.equipped?.Kanat?.wingId?VALOR_STARTER_ART[VALOR_STARTER_CLASS_IDS[state.class]]?.hero:null;}
 const valorStarterPreviousIcon=equipmentIcon;
 equipmentIcon=function(it){const art=VALOR_STARTER_ART[VALOR_STARTER_CLASS_IDS[it?.cls]],slot=VALOR_STARTER_SLOTS.indexOf(it?.slot);return it?.starterSet==='starter-v1'&&art&&slot>=0?art.icons[slot]:valorStarterPreviousIcon(it);};
 const valorStarterPreviousPower=equipmentPower;
@@ -22,7 +22,7 @@ initClass=function(cls,nick){
   if(state.class||!VALOR_STARTER_CLASS_IDS[cls])return;
   const name=String(nick||'').trim();if(name.length<3||name.length>20)return;
   const fresh=valorAccountFreshState();
-  state={...fresh,class:cls,name,stones:{},shards:0,papers:0,starterCharacterV1:true,
+  state={...fresh,class:cls,gender:creationGender==='female'?'female':'male',name,stones:{},shards:0,papers:0,starterCharacterV1:true,
     valorDiamondGrant20261022:true,valorAllSetsTestV1:true,testStone8Gift20261022:true,gemInventory:[],gemVisualTest70v1:true,mountSpiritFragments:0,mountCraftCards:[],
     mountsV1:{owned:[],cards:[],souls:0,temporary:[],training:Array.from({length:4},()=>({level:0,xp:0})),stones:0,bonus200v1:true,bonus99999v1:true},
     astrologyV1:{crimsonFury:0,ironWill:0,astralFlame:0,starVeil:0,fateBreaker:0,nightVeil:0,endlessResistance:0,lifeLight:0}};
