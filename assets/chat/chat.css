@@ -1,0 +1,21 @@
+/* Chat */
+.vch-page{display:flex;flex-direction:column;gap:8px}
+.vch-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vch-tabs button{min-height:40px;font-size:13px;border-color:#786344;background:#231c1c;color:#b7a58a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vch-tabs button[aria-pressed=true]{border-color:#c9a36b;color:#f0d5a5;background:linear-gradient(#634a2c,#30241e);box-shadow:inset 0 -2px #d0aa65}
+.vch-list{height:min(56dvh,520px);overflow-y:auto;overscroll-behavior:contain;padding:8px;border:1px solid #806b4466;border-radius:10px;background:#0d0b0ecc;display:flex;flex-direction:column;gap:7px}
+.vch-msg{max-width:86%;align-self:flex-start;padding:6px 10px 7px;border:1px solid #806b4444;border-radius:4px 12px 12px 12px;background:#1c1714}
+.vch-msg.mine{align-self:flex-end;border-radius:12px 4px 12px 12px;background:#2b2116;border-color:#a8854c66}
+.vch-meta{display:flex;align-items:center;gap:6px}
+.vch-meta b{font-size:12px}.vch-meta small{font-size:10px;color:#8f7d62}
+.vch-more{min-height:0!important;margin-left:auto;padding:0 2px!important;border:0!important;background:none!important;box-shadow:none!important;color:#6e5d46;font-size:12px;line-height:1;cursor:pointer}
+.vch-msg p{margin:3px 0 0;font-size:13px;line-height:1.45;color:#e8dcc2;overflow-wrap:anywhere;white-space:pre-wrap}
+.vch-empty{margin:auto;text-align:center;color:#a9967a;font-size:13px}
+.vch-error{margin:0;padding:8px 10px;border:1px solid #a0574c;border-radius:7px;background:#2a1717;color:#e3a08f;font-size:12px}
+.vch-form{display:grid;grid-template-columns:1fr auto;gap:8px}
+.vch-form input{min-height:44px;min-width:0;padding:0 12px;font-size:16px;box-sizing:border-box}
+.vch-form button{min-height:44px;padding:0 16px;border-color:#e0b863;background:linear-gradient(#8a6330,#4a3219);color:#fbe3ae}
+.vch-count{align-self:flex-end;margin-top:-4px;font-size:10px;color:#8f7d62}
+.vch-blocked{font-size:12px;color:#bca98c}.vch-blocked div{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.vch-blocked button{min-height:28px;padding:0 10px;font-size:11px}
+.vch-rules{margin:0;font-size:10.5px;color:#8f7d62;line-height:1.5}
