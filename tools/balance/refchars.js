@@ -1,4 +1,5 @@
 // Reference characters for balance measurement. Runs inside the game page.
+// Every reference wears 5 refined affixes at 5 stars (refining costs 1,000 gold, so new players have them on day 0).
 window.VALOR_REFS=[
  {id:'R0',day:0,level:1,gear:'starter',gearLevel:1,tier:0,plus:0,pet:0,astro:0,mount:0,medal:null},
  {id:'R1',day:10,level:25,gear:'starter',gearLevel:1,tier:1,plus:6,pet:3,astro:2,mount:15,medal:null},
@@ -14,7 +15,7 @@ window.valorRefApply=function(r,cls='Savaşçı'){
  for(const slot of VALOR_STARTER_SLOTS){
   const it=r.gear==='starter'?valorStarterItem(slot,cls):item(slot,cls,r.gearLevel);
   it.plus=r.plus;it.evolutionTier=r.tier;it.epic=r.tier>0;it.gems=[];
-  it.affixes=r.gear==='starter'&&r.tier===0&&r.plus===0?[]:Array.from({length:5},()=>({type:pool[(k++)%pool.length],stars:5}));
+  it.affixes=Array.from({length:5},()=>({type:pool[(k++)%pool.length],stars:5}));
   state.inventory.push(it);state.equipped[slot]=it;
  }
  if(r.medal){const m={id:'ref-medal',slot:'Madalyon',name:'Madalyon',medallionId:r.medal,expiresAt:Date.now()+864e5,boughtAt:Date.now()};state.inventory.push(m);state.equipped.Madalyon=m}

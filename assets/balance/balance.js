@@ -20,8 +20,9 @@ function valorBalanceInterp(anchors,x){
 }
 
 /* ---------- Dungeon ---------- */
-/* Target: R0 (new) floor 3, R1 (day 10) floor 15, R2 (day 30) 33, R3 (day 60) 52, R4 (day 90) 70, peak build 100. */
-const VALOR_DUNGEON_ANCHORS=[[1,6700],[3,9600],[15,86000],[33,201000],[52,361000],[70,1210000],[100,8200000]];
+/* 2026-10-27: floors 1-15 and Kızıl Orman recalibrated for references wearing refined affixes (new player ~64k power).
+   Target: R0 (new) floor 3, R1 (day 10) floor 15, R2 (day 30) 33, R3 (day 60) 52, R4 (day 90) 70, peak build 100. */
+const VALOR_DUNGEON_ANCHORS=[[1,45000],[3,60000],[15,110000],[33,201000],[52,361000],[70,1210000],[100,8200000]];
 /* Every 5th floor is a boss (+12%), every 10th a great boss (+25%): gates the player must grow into. */
 function valorDungeonFloorMult(floor){return floor%10===0?1.25:floor%5===0?1.12:1}
 function valorDungeonBasePower(floor){
@@ -37,7 +38,7 @@ vsEnemy=function(floor){const f=Math.max(1,Math.min(100,Math.floor(Number(floor)
 /* Per area [Kolay, Zor, Kabus] base power of the first foe. Foes ramp +5% each, the boss is +25%.
    Kolay: the area's entry character clears it reliably. Kabus: the character at the end of the area
    clears it about half the time. Zor sits between them. */
-const VALOR_STAGE_POWER=[[3000,11600,35800],[35000,54600,85000],[83000,112000,152000],[146000,278000,530000]];
+const VALOR_STAGE_POWER=[[22000,32000,46000],[35000,54600,85000],[83000,112000,152000],[146000,278000,530000]];
 const VALOR_STAGE_DIFFS=['Kolay','Zor','Kabus'];
 /* Late areas (Buzul Dağları 51-75, Cehennem Ovaları 76-100) are 25% stronger. */
 const VALOR_STAGE_LATE_MULT=[1,1,1.25,1.25];
