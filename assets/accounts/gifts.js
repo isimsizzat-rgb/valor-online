@@ -1,4 +1,4 @@
-/* Server gifts (supabase/gifts.sql): each active gift is given once per account, to existing and new players.
+/* Server gifts (supabase/gifts.sql): each active gift (diamonds and/or gold) is given once per account, to existing and new players.
    The server adds the diamonds and bumps the save revision; the game adds the same amount locally and adopts
    the new revision, so the next upload is neither cut by the save guard nor seen as a conflict. */
 const valorGifts={busy:false,checkedAt:0,off:false};
@@ -21,8 +21,9 @@ async function valorGiftsCheck(force){
    if(result?.status!=='ok')continue;
    if(state!==before||valorAccountActive?.id!==owner){valorCloudConflict();return}
    state.diamonds=Math.max(0,Number(state.diamonds)||0)+Number(result.diamonds||0);
+   state.gold=Math.max(0,Number(state.gold)||0)+Number(result.gold||0);
    localStorage.setItem(valorCloudRevKey(owner),String(result.rev));
-   save();render();toast('🎁 +'+money(result.diamonds)+' elmas hediye hesabına eklendi!');
+   save();render();toast('🎁 '+[result.diamonds?'+'+money(result.diamonds)+' elmas':'',result.gold?'+'+money(result.gold)+' altın':''].filter(Boolean).join(', ')+' hediye hesabına eklendi!');
   }
  }catch(e){if(e.status===404||e.code==='PGRST202')valorGifts.off=true}
  finally{valorGifts.busy=false;if(typeof valorCloudDirty!=='undefined'&&valorCloudDirty&&!valorCloudBlocked)valorCloudSchedule()}
