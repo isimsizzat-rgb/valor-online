@@ -1,10 +1,11 @@
-/* Four-stage evolution for beginner equipment and approved warrior/mage scene sets. */
+/* Four-stage evolution for all three classes and every supported equipment set. */
 (function(){
  const names=['Normal','Epik','Ebedi','İlahi'],colors=['#b7bdc9','#d5b16b','#bda0ef','#f0db9e'];
  const epicCosts=[10,30,90];
  const oldPower=equipmentPower;let pending=null;
- function sceneSet(it){if(!it||it.starterSet)return null;const families=it.cls==='Savaşçı'?['varkhan','mordrak','lumeris']:it.cls==='Büyücü'?['oryndis','aeloria','zephyriel']:null;if(!families)return null;const level=Number(it.level);return level>75&&level<=100?families[2]:level>50&&level<=75?families[1]:level>25&&level<=50?families[0]:null}
- const eligible=it=>!!it&&(it.starterSet==='starter-v1'||sceneSet(it))&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
+ const familiesByClass={'Savaşçı':['varkhan','mordrak','lumeris'],'Büyücü':['oryndis','aeloria','zephyriel'],'Okçu':['selthir','vaelthorn','eryndor']};
+ function sceneSet(it){if(!it||it.starterSet)return null;const families=familiesByClass[it.cls],level=Number(it.level);if(!families)return null;return level>75&&level<=100?families[2]:level>50&&level<=75?families[1]:level>25&&level<=50?families[0]:null}
+ const eligible=it=>!!it&&!!familiesByClass[it.cls]&&(it.starterSet==='starter-v1'||(Number(it.level)>=1&&Number(it.level)<=25)||sceneSet(it))&&VALOR_STARTER_SLOTS.includes(it.slot)&&!it.wingId&&!it.marketItemId;
  const artBanks={
   'Savaşçı':{starter:typeof VALOR_WARRIOR_EVOLUTION_ART!=='undefined'?VALOR_WARRIOR_EVOLUTION_ART:null,varkhan:typeof VALOR_WARRIOR_VARKHAN_ART!=='undefined'?VALOR_WARRIOR_VARKHAN_ART:null,mordrak:typeof VALOR_WARRIOR_MORDRAK_ART!=='undefined'?VALOR_WARRIOR_MORDRAK_ART:null,lumeris:typeof VALOR_WARRIOR_LUMERIS_ART!=='undefined'?VALOR_WARRIOR_LUMERIS_ART:null},
   'Okçu':{starter:VALOR_ARCHER_STARTER_ART,selthir:VALOR_ARCHER_SELTHIR_ART,vaelthorn:VALOR_ARCHER_VAELTHORN_ART,eryndor:VALOR_ARCHER_ERYNDOR_ART},
@@ -33,13 +34,13 @@
  function costMarkup(it){const cost=stoneCost(it),owned=stoneStock();return cost?'<p class="evo-cost '+(owned<cost?'evo-cost-missing':'')+'">Epik Taşı: <b>'+money(cost)+'</b> · Mevcut: <b>'+money(owned)+'</b>'+(owned<cost?' · Yetersiz':'')+'</p>':''}
  function label(it){return names[tier(it)]+' +'+(Number(it.plus)||0)}
  function find(id){return veFindItem(id)}
- function button(id){const b=document.createElement('button');b.type='button';b.className='evo-button';b.textContent='EVRİMLEŞTİR';b.disabled=stoneStock()<stoneCost(find(id));b.onclick=()=>valorEvolutionAsk(id);return b}
+ function button(id){const b=document.createElement('button');b.type='button';b.className='evo-button';b.textContent='EVRİMLEŞTİR';const it=find(id);b.disabled=Number(it?.plus)!==21||stoneStock()<stoneCost(it);b.onclick=()=>valorEvolutionAsk(id);return b}
  function panel(it,withButton=true){
-  const t=tier(it),ready=it.plus===21&&t<3,p=equipmentPower(it),next=t<3?at(it,t+1,0):null;
+  const t=tier(it),ready=Number(it.plus)===21&&t<3,p=equipmentPower(it),next=t<3?at(it,t+1,0):null;
   const el=document.createElement('section');el.className='evo-panel';el.style.setProperty('--evo-color',colors[t]);
   el.innerHTML='<b class="evo-current">'+label(it)+'</b><div class="evo-track">'+names.map((name,i)=>'<span class="'+(i===t?'active':'')+'">'+name+'</span>').join('')+'</div>'+(next!==null?'<p>'+names[t]+' +21 → '+names[t+1]+' +0</p><div class="evo-values"><span>Şimdi <strong>'+valorEquipmentStatsText(it,p)+'</strong></span><span>'+names[t+1]+' +0 <strong>'+valorEquipmentStatsText(it,next)+'</strong></span></div><small>'+(ready?'Evrime hazır. + seviyesi sıfırlanır; taşlar ve efsunlar korunur.':'+21’e ulaştığında sonraki aşamaya evrimleştirebilirsin.')+'</small>':'<small>'+(it.plus===21?'İlahi +21 · Son gelişim aşaması.':'Son evrim aşaması · +21’e kadar güçlendirebilirsin.')+'</small>');
   if(t<3)el.insertAdjacentHTML('beforeend',costMarkup(it));
-  if(withButton&&ready)el.appendChild(button(it.id));return el;
+  if(withButton&&t<3){el.appendChild(button(it.id));if(!ready){const enhance=document.createElement('button');enhance.type='button';enhance.className='evo-enhance-link';enhance.dataset.itemId=String(it.id);enhance.textContent='Güçlendirmeye Git';el.appendChild(enhance)}}return el;
  }
  function decoratePopup(it,id){
   if(!artFor(it))return;const root=document.getElementById(id),dialog=root?.querySelector('.valor-item-dialog');if(!dialog)return;
@@ -59,14 +60,14 @@
  };
  // Template serialization drops DOM listeners, so bind evolution controls after render.
  const oldRender=render;
- render=function(){const r=oldRender.apply(this,arguments);document.querySelectorAll('#main .evo-button').forEach(b=>{b.onclick=()=>valorEvolutionAsk(vwSelectedItemId)});return r};
+ render=function(){const r=oldRender.apply(this,arguments);document.querySelectorAll('#main .evo-button').forEach(b=>{b.onclick=()=>valorEvolutionAsk(vwSelectedItemId)});document.querySelectorAll('#main .evo-enhance-link').forEach(b=>{b.onclick=()=>{const id=b.dataset.itemId;if(!find(id))return;workTab='enhance';vwSelectedItemId=id;render();vwOpenEnhance(id)}});return r};
  const oldDraw=vwDrawEnhance;
  vwDrawEnhance=function(){const r=oldDraw.apply(this,arguments),it=vwEnhanceItem(),root=document.getElementById('vw-enhance-overlay');if(eligible(it)&&root){root.querySelector('.vw-enhance-dialog').dataset.evolutionTier=String(tier(it))}return r};
  const oldEpic=epic;
- epic=function(id){const it=find(id);if(eligible(it)){if(it.plus!==21)return toast('Evrim için ekipmanı +21 yapmalısın.');return valorEvolutionAsk(id)}return oldEpic.apply(this,arguments)};
+ epic=function(id){const it=find(id);if(eligible(it)){if(Number(it.plus)!==21)return toast('Evrim için ekipmanı +21 yapmalısın.');return valorEvolutionAsk(id)}return oldEpic.apply(this,arguments)};
  window.valorEvolutionCancel=function(){pending=null;document.getElementById('valor-evolution-confirm')?.remove()};
  window.valorEvolutionAsk=function(id){
-  const it=find(id);if(!eligible(it)||it.plus!==21||tier(it)>=3)return toast('Bu ekipman şu anda evrimleşemez.');
+  const it=find(id);if(!eligible(it)||Number(it.plus)!==21||tier(it)>=3)return toast('Bu ekipman şu anda evrimleşemez.');
   if(stoneStock()<stoneCost(it))return toast('Epik Taşı yetersiz. Gereken: '+stoneCost(it)+' · Mevcut: '+stoneStock());
   valorEvolutionCancel();pending={owner:state,item:it,id:it.id,tier:tier(it),from:equipmentPower(it),cost:stoneCost(it),enhance:!!document.getElementById('vw-enhance-overlay')};
   const root=document.createElement('div');root.id='valor-evolution-confirm';root.className='evo-overlay';
@@ -74,7 +75,7 @@
   root.querySelector('.evo-cancel').onclick=valorEvolutionCancel;root.querySelector('.evo-confirm').onclick=valorEvolutionConfirm;root.addEventListener('click',e=>{if(e.target===root)valorEvolutionCancel()});document.body.append(root);root.querySelector('.evo-confirm').focus();
  };
  window.valorEvolutionConfirm=function(){
-  const p=pending;if(!p)return;const it=find(p.id);if(state!==p.owner||it!==p.item||!eligible(it)||it.plus!==21||tier(it)!==p.tier||equipmentPower(it)!==p.from){valorEvolutionCancel();return toast('Ekipman değişti. Evrimi yeniden aç.');}
+  const p=pending;if(!p)return;const it=find(p.id);if(state!==p.owner||it!==p.item||!eligible(it)||Number(it.plus)!==21||tier(it)!==p.tier||equipmentPower(it)!==p.from){valorEvolutionCancel();return toast('Ekipman değişti. Evrimi yeniden aç.');}
   if(stoneCost(it)!==p.cost||stoneStock()<p.cost){valorEvolutionCancel();return toast('Epik Taşı yetersiz. Gereken: '+stoneCost(it)+' · Mevcut: '+stoneStock())}
   const before={shards:state.shards,tier:it.evolutionTier,epic:it.epic,plus:it.plus};
   pending=null;document.getElementById('valor-evolution-confirm')?.remove();
@@ -88,7 +89,7 @@
  const oldGo=go;go=function(){valorEvolutionCancel();return oldGo.apply(this,arguments)};
  document.addEventListener('keydown',e=>{const root=document.getElementById('valor-evolution-confirm');if(!root)return;if(e.key==='Escape'){e.preventDefault();valorEvolutionCancel()}if(e.key==='Tab'){const a=[...root.querySelectorAll('button')];if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a.at(-1).focus()}else if(!e.shiftKey&&document.activeElement===a.at(-1)){e.preventDefault();a[0].focus()}}});
  const style=document.createElement('style');style.textContent=`
-.evo-panel{padding:14px;margin:12px 0;border:1px solid var(--evo-color,#ac9063);border-radius:8px;background:#121016;color:#dcd0bd;text-align:left}.evo-current{display:block;color:var(--evo-color);font:700 19px Georgia}.evo-track{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.evo-track span{padding:4px 7px;color:#8d8580;border:1px solid #ffffff15;border-radius:4px;font:11px system-ui}.evo-track .active{color:var(--evo-color);border-color:var(--evo-color)}.evo-panel p,.evo-panel small{font:12px/1.7 system-ui;color:#c6bca9}.evo-panel small{display:block}.evo-values{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.evo-values span{display:block;font:11px/1.6 system-ui;color:#bfb19b}.evo-values strong{display:block;font:700 20px Georgia;color:#f0d8a1;margin-top:4px}.evo-cost b{color:#efd198}.evo-cost-missing,.evo-cost-missing b{color:#ed9990!important}.evo-button:disabled{opacity:.45;cursor:not-allowed}.evo-button{width:100%;min-height:44px;margin-top:12px;background:#382b1d;color:#f1d79b;border:1px solid #b59961;border-radius:5px}.evo-badge{position:absolute;bottom:3px;left:3px;padding:2px 4px;background:#0a090ddd;border-radius:3px;font:9px Georgia;pointer-events:none}.bag-slot[data-evolution-tier="2"],.vw-item[data-evolution-tier="2"]{border-color:#bda0ef!important}.bag-slot[data-evolution-tier="3"],.vw-item[data-evolution-tier="3"]{border-color:#f0db9e!important;box-shadow:inset 0 0 8px #e7d4a133}.evo-overlay{position:fixed;inset:0;z-index:1000001;display:grid;place-items:center;padding:16px;background:#08070be8}.evo-dialog{width:min(100%,420px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:22px;border:1px solid #b59961;border-radius:10px;background:#1d171b;color:#ead8b6}.evo-dialog h2{font:700 25px Georgia;color:#efd198}.evo-dialog p{font:13px/1.7 system-ui}.evo-confirm-stages{font:700 22px Georgia;text-align:center;color:#efd198;margin:20px 0}.evo-confirm-stages span{display:block;padding:9px;color:#9c8660}.evo-confirm-actions{display:flex;gap:10px}.evo-confirm-actions button{flex:1;min-height:44px;border:1px solid #9c8458;border-radius:5px;background:#34271d;color:#f1d79b}
+.evo-panel{padding:14px;margin:12px 0;border:1px solid var(--evo-color,#ac9063);border-radius:8px;background:#121016;color:#dcd0bd;text-align:left}.evo-current{display:block;color:var(--evo-color);font:700 19px Georgia}.evo-track{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.evo-track span{padding:4px 7px;color:#8d8580;border:1px solid #ffffff15;border-radius:4px;font:11px system-ui}.evo-track .active{color:var(--evo-color);border-color:var(--evo-color)}.evo-panel p,.evo-panel small{font:12px/1.7 system-ui;color:#c6bca9}.evo-panel small{display:block}.evo-values{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.evo-values span{display:block;font:11px/1.6 system-ui;color:#bfb19b}.evo-values strong{display:block;font:700 20px Georgia;color:#f0d8a1;margin-top:4px}.evo-cost b{color:#efd198}.evo-cost-missing,.evo-cost-missing b{color:#ed9990!important}.evo-enhance-link{display:block;width:100%;min-height:44px;margin-top:8px;border:1px solid #766347;border-radius:5px;background:#1b181c;color:#d7c5a6}.evo-button:disabled{opacity:.45;cursor:not-allowed}.evo-button{width:100%;min-height:44px;margin-top:12px;background:#382b1d;color:#f1d79b;border:1px solid #b59961;border-radius:5px}.evo-badge{position:absolute;bottom:3px;left:3px;padding:2px 4px;background:#0a090ddd;border-radius:3px;font:9px Georgia;pointer-events:none}.bag-slot[data-evolution-tier="2"],.vw-item[data-evolution-tier="2"]{border-color:#bda0ef!important}.bag-slot[data-evolution-tier="3"],.vw-item[data-evolution-tier="3"]{border-color:#f0db9e!important;box-shadow:inset 0 0 8px #e7d4a133}.evo-overlay{position:fixed;inset:0;z-index:1000001;display:grid;place-items:center;padding:16px;background:#08070be8}.evo-dialog{width:min(100%,420px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:22px;border:1px solid #b59961;border-radius:10px;background:#1d171b;color:#ead8b6}.evo-dialog h2{font:700 25px Georgia;color:#efd198}.evo-dialog p{font:13px/1.7 system-ui}.evo-confirm-stages{font:700 22px Georgia;text-align:center;color:#efd198;margin:20px 0}.evo-confirm-stages span{display:block;padding:9px;color:#9c8660}.evo-confirm-actions{display:flex;gap:10px}.evo-confirm-actions button{flex:1;min-height:44px;border:1px solid #9c8458;border-radius:5px;background:#34271d;color:#f1d79b}
 `;document.head.append(style);
  if(state.class&&typeof valorAccountCanPlay==='function'&&valorAccountCanPlay())render();
 })();
