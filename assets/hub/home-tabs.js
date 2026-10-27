@@ -1,13 +1,13 @@
 /* Home hubs reuse the existing game schedules, navigation and account controls. */
-const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Kurallar','kurallar'],['Ayarlar','ayarlar']];
-// Keep related destinations together without changing the existing three-column design.
+const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Rehber','rehber'],['Kurallar','kurallar'],['Ayarlar','ayarlar']];
+// Keep related destinations together without changing the existing grid design.
 const VALOR_HOME_ORDER=[
  'Savaş','Zindan','Dünya Bossu',
  'Görevler','Birlik','Sıralama',
  'Atölye','Teknoloji','Astroloji',
  'Binek','Muhafız','Fashion',
  'Market','Çiftlik','Şans Çarkı',
- 'Etkinlikler','Kurallar','Ayarlar'
+ 'Etkinlikler','Rehber','Kurallar','Ayarlar'
 ];
 function valorOrderHomeTiles(grid){
  if(!grid)return;
@@ -40,21 +40,13 @@ function valorEventsPage(){
 }
 function valorRulesPage(){
  const rules=[
-  ['Hesap Güvenliği','Hesabın sana aittir; şifreni ve kurtarma kodunu kimseyle paylaşma. Yönetim ekibi senden asla şifre istemez. Hesap satmak, satın almak, paylaşmak ve başkasının hesabına girmek yasaktır.'],
-  ['Hile ve Hata Kullanımı','Hile programı, oyun dosyalarını veya kaydı değiştirmek, otomatik tıklama/bot kullanmak yasaktır. Bulduğun bir hatayı kullanmak yerine yönetime bildir. Sunucu şüpheli değerleri otomatik düzeltir ve kayda alır; tekrarında hesap kalıcı olarak kapatılır.'],
-  ['Tek Hesap Kuralı','Arena, birlik veya boss sıralamasında avantaj sağlamak için birden fazla hesap açmak ve yan hesaplarla kendini beslemek yasaktır.'],
-  ['Sohbet Kuralları','Küfür, hakaret, ırkçılık, taciz, tehdit, spam ve reklam yasaktır. Başkalarının kişisel bilgilerini paylaşma. Kurallara uymayanlar sohbetten susturulur, tekrarında hesap kapatılır.'],
-  ['Karakter ve Birlik Adları','Küfürlü, hakaret içeren, yönetimi taklit eden veya uygunsuz karakter ve birlik adları yasaktır. Bu adlar uyarı vermeden değiştirilebilir.'],
-  ['Adil Oyun','Arena, takım arenası, kale savaşı ve dünya bossu sonuçları sunucuda hesaplanır. Rakiplerine saygılı ol; maç ayarlamak veya başkasını taciz etmek için oyunu kullanmak yasaktır.'],
-  ['Gerçek Para Ticareti','Oyun içi elmas, altın, eşya veya hesapların gerçek para ya da başka oyunlar karşılığında alınıp satılması yasaktır.'],
-  ['Cezalar','İhlalin ağırlığına göre uyarı, sohbet susturma, süreli veya kalıcı uzaklaştırma uygulanır. Kurallara aykırı yollarla kazanılan her şey geri alınabilir. Yönetim kararlarına itirazını sakin bir dille yapabilirsin.'],
   ['Karakter ve Ekipman','Savaşçı, Büyücü veya Okçu olarak oynarsın. Karakter seviyesi en fazla 100’dür. Ekipmanlar sınıfına ve gereken seviyeye uygun olmalıdır.'],
   ['Güçlendirme ve Evrim','Ekipmanlar +21’e kadar güçlendirilir. Evrim sırası Normal → Epik → Ebedi → İlahi’dir. Her evrimden sonra +0’a dönersin; sonraki aşama için yeniden +21 gerekir.'],
   ['Sahne ve Macera','Sahnelerde Kolay, Zor ve Kabus modları bulunur. Macera enerji kullanır; sahne girişleri ayrı haklarla yapılır.'],
   ['Etkinlik Saatleri','Etkinlik takvimi Türkiye saatine göre işler. Güncel açık ve kapalı durumları Etkinlikler bölümünde görebilirsin.'],
   ['Hesap ve Karakter Adı','Kullanıcı adın ile karakter adın farklı olabilir. Nick değiştirme kartı karakter adını değiştirir; hesabının kullanıcı adını değiştirmez.']
  ];
- return '<section class="vhub-page">'+valorHubHeader('Kurallar','Oyuna giren herkes bu kuralları kabul etmiş sayılır.')+'<div class="vhub-rules">'+rules.map(([title,body],i)=>'<article class="vhub-card"><span class="vhub-rule-number">'+String(i+1).padStart(2,'0')+'</span><h2>'+title+'</h2><p>'+body+'</p></article>').join('')+'</div></section>';
+ return '<section class="vhub-page">'+valorHubHeader('Kurallar','Oyunun temel işleyişi.')+'<div class="vhub-rules">'+rules.map(([title,body],i)=>'<article class="vhub-card"><span class="vhub-rule-number">0'+(i+1)+'</span><h2>'+title+'</h2><p>'+body+'</p></article>').join('')+'</div></section>';
 }
 const VALOR_INTERFACE_PREFS='valor-interface-preferences-v1';
 let valorInterfacePrefs={reducedMotion:false};
