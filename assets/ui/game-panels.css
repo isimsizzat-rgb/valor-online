@@ -45,9 +45,11 @@ html body header.top.valor-resource-bar .valor-portrait-level{min-width:29px;hei
  html body header.top.valor-resource-bar .valor-diamonds{font-size:15px;gap:4px}
  html body header.top.valor-resource-bar .valor-hud-energy{font-size:10px}
 }
-/* Three readable columns, with Astrology centered at the same card size. */
+/* Four columns with breathing room between the existing portrait cards. */
 html body .mmorpg-home-grid.valor-vertical-home.valor-fantasy-home{
- grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ column-gap:clamp(9px,2.5vw,18px)!important;
+ row-gap:clamp(12px,3vw,22px)!important;
 }
 html body .valor-fantasy-home .mmorpg-home-tile.valor-vertical-tile:last-child{
  grid-column:2;
