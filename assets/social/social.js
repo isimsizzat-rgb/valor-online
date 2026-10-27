@@ -51,11 +51,19 @@ function valorSocialBlock(i){valorSocialBlockName(valorSocialName('friends',i))}
 function valorSocialBlockTyped(){const n=(document.getElementById('vsocial-block-name')?.value||'').trim();if(n.length<3){valorSocial.notice='Engellemek istediğin karakter adını yaz.';valorSocial.noticeOk=false;render();return}valorSocialBlockName(n)}
 function valorSocialUnblock(i){const n=valorSocialName('blocked',i);if(n)valorSocialCall('player_unblock',{target:n},n+' adlı oyuncunun engeli kaldırıldı.')}
 function valorSocialHeart(i){const n=valorSocialName('friends',i);if(n&&typeof valorHeartOpen==='function')valorHeartOpen(n)}
-function valorSocialSeen(iso){
- const t=Date.parse(iso);if(!t)return '';const m=Math.floor((Date.now()-t)/60000);
- if(m<10)return '<span class="vsocial-online">● Çevrimiçi</span>';
- return '<span class="vsocial-seen">'+(m<60?m+' dk önce':m<1440?Math.floor(m/60)+' sa önce':Math.floor(m/1440)+' gün önce')+'</span>';
+/* Online: the server's flag (presence.sql, pinged every minute); before that file is run, a cloud save in the last 10 minutes. */
+function valorSocialIsOnline(p){if(typeof p.online==='boolean')return p.online;const t=Date.parse(p.seen);return !!t&&Date.now()-t<600000}
+function valorSocialAgo(iso){const t=Date.parse(iso);if(!t)return '';const m=Math.max(1,Math.floor((Date.now()-t)/60000));return m<60?m+' dk önce':m<1440?Math.floor(m/60)+' sa önce':Math.floor(m/1440)+' gün önce'}
+function valorSocialSeen(p){
+ if(valorSocialIsOnline(p))return '<span class="vsocial-status on"><i aria-hidden="true"></i>Çevrimiçi</span>';
+ const ago=valorSocialAgo(p.seen);return '<span class="vsocial-status off"><i aria-hidden="true"></i>Çevrimdışı'+(ago?'<small>'+ago+'</small>':'')+'</span>';
 }
+function valorSocialSorted(list){return list.map((p,i)=>({p,i})).sort((a,b)=>valorSocialIsOnline(b.p)-valorSocialIsOnline(a.p)||(Number(b.p.power)||0)-(Number(a.p.power)||0))}
+async function valorSocialPing(){
+ if(valorSocial.noPing||document.hidden||!valorSocialOnline()||!state.class)return;
+ try{await valorCloudFetch('/rest/v1/rpc/social_ping',{method:'POST',body:'{}'})}catch(e){if(e.status===404||e.code==='PGRST202')valorSocial.noPing=true}
+}
+
 function valorSocialWho(p){return '<div class="vsocial-who"><b>'+escapeAttr(p.name)+'</b><small>'+escapeAttr(p.class||'')+' · Sv. '+(Number(p.level)||1)+(p.power?' · '+money(Number(p.power)||0)+' SG':'')+'</small></div>'}
 function valorSocialRow(p,extra,buttons){return '<li class="vsocial-row">'+valorSocialWho(p)+(extra||'')+'<div class="vsocial-row-actions">'+buttons+'</div></li>'}
 function valorSocialEmpty(title,text){return '<div class="vsocial-empty"><p>'+title+'</p><small>'+text+'</small></div>'}
@@ -70,15 +78,16 @@ function valorSocialContent(){
   return valorSocialPanel('add','+','Arkadaş Ekle','Birlikte maceraya atılacağın oyuncuyu bul.','<label class="vsocial-label" for="vsocial-player">Karakter adı</label><form class="vsocial-add-row" onsubmit="event.preventDefault();valorSocialAdd()"><input id="vsocial-player" type="text" maxlength="20" autocomplete="off" placeholder="Oyuncunun karakter adı"><button type="submit"'+dis+'>İstek Gönder</button></form><p class="vsocial-note">Oyuncu isteğini kabul edince arkadaş olursunuz. En fazla '+VALOR_FRIEND_LIMIT+' arkadaş.</p>'+out);
  }
  if(valorSocialTab==='manage'){
-  const friends=d.friends.length?'<ul class="vsocial-list">'+d.friends.map((p,i)=>valorSocialRow(p,'','<button type="button" class="vsocial-ghost" onclick="valorSocialRemove('+i+')"'+dis+'>Çıkar</button><button type="button" class="vsocial-danger" onclick="valorSocialBlock('+i+')"'+dis+'>Engelle</button>')).join('')+'</ul>':valorSocialEmpty('Henüz arkadaşın yok.','Arkadaş ekledikçe burada düzenleyebileceksin.');
+  const friends=d.friends.length?'<ul class="vsocial-list">'+d.friends.map((p,i)=>valorSocialRow(p,valorSocialSeen(p),'<button type="button" class="vsocial-ghost" onclick="valorSocialRemove('+i+')"'+dis+'>Çıkar</button><button type="button" class="vsocial-danger" onclick="valorSocialBlock('+i+')"'+dis+'>Engelle</button>')).join('')+'</ul>':valorSocialEmpty('Henüz arkadaşın yok.','Arkadaş ekledikçe burada düzenleyebileceksin.');
   const blocked='<h3 class="vsocial-sub">Engellenenler ('+d.blocked.length+')</h3>'+(d.blocked.length?'<ul class="vsocial-list">'+d.blocked.map((p,i)=>valorSocialRow(p,'','<button type="button" class="vsocial-ghost" onclick="valorSocialUnblock('+i+')"'+dis+'>Engeli Kaldır</button>')).join('')+'</ul>':'<p class="vsocial-note">Engellediğin kimse yok.</p>')
    +'<form class="vsocial-add-row vsocial-block-row" onsubmit="event.preventDefault();valorSocialBlockTyped()"><input id="vsocial-block-name" type="text" maxlength="20" autocomplete="off" placeholder="Engellenecek karakter adı"><button type="submit" class="vsocial-danger"'+dis+'>Engelle</button></form>';
   return valorSocialPanel('manage','≡','Arkadaş Yönetimi','Arkadaşlarını çıkar, oyuncuları engelle.','<h3 class="vsocial-sub">Arkadaşların ('+d.friends.length+' / '+VALOR_FRIEND_LIMIT+')</h3>'+friends+blocked);
  }
  const inc=d.incoming.length?'<h3 class="vsocial-sub">Gelen istekler ('+d.incoming.length+')</h3><ul class="vsocial-list vsocial-incoming">'+d.incoming.map((p,i)=>valorSocialRow(p,'','<button type="button" onclick="valorSocialAnswer('+i+',true)"'+dis+'>Kabul Et</button><button type="button" class="vsocial-ghost" onclick="valorSocialAnswer('+i+',false)"'+dis+'>Reddet</button>')).join('')+'</ul>':'';
  const heart=typeof valorHeartOpen==='function';
- const list=d.friends.length?'<ul class="vsocial-list">'+d.friends.map((p,i)=>valorSocialRow(p,valorSocialSeen(p.seen),heart?'<button type="button" class="vsocial-ghost" onclick="valorSocialHeart('+i+')" aria-label="'+escapeAttr(p.name)+' adlı oyuncuya kalp gönder">❤ Kalp</button>':'')).join('')+'</ul>':valorSocialEmpty('Henüz arkadaşın yok.','Arkadaş Ekle sekmesinden karakter adıyla istek gönderebilirsin.')+'<button type="button" class="vsocial-primary" onclick="valorSocialSelect(\'add\')">Arkadaş Ekle ›</button>';
- return valorSocialPanel('friends','♜','Arkadaşlarım',d.friends.length+' / '+VALOR_FRIEND_LIMIT+' arkadaş',inc+(inc?'<h3 class="vsocial-sub">Arkadaşların</h3>':'')+list);
+ const list=d.friends.length?'<ul class="vsocial-list">'+valorSocialSorted(d.friends).map(({p,i})=>valorSocialRow(p,valorSocialSeen(p),heart?'<button type="button" class="vsocial-ghost" onclick="valorSocialHeart('+i+')" aria-label="'+escapeAttr(p.name)+' adlı oyuncuya kalp gönder">❤ Kalp</button>':'')).join('')+'</ul>':valorSocialEmpty('Henüz arkadaşın yok.','Arkadaş Ekle sekmesinden karakter adıyla istek gönderebilirsin.')+'<button type="button" class="vsocial-primary" onclick="valorSocialSelect(\'add\')">Arkadaş Ekle ›</button>';
+ const onlineN=d.friends.filter(valorSocialIsOnline).length;
+ return valorSocialPanel('friends','♜','Arkadaşlarım',d.friends.length+' / '+VALOR_FRIEND_LIMIT+' arkadaş'+(d.friends.length?' · <span class="vsocial-online-count">'+onlineN+' çevrimiçi</span>':''),inc+(inc?'<h3 class="vsocial-sub">Arkadaşların</h3>':'')+list);
 }
 function valorSocialPage(){
  valorSocialLoad();
@@ -101,5 +110,6 @@ function valorSocialPage(){
   valorChatUnblock=function(name){const i=valorSocialList('blocked').findIndex(p=>p.name===name);if(i>=0)valorSocialUnblock(i);return localUnblock(name)};
  }
  setInterval(()=>{if(!document.hidden&&state.class&&(page==='Sosyal'||page==='Sohbet'))valorSocialLoad()},VALOR_SOCIAL_TTL);
+ setInterval(valorSocialPing,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)valorSocialPing()});setTimeout(valorSocialPing,3000);
 })();
 if(state.class)valorSocialLoad();

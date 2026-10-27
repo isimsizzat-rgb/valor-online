@@ -18,3 +18,11 @@
 .vsocial-notice.bad{background:#2e1715;color:#f0b9ab;border:1px solid #8a4537}
 .vsocial-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:#c0392b;color:#fff;font:700 11px Arial,sans-serif;vertical-align:1px}
 .vsocial-block-row{margin-top:12px}
+.vsocial-status{display:flex;align-items:center;gap:5px;flex:none;font-size:11px;line-height:1.2}
+.vsocial-status i{width:8px;height:8px;border-radius:50%;flex:none}
+.vsocial-status.on{color:#8fdb8a}.vsocial-status.on i{background:#5fd35a;box-shadow:0 0 6px #5fd35a}
+.vsocial-status.off{color:#9a8c78}.vsocial-status.off i{background:#5d554b}
+.vsocial-status small{display:block;margin-left:2px;color:#7f735f;font-size:10px}
+.vsocial-online-count{color:#8fdb8a}
+.vsocial-status{flex-wrap:wrap;max-width:96px}
+.vsocial-status small{flex-basis:100%;margin:2px 0 0 13px}
