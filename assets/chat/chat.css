@@ -25,4 +25,10 @@
 body.valor-chat-page header.top.valor-resource-bar{display:none!important}
 body.valor-chat-page .layout{margin-top:8px!important}
 body.valor-chat-page #main{padding-top:8px!important}
-body.valor-chat-page .vch-list{height:min(68dvh,720px)}
+/* The page itself never scrolls on the chat screen: only the message list does. With the keyboard open
+   the bottom menu hides and the list shrinks so the send bar sits right above the keyboard (chat.js fits it). */
+html.vch-lock,html.vch-lock body{overflow:hidden;overscroll-behavior:none}
+html.vch-lock body{position:fixed;top:0;left:0;right:0;width:100%}
+body.vch-kb #bottomNav{display:none!important}
+body.valor-chat-page .vch-rules{display:none}
+body.valor-chat-page .vch-count{display:block;margin-top:2px}
