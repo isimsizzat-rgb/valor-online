@@ -1,5 +1,5 @@
 /* Home hubs reuse the existing game schedules, navigation and account controls. */
-const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Sosyal','sosyal'],['Rehber','rehber'],['Kurallar','kurallar'],['Destek','destek'],['Ayarlar','ayarlar']];
+const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Sosyal','sosyal'],['Rehber','rehber'],['Destek','destek'],['Ayarlar','ayarlar']];
 // Keep related destinations together without changing the existing grid design.
 const VALOR_HOME_ORDER=[
  'Savaş','Zindan','Dünya Bossu',
@@ -7,7 +7,7 @@ const VALOR_HOME_ORDER=[
  'Atölye','Teknoloji','Astroloji',
  'Binek','Muhafız','Fashion',
  'Market','Çiftlik','Şans Çarkı',
- 'Etkinlikler','Rehber','Kurallar','Destek','Ayarlar'
+ 'Etkinlikler','Rehber','Destek','Ayarlar'
 ];
 function valorOrderHomeTiles(grid){
  if(!grid)return;
@@ -37,16 +37,6 @@ function valorHubEvents(now=Date.now()){
 }
 function valorEventsPage(){
  return '<section class="vhub-page">'+valorHubHeader('Etkinlikler','Tüm saatler Türkiye saatine göredir.')+'<div class="vhub-events">'+valorHubEvents().map(e=>'<article class="vhub-event"><img src="assets/home-fantasy/'+e.art+'.webp" alt="" loading="lazy"><div><span class="vhub-status" data-event-status="'+e.id+'" data-open="'+e.open+'">'+(e.open?'Şimdi açık':'Sıradaki etkinlik')+'</span><h2>'+e.name+'</h2><p>'+e.schedule+'</p><small data-event-time="'+e.id+'">'+e.detail+'</small><button type="button" onclick="'+e.action.replace(/"/g,'&quot;')+'">Etkinliğe Git ›</button></div></article>').join('')+'</div><section class="vhub-card"><h2>Günlük Fırsatlar</h2><p>Giriş ödülünü al, elmas sandığını kontrol et veya şansını dene.</p><div class="vhub-actions"><button type="button" onclick="valorLoginOpen()">Giriş Ödülü</button><button type="button" onclick="valorChestOpen()">Elmas Sandığı</button><button type="button" onclick="go(\'Şans Çarkı\')">Şans Çarkı</button></div></section></section>';
-}
-function valorRulesPage(){
- const rules=[
-  ['Karakter ve Ekipman','Savaşçı, Büyücü veya Okçu olarak oynarsın. Karakter seviyesi en fazla 100’dür. Ekipmanlar sınıfına ve gereken seviyeye uygun olmalıdır.'],
-  ['Güçlendirme ve Evrim','Ekipmanlar +21’e kadar güçlendirilir. Evrim sırası Normal → Epik → Ebedi → İlahi’dir. Her evrimden sonra +0’a dönersin; sonraki aşama için yeniden +21 gerekir.'],
-  ['Sahne ve Macera','Sahnelerde Kolay, Zor ve Kabus modları bulunur. Macera enerji kullanır; sahne girişleri ayrı haklarla yapılır.'],
-  ['Etkinlik Saatleri','Etkinlik takvimi Türkiye saatine göre işler. Güncel açık ve kapalı durumları Etkinlikler bölümünde görebilirsin.'],
-  ['Hesap ve Karakter Adı','Kullanıcı adın ile karakter adın farklı olabilir. Nick değiştirme kartı karakter adını değiştirir; hesabının kullanıcı adını değiştirmez.']
- ];
- return '<section class="vhub-page">'+valorHubHeader('Kurallar','Oyunun temel işleyişi.')+'<div class="vhub-rules">'+rules.map(([title,body],i)=>'<article class="vhub-card"><span class="vhub-rule-number">0'+(i+1)+'</span><h2>'+title+'</h2><p>'+body+'</p></article>').join('')+'</div></section>';
 }
 const VALOR_INTERFACE_PREFS='valor-interface-preferences-v1';
 let valorInterfacePrefs={reducedMotion:false};
