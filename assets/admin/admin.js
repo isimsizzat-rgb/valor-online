@@ -40,6 +40,44 @@ function valorAdminMute(uid){valorAdminDo('admin_mute',{uid,hours:valorAdminHour
 function valorAdminBan(uid,name){const h=valorAdminHours('vad-ban');if(h!==0&&!confirm(name+' yasaklansın mı?'))return;valorAdminDo('admin_ban',{uid,hours:h,why:valorAdminVal('vad-ban-why')},h===0?'Yasak kaldırıldı.':'Oyuncu yasaklandı.')}
 function valorAdminPass(uid,name){const p=valorAdminVal('vad-pass');if(p.length<8)return toast('Şifre en az 8 karakter olmalı');if(!confirm(name+' için şifre değiştirilsin mi?'))return;valorAdminDo('admin_reset_password',{uid,new_password:p},'Şifre değiştirildi. Yeni şifreyi oyuncuya ilet.')}
 function valorAdminDelMsg(id){valorAdminRpc('admin_delete_message',{mid:id}).then(()=>{toast('Mesaj silindi');valorAdminLoad('chat')}).catch(e=>toast(e.message))}
+/* ---------- Eşya Ver ---------- */
+valorAdmin.giftKind='item';
+function valorAdminOptions(list,sel){return list.map(([v,t])=>'<option value="'+escapeAttr(String(v))+'"'+(String(v)===String(sel)?' selected':'')+'>'+escapeAttr(t)+'</option>').join('')}
+function valorAdminStackList(){
+ const ids=[...new Set([...(typeof marketProducts!=='undefined'?marketProducts.map(x=>x.id):[]),'petFood','luckBag','mosaicStone','mountStone','energyBottle','expeditionPaper','anniversaryBox'])];
+ return ids.map(id=>[id,(typeof marketProduct==='function'&&marketProduct(id)?.name)||id]).filter(([id,n])=>n);
+}
+function valorAdminGiftForm(p){
+ const k=valorAdmin.giftKind,num=(id,v,min,max,ph)=>'<input id="'+id+'" type="number" min="'+min+'" max="'+max+'" value="'+v+'" placeholder="'+ph+'">';
+ let f='';
+ if(k==='item')f='<div class="vad-line"><select id="vad-gc">'+valorAdminOptions(classes.map(c=>[c,c]),p.class||classes[0])+'</select><select id="vad-gs">'+valorAdminOptions([...slots.map(x=>[x,x]),['set','Tüm set (6 parça)']],'set')+'</select></div><div class="vad-line"><label class="vad-mini-label">Seviye'+num('vad-gl',Math.max(1,Number(p.level)||1),1,100,'Seviye')+'</label><label class="vad-mini-label">Artı'+num('vad-gp',0,0,21,'+')+'</label><select id="vad-gt">'+valorAdminOptions([[0,'Normal'],[1,'Epik'],[2,'Ebedi'],[3,'İlahi']],0)+'</select><label class="vad-mini-label">Adet'+num('vad-gn',1,1,10,'Adet')+'</label></div>';
+ else if(k==='stack')f='<div class="vad-line"><select id="vad-gid">'+valorAdminOptions(valorAdminStackList(),'petFood')+'</select>'+num('vad-gn',10,1,999999,'Adet')+'</div>';
+ else if(k==='stone')f='<div class="vad-line"><select id="vad-glv">'+valorAdminOptions(Array.from({length:8},(_,i)=>[i+1,'Şans Taşı Sv.'+(i+1)]),4)+'</select>'+num('vad-gn',5,1,9999,'Adet')+'</div>';
+ else if(k==='gem')f='<div class="vad-line"><select id="vad-gty">'+valorAdminOptions((typeof veGemTypes!=='undefined'?veGemTypes:[]).map(t=>[t,t]),'')+'</select><select id="vad-glv">'+valorAdminOptions(Array.from({length:10},(_,i)=>[i+1,'Sv.'+(i+1)]),3)+'</select>'+num('vad-gn',1,1,999,'Adet')+'</div>';
+ else f='<div class="vad-line">'+num('vad-gn',500,1,9999999,'Dukat')+'</div>';
+ return '<div><label>Eşya ver</label><div class="vad-line"><select id="vad-gk" onchange="valorAdmin.giftKind=this.value;render()">'+valorAdminOptions([['item','Ekipman'],['stack','Market / çanta eşyası'],['stone','Şans taşı'],['gem','Mozaik taşı'],['dukat','Dukat']],k)+'</select></div>'+f+'<div class="vad-line"><button type="button" class="vad-give" onclick="valorAdminGive(\''+p.user_id+'\')">'+(p.user_id===valorAccountActive?.id?'Kendime Ver':'Ver')+'</button></div></div>';
+}
+function valorAdminGiftOps(){
+ const v=id=>document.getElementById(id)?.value,n=(id,min,max)=>Math.max(min,Math.min(max,Math.floor(Number(v(id))||min))),k=valorAdmin.giftKind,ops=[];
+ if(k==='item'){const cls=v('vad-gc'),sl=v('vad-gs'),lvl=n('vad-gl',1,100),plus=n('vad-gp',0,21),tier=n('vad-gt',0,3),count=n('vad-gn',1,10);
+  for(let c=0;c<count;c++)for(const slot of sl==='set'?slots:[sl])ops.push({kind:'item',item:JSON.parse(JSON.stringify({...item(slot,cls,lvl),plus,epic:tier>0,evolutionTier:tier}))})}
+ else if(k==='stack'){const id=v('vad-gid'),pr=typeof marketProduct==='function'?marketProduct(id):null;ops.push({kind:'stack',id,name:pr?.name||id,description:pr?.description||'',count:n('vad-gn',1,999999)})}
+ else if(k==='stone')ops.push({kind:'stone',level:n('vad-glv',1,8),count:n('vad-gn',1,9999)});
+ else if(k==='gem')ops.push({kind:'gem',type:v('vad-gty'),level:n('vad-glv',1,10),count:n('vad-gn',1,999)});
+ else ops.push({kind:'dukat',count:n('vad-gn',1,9999999)});
+ return ops;
+}
+function valorAdminGiftLabel(ops){const o=ops[0];if(!o)return '';return o.kind==='item'?ops.length+' ekipman':o.kind==='stack'?o.count+' × '+o.name:o.kind==='stone'?o.count+' × Şans Taşı Sv.'+o.level:o.kind==='gem'?o.count+' × '+o.type+' Sv.'+o.level:o.count+' Dukat'}
+async function valorAdminGive(uid){
+ const ops=valorAdminGiftOps();if(!ops.length)return;const label=valorAdminGiftLabel(ops);
+ if(uid===valorAccountActive?.id){
+  // To myself: straight into my bag, saved like any other change.
+  for(const o of ops){if(o.kind==='item')state.inventory.push(o.item);else if(o.kind==='stack')addMarketStack(o.id,o.count);else if(o.kind==='stone')addLuckStoneStack(o.level,o.count);else if(o.kind==='gem')vwAddGem(o.type,o.level,o.count);else{const d=valorCastleData();d.medallions=(Number(d.medallions)||0)+o.count}}
+  save();render();toast(label+' çantana eklendi');return;
+ }
+ if(!confirm(label+' verilsin mi?'))return;
+ valorAdminDo('admin_give',{uid,ops},label+' verildi. Oyuncu oyunu yenileyince görür.');
+}
 function valorAdminPlayerRow(p){
  const tags=[p.hidden?'<i class="vad-tag">gizli</i>':'',p.trusted?'<i class="vad-tag ok">test</i>':'',p.muted?'<i class="vad-tag warn">susturulmuş</i>':'',p.banned?'<i class="vad-tag bad">yasaklı</i>':'',p.cheats?'<i class="vad-tag warn">'+p.cheats+' hile kaydı</i>':''].join('');
  const open=valorAdmin.sel===p.user_id,nm=escapeAttr(String(p.name||p.username).replace(/'/g,''));
@@ -49,6 +87,7 @@ function valorAdminPlayerRow(p){
    +'<div class="vad-line"><button type="button" onclick="valorAdminDo(\'admin_flag\',{uid:\''+p.user_id+'\',flag:\'hidden\',val:'+!p.hidden+'},\'Güncellendi\')">'+(p.hidden?'Sıralamada göster':'Sıralamadan gizle')+'</button><button type="button" onclick="valorAdminDo(\'admin_flag\',{uid:\''+p.user_id+'\',flag:\'trusted\',val:'+!p.trusted+'},\'Güncellendi\')">'+(p.trusted?'Test işaretini kaldır':'Test hesabı yap')+'</button></div>'
    +'<div><label>Sohbet cezası '+(p.muted?'(şu an: '+valorAdminDate(p.muted)+')':'')+'</label><div class="vad-line"><select id="vad-mute"><option value="1">1 saat</option><option value="24">24 saat</option><option value="168">7 gün</option><option value="perm">Kalıcı</option><option value="0">Cezayı kaldır</option></select><input id="vad-mute-why" placeholder="Sebep"><button type="button" onclick="valorAdminMute(\''+p.user_id+'\')">Uygula</button></div></div>'
    +'<div><label>Hesap yasağı '+(p.banned?'(şu an: '+valorAdminDate(p.banned)+')':'')+'</label><div class="vad-line"><select id="vad-ban"><option value="24">24 saat</option><option value="168">7 gün</option><option value="720">30 gün</option><option value="perm">Kalıcı</option><option value="0">Yasağı kaldır</option></select><input id="vad-ban-why" placeholder="Sebep"><button type="button" class="vad-danger" onclick="valorAdminBan(\''+p.user_id+'\',\''+nm+'\')">Uygula</button></div></div>'
+   +valorAdminGiftForm(p)
    +'<div><label>Şifre sıfırla</label><div class="vad-line"><input id="vad-pass" type="text" autocomplete="off" placeholder="Yeni şifre (en az 8)"><button type="button" onclick="valorAdminPass(\''+p.user_id+'\',\''+nm+'\')">Değiştir</button></div></div>'
   +'</div>':'')+'</article>';
 }

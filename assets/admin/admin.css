@@ -23,3 +23,6 @@
 .vad-log{display:grid;gap:2px;padding:8px 10px;border-bottom:1px solid #806b4433;font-size:12px}
 .vad-log b{color:#ecd7b4}.vad-log span{color:#d5c3a2;overflow-wrap:anywhere}.vad-log small{color:#8f7d62}
 .vad-open{min-height:32px;padding:4px 12px;font-size:12px;border-color:#e0b863;color:#f3d294}
+.vad-mini-label{display:flex;flex:1 1 70px;flex-direction:column;gap:2px;font-size:10px;color:#a9967a}
+.vad-mini-label input{min-height:34px!important}
+.vad-give{border-color:#e0b863!important;background:linear-gradient(#8a6330,#4a3219)!important;color:#fbe3ae!important;flex:1}
