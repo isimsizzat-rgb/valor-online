@@ -29,5 +29,5 @@
  }catch(e){console.warn('Local cleanup skipped',e);return}
  if(removed)console.info('Valor: removed '+removed+' old device-only records');
  // The character already loaded into memory must not be saved back before the page reloads.
- if(reload){try{state={class:null,name:'',level:1,xp:0,gold:50000,diamonds:150,hp:100,statPoints:0,stats:{},inventory:[],equipped:{},stones:{},shards:0,stageWins:{},guild:null,logs:[]}}catch{}location.reload()}
+ if(reload){try{state={class:null,name:'',level:1,xp:0,gold:50000,diamonds:500,hp:100,statPoints:0,stats:{},inventory:[],equipped:{},stones:{},shards:0,stageWins:{},guild:null,logs:[]}}catch{}location.reload()}
 })();
