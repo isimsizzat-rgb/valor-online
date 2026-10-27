@@ -22,8 +22,11 @@ async function valorChatFetch(){
  const ch=valorChatCurrent();if(valorChat.loading)return;valorChat.loading=true;
  try{
   const last=valorChat.last[ch]||0;
-  const q='/rest/v1/chat_messages?select=id,user_id,name,class,level,body,created_at&channel=eq.'+encodeURIComponent(ch)+(last?'&id=gt.'+last+'&order=id.asc&limit=100':'&order=id.desc&limit=50');
-  let rows=await valorCloudFetch(q);rows=Array.isArray(rows)?rows:[];if(!last)rows.reverse();
+  // The tag column arrives with supabase/chat-tags.sql; until it exists the list is read without it.
+  const cols='id,user_id,name,class,level,body,created_at'+(valorChat.noTag?'':',tag'),rest='&channel=eq.'+encodeURIComponent(ch)+(last?'&id=gt.'+last+'&order=id.asc&limit=100':'&order=id.desc&limit=50');
+  let rows;
+  try{rows=await valorCloudFetch('/rest/v1/chat_messages?select='+cols+rest)}
+  catch(e){if(valorChat.noTag||!(e.status===400||e.code==='42703'||e.code==='PGRST204'))throw e;valorChat.noTag=true;rows=await valorCloudFetch('/rest/v1/chat_messages?select=id,user_id,name,class,level,body,created_at'+rest)}rows=Array.isArray(rows)?rows:[];if(!last)rows.reverse();
   const list=valorChat.msgs[ch]||(valorChat.msgs[ch]=[]);
   if(rows.length){list.push(...rows.filter(r=>!list.some(x=>x.id===r.id)));if(list.length>150)list.splice(0,list.length-150);valorChat.last[ch]=Math.max(last,...rows.map(r=>r.id))}
   if(valorChat.error){valorChat.error='';if(page==='Sohbet')render()}
@@ -37,7 +40,11 @@ async function valorChatSend(){
  valorChat.sending=true;
  try{
   if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{});
-  const r=await valorCloudFetch('/rest/v1/rpc/chat_send',{method:'POST',body:JSON.stringify({ch:valorChatCurrent(),msg:text})});
+  // The selected title travels with the message; the server keeps it only if I still hold it.
+  const tag=typeof valorTitleActive==='function'?valorTitleActive():null,body={ch:valorChatCurrent(),msg:text};
+  let r;
+  if(tag&&!valorChat.noTagSend){try{r=await valorCloudFetch('/rest/v1/rpc/chat_send',{method:'POST',body:JSON.stringify({...body,tag})})}catch(e){if(!(e.status===404||e.code==='PGRST202'))throw e;valorChat.noTagSend=true}}
+  if(r===undefined)r=await valorCloudFetch('/rest/v1/rpc/chat_send',{method:'POST',body:JSON.stringify(body)});
   if(r==='ok'){if(input){input.value='';valorChatCount()}await valorChatFetch()}
   else toast({slow:'Çok hızlı yazıyorsun. Birkaç saniye bekle.',muted:'Sohbet yasağın var.',not_member:'Bu birliğin üyesi değilsin.',no_character:'Önce karakterin buluta kaydedilmeli.',invalid:'Mesaj gönderilemedi.'}[r]||'Mesaj gönderilemedi.');
  }catch(e){toast((e.status===404||e.code==='PGRST202')?'Sohbet sunucuda henüz kurulmadı.':e.message)}

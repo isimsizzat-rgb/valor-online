@@ -1,0 +1,5 @@
+.vch-tag{font:700 11px Georgia,serif;color:#ffd57a;text-shadow:0 0 6px #e6a42e88;white-space:nowrap}
+.vtl-picker{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 12px;border:1px solid #a77c3e;border-top:0;background:#140f0cee}
+.vtl-picker span{font:11px Arial,sans-serif;color:#b9a27c;margin-right:2px}
+.vtl-picker button{min-height:36px;padding:6px 11px;border:1px solid #81653c88;border-radius:18px;background:#1b1512;color:#c9b693;font:12px Georgia,serif}
+.vtl-picker button[aria-pressed=true]{border-color:#e2bd73;background:#5a3f1f;color:#ffe2a6;box-shadow:0 0 8px #e6a42e55}
