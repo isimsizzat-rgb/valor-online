@@ -83,8 +83,9 @@ const VALOR_GUIDE_TOPICS=[
   'Dünya Bossu’nda Saldırıyı Başlat’a bas; ekran açık kaldığı sürece her saniye otomatik vurursun. Etkinlik bitince toplam hasarının %1’i kadar altın kazanırsın. Boss ekranından ayrılırsan saldırı durur.',
   'Etkinlikler ekranı açık olan etkinliği, bitiş saatini veya bir sonraki başlangıcı gösterir.'
  ],route:'Etkinlikler',link:'Takvimi Aç'},
- {id:'binek',category:'Gelişim',title:'Binekler ve binek gelişimi',tags:'güç zeka zırh beden binek taşı ruh koleksiyon eğitim',text:[
-  'Sahip olduğun bütün bineklerin özellikleri toplanır; sadece birini seçmezsin. Yeni binekleri Market → Binekler’den altınla alırsın.',
+ {id:'binek',category:'Gelişim',title:'Binekler ve binek gelişimi',tags:'güç zeka zırh beden binek taşı ruh koleksiyon eğitim kart parçala parça süreli birleştir',text:[
+  'Sahip olduğun bütün bineklerin özellikleri toplanır; sadece birini seçmezsin. Market → Binekler’den altınla aldığın binek kart olarak çantana düşer; kartı çantadan kullanınca koleksiyonuna eklenir.',
+  'Koleksiyonundaki bir bineğin fazla kartını çantada parçalayıp Binek Ruh Parçası alırsın (bineğin ruh değerinin beşte biri). Atölye → Binek Kartı bölümünde parçalarla süreli binek üretirsin: Kül Tayı 7 gün (100), Fırtına Kurdu 7 gün (250), Gölge Grifonu 15 gün (600), Ejder Ruhu 30 gün (1.500). Aynı süreli bineği tekrar kullanmak süresini uzatır.',
   'Binek özellikleri karakterine şöyle geçer:',
   ['Güç: puan başına 4 Saldırı','Zeka: puan başına 4 Sihir','Zırh: puan başına 4 Defans ve 4 Sihirli Defans','Beden: puan başına 40 Can'],
   'Binek Geliştirme’de bir satır seçip Binek Taşı kullanırsın: 1 taş 10 EXP verir, %10 şansla 50 EXP. Her seviye o özelliğe +5 ekler. Taşları 1’er ya da 50’şer kullanabilirsin.',

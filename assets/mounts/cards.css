@@ -1,0 +1,12 @@
+.vmc-note{font-size:12px;color:#c9b693;line-height:1.5;margin:10px 0 0;text-align:center}
+.vmc-shatter{background:#3a1d14!important;border-color:#a8653e!important;color:#f3c9a4!important}
+.vmc-have{margin:10px 0 14px;padding:10px 12px;border:1px solid #8e6c3f88;border-radius:6px;background:#120e0ccc;color:#d9c49f;font-size:13px}
+.vmc-have b{color:#ffd58a;font-size:16px}
+.vmc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vmc-card{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid color-mix(in srgb,var(--mount-color) 55%,#000);border-radius:8px;background:linear-gradient(160deg,#21170fee,#0e0b0dee)}
+.vmc-art{aspect-ratio:4/3;overflow:hidden;border-radius:5px;background:#0a080a}
+.vmc-art img{width:100%;height:100%;object-fit:cover;display:block}
+.vmc-card h3{margin:2px 0 0;font:400 16px Georgia,serif;color:var(--mount-color)}
+.vmc-days{font-size:12px;color:#e8cf9c}
+.vmc-stats{font-size:11px;color:#b3a289;line-height:1.5;flex:1}
+.vmc-card button{min-height:40px;font-size:12px}
