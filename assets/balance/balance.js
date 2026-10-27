@@ -118,13 +118,14 @@ function valorWelfareFetch(day){
  if(valorWelfareLoading||Date.now()<valorWelfareRetryAt||typeof valorAccountActive==='undefined'||!valorAccountActive?.cloud||typeof valorCloudFetch!=='function')return;
  valorWelfareLoading=true;
  valorCloudFetch('/rest/v1/rpc/welfare_reference',{method:'POST',body:'{}'})
-  .then(r=>{const level=Math.max(1,Math.min(100,Math.floor(Number(r)||1)));if(state?.class&&valorWelfareToday()===day){state.welfareRef={day,level,src:'server'};try{save()}catch(e){}render()}})
+  .then(r=>{const level=Math.max(1,Math.min(100,Math.floor(Number(r)||1))),old=state?.welfareRef;if(state?.class&&valorWelfareToday()===day){state.welfareRef={day,level,src:'server',at:Date.now()};try{save()}catch(e){}if(old?.level!==level)render()}})
   .catch(()=>{valorWelfareRetryAt=Date.now()+600000})
   .finally(()=>{valorWelfareLoading=false});
 }
 function valorWelfareReferenceLevel(){
  const day=valorWelfareToday(),ref=state.welfareRef;
- if(ref&&ref.day===day&&ref.src==='server'&&Number.isFinite(ref.level))return ref.level;
+ // Refreshed every 30 minutes, so marking test accounts in the admin panel shows up the same day.
+ if(ref&&ref.day===day&&ref.src==='server'&&Number.isFinite(ref.level)){if(!(Date.now()-(Number(ref.at)||0)<1800000))valorWelfareFetch(day);return ref.level}
  valorWelfareFetch(day);
  return Number(state.level)||1;
 }
@@ -137,7 +138,7 @@ function valorWelfareBadge(){
  let badge=document.getElementById('valor-welfare-badge');const bonus=valorWelfareBonus();
  if(!bonus){badge?.remove();return}
  if(!badge){badge=document.createElement('span');badge.id='valor-welfare-badge';badge.style.cssText='margin-left:8px;padding:1px 7px;border:1px solid #7fc99a;border-radius:999px;color:#bff0cf;background:#173326cc;font-size:10px;white-space:nowrap';anchor.parentElement.appendChild(badge)}
- badge.textContent='Refah +%'+Math.round(bonus*100)+' EXP';badge.title='Bugünün referansı (00.00 sıralaması): Sv.'+valorWelfareReferenceLevel()+'. Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' altındaki her seviye için +%10 EXP (en fazla +%100); Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' ve üstü bonus almaz.';
+ badge.textContent='Refah +%'+Math.round(bonus*100)+' EXP';badge.title='Referans: en yüksek seviyeli oyuncu Sv.'+valorWelfareReferenceLevel()+'. Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' altındaki her seviye için +%10 EXP (en fazla +%100); Sv.'+(valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF)+' ve üstü bonus almaz.';
 }
 const valorWelfarePreviousRender=render;
 render=function(){const result=valorWelfarePreviousRender.apply(this,arguments);try{valorWelfareBadge()}catch(e){}return result};
