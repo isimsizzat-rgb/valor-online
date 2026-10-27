@@ -1,0 +1,9 @@
+.vch-msg.vch-has-av{display:flex;align-items:flex-start;gap:8px}
+.vch-msg.mine.vch-has-av{flex-direction:row-reverse}
+.vch-body{min-width:0;flex:1}
+.vch-avatar{flex:none;width:34px!important;height:34px!important;min-height:0!important;padding:0!important;margin:1px 0 0!important;border:1px solid #b08a4f99!important;border-radius:50%!important;overflow:hidden;background:#0b090c!important;box-shadow:0 0 0 2px #00000066!important;cursor:pointer}
+.vch-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.vch-name{display:inline;min-height:0!important;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;font:inherit;cursor:pointer;text-align:left}
+.vch-name:hover b,.vch-name:focus-visible b{text-decoration:underline}
+.vch-profile-actions{display:flex;justify-content:center;padding:10px 12px 0}
+.vch-profile-actions button{min-width:180px;min-height:42px}
