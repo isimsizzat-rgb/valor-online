@@ -78,6 +78,6 @@ function valorChatDecorateTabs(){
  btn.setAttribute('aria-selected',String(guildOn));btn.classList.toggle('vch-tab-off',!valorChatGuildChannel());btn.title=valorChatGuildChannel()?'Birlik sohbeti':'Birliğe katılınca açılır';
  if(guildOn&&chatTab)chatTab.setAttribute('aria-selected','false');
 }
-(function(){const prev=render;render=function(){const r=prev.apply(this,arguments);try{valorChatDecorateTabs()}catch(e){}return r}})();
+(function(){const prev=render;render=function(){const r=prev.apply(this,arguments);document.body.classList.toggle('valor-chat-page',!!state.class&&page==='Sohbet');try{valorChatDecorateTabs()}catch(e){}return r}})();
 setInterval(()=>{if(page==='Sohbet'&&!document.hidden&&valorChatOnline()&&state.class)valorChatFetch()},VALOR_CHAT_POLL);
 if(state.class&&page==='Sohbet')render();
