@@ -7,3 +7,9 @@
 .vch-name:hover b,.vch-name:focus-visible b{text-decoration:underline}
 .vch-profile-actions{display:flex;justify-content:center;padding:10px 12px 0}
 .vch-profile-actions button{min-width:180px;min-height:42px}
+.vpv-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}
+.vpv-bar span{font:700 11px Georgia,serif;letter-spacing:2px;color:#bfa271}
+.vpv-back{min-height:38px;padding:7px 14px}
+.vpv-actions{display:flex;gap:8px;justify-content:center;margin:0 0 10px}
+.vpv-actions button{flex:1;max-width:200px;min-height:42px}
+.vpv-wrap .vp-gear button:disabled,.vpv-wrap .vp-scene button:disabled{opacity:1;filter:none;cursor:default}
