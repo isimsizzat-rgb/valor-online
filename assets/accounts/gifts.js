@@ -15,7 +15,7 @@ async function valorGiftsCheck(force){
   await valorCloudFlush();if(valorCloudBlocked||state!==before||valorAccountActive?.id!==owner)return;
   for(const gift of pending){
    let result;
-   const op=valorCloudFetch('/rest/v1/rpc/gift_claim',{method:'POST',body:JSON.stringify({gift:gift.id})});
+   const op=valorCloudFetch('/rest/v1/rpc/gift_claim',{method:'POST',body:JSON.stringify({gift:gift.id,v:2})});
    valorCloudBusy=op;   // no upload may slip in between the server change and adopting its revision
    try{result=await op}finally{if(valorCloudBusy===op)valorCloudBusy=null}
    if(result?.status!=='ok')continue;
