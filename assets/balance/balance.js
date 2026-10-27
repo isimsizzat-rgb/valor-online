@@ -108,14 +108,25 @@ if(state.class&&['Zindan','Sahne Macerası','Sahneler'].includes(page))render();
    Every day after 00.00 (Istanbul) the ranking's top level is recorded and stays fixed for that day.
    Only players more than 10 levels below that reference get a bonus: 10% per level below
    (reference - 10), max +100%. With a top of Sv.50, Sv.30 and below get +100%, Sv.39 +10%, Sv.40+ nothing.
-   valorRankRows() holds the sample players until a server provides real rankings. */
+   The reference is the top level of real players on the server. */
 const VALOR_WELFARE_STEP=.10,VALOR_WELFARE_MAX=1,VALOR_WELFARE_CUTOFF=10;
 function valorWelfareToday(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v={};p.forEach(x=>v[x.type]=x.value);return v.year+'-'+v.month+'-'+v.day}
+/* The reference comes from the server (welfare_reference in supabase/guard3.sql: real players only, test/hidden
+   accounts left out). Until it answers, offline, or before that file is run, there is no bonus. */
+let valorWelfareLoading=false,valorWelfareRetryAt=0;
+function valorWelfareFetch(day){
+ if(valorWelfareLoading||Date.now()<valorWelfareRetryAt||typeof valorAccountActive==='undefined'||!valorAccountActive?.cloud||typeof valorCloudFetch!=='function')return;
+ valorWelfareLoading=true;
+ valorCloudFetch('/rest/v1/rpc/welfare_reference',{method:'POST',body:'{}'})
+  .then(r=>{const level=Math.max(1,Math.min(100,Math.floor(Number(r)||1)));if(state?.class&&valorWelfareToday()===day){state.welfareRef={day,level,src:'server'};try{save()}catch(e){}render()}})
+  .catch(()=>{valorWelfareRetryAt=Date.now()+600000})
+  .finally(()=>{valorWelfareLoading=false});
+}
 function valorWelfareReferenceLevel(){
  const day=valorWelfareToday(),ref=state.welfareRef;
- if(ref&&ref.day===day&&Number.isFinite(ref.level))return ref.level;
- let level=Number(state.level)||1;try{level=Math.max(...valorRankRows().map(r=>Number(r.level)||1))}catch(e){}
- state.welfareRef={day,level};try{save()}catch(e){}return level;
+ if(ref&&ref.day===day&&ref.src==='server'&&Number.isFinite(ref.level))return ref.level;
+ valorWelfareFetch(day);
+ return Number(state.level)||1;
 }
 function valorWelfareBonus(){if(!state?.class)return 0;const gap=valorWelfareReferenceLevel()-VALOR_WELFARE_CUTOFF-(Number(state.level)||1);return gap>0?Math.min(VALOR_WELFARE_MAX,gap*VALOR_WELFARE_STEP):0}
 function valorWelfareXp(base){return Math.round((Number(base)||0)*(1+valorWelfareBonus()))}
