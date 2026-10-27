@@ -78,16 +78,20 @@ function valorChatDecorateTabs(){
  btn.setAttribute('aria-selected',String(guildOn));btn.classList.toggle('vch-tab-off',!valorChatGuildChannel());btn.title=valorChatGuildChannel()?'Birlik sohbeti':'Birliğe katılınca açılır';
  if(guildOn&&chatTab)chatTab.setAttribute('aria-selected','false');
 }
-/* Fixed chat screen: the page is locked, the list takes the remaining height. On iOS the keyboard pans the
-   visual viewport; the body is moved by the same amount so the screen stays put and only the send bar rises. */
+/* Fixed chat screen: the page does not scroll, the list takes the remaining height. The keyboard is
+   detected from the focused input plus a shrinking visual viewport (no screen-size guesses). */
+let valorChatBaseH=0;
 function valorChatFit(){
  const root=document.documentElement,body=document.body,on=body.classList.contains('valor-chat-page')&&!!document.getElementById('vch-list');
- if(!on){if(root.classList.contains('vch-lock')){root.classList.remove('vch-lock');body.classList.remove('vch-kb');body.style.transform=''}return}
- root.classList.add('vch-lock');
- const vv=window.visualViewport,vh=vv?vv.height:innerHeight,off=vv?Math.max(0,vv.offsetTop):0,kb=!!vv&&innerHeight-vv.height>150;
- body.classList.toggle('vch-kb',kb);body.style.transform=off?'translateY('+off+'px)':'';
- const list=document.getElementById('vch-list');if(!list)return;
- const near=list.scrollHeight-list.scrollTop-list.clientHeight<80,top=list.getBoundingClientRect().top-off;
+ if(!on){if(root.classList.contains('vch-lock')){root.classList.remove('vch-lock');body.classList.remove('vch-kb')}return}
+ if(!root.classList.contains('vch-lock')){root.classList.add('vch-lock');window.scrollTo(0,0)}
+ const vv=window.visualViewport,vh=vv?vv.height:innerHeight,focused=document.activeElement?.id==='vch-input';
+ if(!focused)valorChatBaseH=vh;else if(!valorChatBaseH)valorChatBaseH=innerHeight;
+ const kb=focused&&vh<valorChatBaseH-120;
+ body.classList.toggle('vch-kb',kb);
+ if(kb&&window.scrollY)window.scrollTo(0,0);
+ const list=document.getElementById('vch-list');
+ const off=vv?Math.max(0,vv.offsetTop):0,near=list.scrollHeight-list.scrollTop-list.clientHeight<80,top=list.getBoundingClientRect().top-off;
  let tail=8;for(let el=list.nextElementSibling;el;el=el.nextElementSibling){const cs=getComputedStyle(el);if(cs.display!=='none')tail+=el.offsetHeight+(parseFloat(cs.marginTop)||0)+(parseFloat(cs.marginBottom)||0)}
  const nav=kb?0:(document.getElementById('bottomNav')?.offsetHeight||0);
  list.style.height=Math.max(120,Math.floor(vh-nav-top-tail-10))+'px';
