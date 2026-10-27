@@ -1,4 +1,4 @@
--- Valor Online: online / offline status for friends (run once in Supabase → SQL Editor, after friends.sql).
+-- Valor Online: online / offline status for friends (run once in Supabase → SQL Editor, after friends.sql — friends.sql already contains it).
 -- While the game is open it calls social_ping() once a minute; a player counts as online if the last
 -- ping (or cloud save) is less than 3 minutes old. Friends are listed online first.
 alter table public.saves add column if not exists last_active timestamptz;
