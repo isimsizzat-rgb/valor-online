@@ -1,11 +1,28 @@
 /* Home hubs reuse the existing game schedules, navigation and account controls. */
 const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Kurallar','kurallar'],['Ayarlar','ayarlar']];
+// Keep related destinations together without changing the existing three-column design.
+const VALOR_HOME_ORDER=[
+ 'Savaş','Zindan','Dünya Bossu',
+ 'Görevler','Birlik','Sıralama',
+ 'Atölye','Teknoloji','Astroloji',
+ 'Binek','Muhafız','Fashion',
+ 'Market','Çiftlik','Şans Çarkı',
+ 'Etkinlikler','Kurallar','Ayarlar'
+];
+function valorOrderHomeTiles(grid){
+ if(!grid)return;
+ const tiles=Array.from(grid.children);
+ const rank=tile=>{const index=VALOR_HOME_ORDER.indexOf(tile.getAttribute('aria-label'));return index<0?VALOR_HOME_ORDER.length:index};
+ tiles.sort((a,b)=>rank(a)-rank(b));
+ for(const tile of tiles)grid.appendChild(tile);
+}
 const valorHubsPreviousHome=home;
 home=function(){
  const template=document.createElement('template');template.innerHTML=valorHubsPreviousHome.apply(this,arguments);
  const grid=template.content.querySelector('.mmorpg-home-grid');if(!grid)return template.innerHTML;
  grid.classList.add('valor-home-expanded');
  for(const [name,art] of VALOR_HOME_HUBS)grid.insertAdjacentHTML('beforeend','<button type="button" class="mmorpg-home-tile valor-vertical-tile" onclick="go(\''+name+'\')" aria-label="'+name+'" title="'+name+'"><img src="assets/home-fantasy/'+art+'.webp?v=1" alt="'+name+'" decoding="async" draggable="false"></button>');
+ valorOrderHomeTiles(grid);
  return template.innerHTML;
 };
 function valorHubHeader(title,subtitle){return '<header class="vhub-heading"><div><span>VALOR ONLINE</span><h1>'+title+'</h1><p>'+subtitle+'</p></div><button type="button" onclick="go(\'Anasayfa\')">‹ Ana Sayfa</button></header>'}
@@ -47,7 +64,7 @@ setInterval(()=>{if(page!=='Etkinlikler'||document.hidden||!state.class)return;f
 const valorHubsPreviousRender=render;
 render=function(){
  const result=valorHubsPreviousRender.apply(this,arguments);
- if(page==='Anasayfa'&&state.class){const grid=document.querySelector('#main .valor-home-expanded');if(grid)for(const [name] of VALOR_HOME_HUBS){const button=grid.querySelector('[aria-label="'+name+'"]');if(button)grid.appendChild(button)}}
+ if(page==='Anasayfa'&&state.class)valorOrderHomeTiles(document.querySelector('#main .valor-home-expanded'));
  return result;
 };
 if(state.class&&typeof valorAccountCanPlay==='function'&&valorAccountCanPlay())render();
