@@ -38,7 +38,7 @@ vsEnemy=function(floor){const f=Math.max(1,Math.min(100,Math.floor(Number(floor)
 /* Per area [Kolay, Zor, Kabus] base power of the first foe. Foes ramp +5% each, the boss is +25%.
    Kolay: the area's entry character clears it reliably. Kabus: the character at the end of the area
    clears it about half the time. Zor sits between them. */
-const VALOR_STAGE_POWER=[[22000,32000,46000],[35000,54600,85000],[83000,112000,152000],[146000,278000,530000]];
+const VALOR_STAGE_POWER=[[22000,32000,46000],[35000,60000,100000],[83000,112000,152000],[146000,278000,530000]];
 const VALOR_STAGE_DIFFS=['Kolay','Zor','Kabus'];
 /* Late areas (Buzul Dağları 51-75, Cehennem Ovaları 76-100) are 25% stronger. */
 const VALOR_STAGE_LATE_MULT=[1,1,1.25,1.25];
