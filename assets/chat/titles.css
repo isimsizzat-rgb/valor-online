@@ -3,3 +3,5 @@
 .vtl-picker span{font:11px Arial,sans-serif;color:#b9a27c;margin-right:2px}
 .vtl-picker button{min-height:36px;padding:6px 11px;border:1px solid #81653c88;border-radius:18px;background:#1b1512;color:#c9b693;font:12px Georgia,serif}
 .vtl-picker button[aria-pressed=true]{border-color:#e2bd73;background:#5a3f1f;color:#ffe2a6;box-shadow:0 0 8px #e6a42e55}
+.valor-rank-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px}
+.valor-rank-tabs button{padding-left:2px;padding-right:2px;font-size:11px;white-space:normal;line-height:1.2}

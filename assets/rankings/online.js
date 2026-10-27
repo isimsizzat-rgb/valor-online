@@ -2,7 +2,7 @@
 const VALOR_RANK_LIMIT=50,VALOR_RANK_TTL=60000;
 const valorRankOnline={};   // kind -> {rows, myRank, at, error, loading}
 function valorRankIsOnline(){return !!(typeof valorAccountActive!=='undefined'&&valorAccountActive?.cloud&&typeof valorCloudFetch==='function')}
-function valorRankMine(){return {name:state.name||'Oyuncu',class:state.class,level:state.level,power:combatPower(),xp:Math.max(0,valorXpTotal(state.level)+(state.xp||0)),spirit:vmTotals().spirit,fame:Math.max(0,Number(state.fame)||0),me:true,profile:typeof valorCloudProfile==='function'?valorCloudProfile():null}}
+function valorRankMine(){return {name:state.name||'Oyuncu',class:state.class,level:state.level,power:combatPower(),xp:Math.max(0,valorXpTotal(state.level)+(state.xp||0)),spirit:vmTotals().spirit,fame:Math.max(0,Number(state.fame)||0),popularity:Number(valorRankOnline.popularity?.mine)||0,me:true,profile:typeof valorCloudProfile==='function'?valorCloudProfile():null}}
 async function valorRankLoad(kind,force){
  const cur=valorRankOnline[kind]||(valorRankOnline[kind]={});
  if(cur.loading||(!force&&cur.at&&Date.now()-cur.at<VALOR_RANK_TTL))return;
@@ -14,14 +14,20 @@ async function valorRankLoad(kind,force){
    valorCloudFetch('/rest/v1/rpc/my_rank',{method:'POST',body:JSON.stringify({kind})}).catch(()=>null)
   ]);
   cur.rows=Array.isArray(rows)?rows:[];cur.myRank=typeof my==='number'?my:null;cur.at=Date.now();
- }catch(e){cur.at=Date.now();cur.error=(e.status===404||e.code==='PGRST202')?'Sıralama sunucuda henüz kurulmadı.':e.message}
+  // Popularity needs supabase/titles.sql; the old leaderboard answers unknown kinds with the power list.
+  if(kind==='popularity'){
+   if(cur.rows.length&&!('popularity' in cur.rows[0]))throw Object.assign(new Error('Popülerlik sıralaması sunucuda henüz kurulmadı.'),{setup:true});
+   const own=await valorCloudFetch('/rest/v1/saves?select=popularity&user_id=eq.'+encodeURIComponent(valorAccountActive.id)).catch(()=>null);
+   cur.mine=Number(Array.isArray(own)&&own[0]?.popularity)||0;
+  }
+ }catch(e){cur.at=Date.now();cur.error=e.setup?e.message:(e.status===404||e.code==='PGRST202')?'Sıralama sunucuda henüz kurulmadı.':e.message}
  finally{cur.loading=false;if(page==='Sıralama')render()}
 }
 /* Rows shown for a tab: server list with my live values, plus my own row below it when I am not in the top list. */
 function valorRankOnlineRows(kind){
  const cur=valorRankOnline[kind];if(!cur?.rows)return null;
  const mine=valorRankMine();let found=false;
- const rows=cur.rows.map(r=>{const row={name:r.name,class:r.class,level:r.level,power:Number(r.power)||0,xp:Number(r.xp)||0,spirit:Number(r.spirit)||0,fame:Number(r.fame)||0,profile:r.profile,rank:Number(r.rank)};if(r.is_me){found=true;return {...row,...mine,rank:row.rank}}return row});
+ const rows=cur.rows.map(r=>{const row={name:r.name,class:r.class,level:r.level,power:Number(r.power)||0,xp:Number(r.xp)||0,spirit:Number(r.spirit)||0,fame:Number(r.fame)||0,popularity:Number(r.popularity)||0,profile:r.profile,rank:Number(r.rank)};if(r.is_me){found=true;return {...row,...mine,rank:row.rank}}return row});
  // My row uses live values, so the list is re-sorted and numbered again; a stale server value can't put me in the wrong place.
  if(found){rows.sort((a,b)=>(Number(b[kind])||0)-(Number(a[kind])||0)||(b.level-a.level));rows.forEach((r,i)=>r.rank=i+1)}
  else if(cur.myRank){const lastShown=rows.length?rows[rows.length-1]:null;
@@ -32,11 +38,11 @@ function valorRankOnlineRows(kind){
 const valorRankOfflinePage=valorLeaderboardPage;
 valorLeaderboardPage=function(){
  if(!valorRankIsOnline())return valorRankOfflinePage.apply(this,arguments);
- const tab=valorRankTab,labels={power:'Savaş Gücü',xp:'EXP',spirit:'Binek Ruhu',fame:'Şöhret'},cur=valorRankOnline[tab]||{};
+ const tab=valorRankTab,labels={power:'Savaş Gücü',xp:'EXP',spirit:'Binek Ruhu',fame:'Şöhret',popularity:'Popülerlik'},cur=valorRankOnline[tab]||{};
  valorRankLoad(tab);
  const rows=valorRankOnlineRows(tab);window.valorRankShown=rows||[];
  let body;
- if(rows&&rows.length)body=rows.map((p,i)=>{const title=valorRankFameTitle(p.fame);return (p.outside?'<div class="vro-gap">· · ·</div>':'')+'<div class="valor-rank-row '+(p.me?'mine':'')+'"><span class="valor-rank-position">'+p.rank+'.</span><div class="valor-rank-player"><b>'+(p.rank===1?'<span class="valor-rank-crown">✦ </span>':'')+escapeAttr(p.name)+(p.me?' (Sen)':'')+'</b><small>'+escapeAttr(p.class||'')+' · Sv. '+p.level+(tab==='spirit'&&p.rank===1?' · Binek Tanrısı':'')+'</small></div>'+(tab==='fame'?'<span class="vr-fame-title" style="--rank-color:'+title.color+'">'+escapeAttr(title.name)+'</span>':'')+'<strong>'+money(Math.floor(p[tab]))+'</strong><button type="button" class="valor-rank-profile-arrow" aria-label="'+escapeAttr(p.name)+' profilini görüntüle" onclick="valorOpenRankProfile('+i+')">'+valorRankOrnateArrow()+'</button></div>'}).join('');
+ if(rows&&rows.length)body=rows.map((p,i)=>{const title=valorRankFameTitle(p.fame);return (p.outside?'<div class="vro-gap">· · ·</div>':'')+'<div class="valor-rank-row '+(p.me?'mine':'')+'"><span class="valor-rank-position">'+p.rank+'.</span><div class="valor-rank-player"><b>'+(p.rank===1?'<span class="valor-rank-crown">✦ </span>':'')+escapeAttr(p.name)+(p.me?' (Sen)':'')+'</b><small>'+escapeAttr(p.class||'')+' · Sv. '+p.level+(p.rank===1&&{spirit:' · Binek Tanrısı',power:' · En Güçlü Lord',fame:' · Savaş Tanrısı',popularity:' · En Popüler Lord'}[tab]||'')+'</small></div>'+(tab==='fame'?'<span class="vr-fame-title" style="--rank-color:'+title.color+'">'+escapeAttr(title.name)+'</span>':'')+'<strong>'+money(Math.floor(p[tab]))+'</strong><button type="button" class="valor-rank-profile-arrow" aria-label="'+escapeAttr(p.name)+' profilini görüntüle" onclick="valorOpenRankProfile('+i+')">'+valorRankOrnateArrow()+'</button></div>'}).join('');
  else if(cur.error)body='<div class="vro-state"><p>'+escapeAttr(cur.error)+'</p><button type="button" onclick="valorRankLoad(\''+tab+'\',true)">Tekrar Dene</button></div>';
  else if(rows)body='<div class="vro-state"><p>Henüz sıralamada oyuncu yok.</p></div>';
  else body='<div class="vro-state"><p>Sıralama yükleniyor…</p></div>';
@@ -50,9 +56,9 @@ valorOpenRankProfile=function(index){
  const cls=classes.includes(p.class)?p.class:classes[0],gender=p.profile?.gender==='female'?'female':'male';
  const hero=typeof valorCreationPortrait==='function'?valorCreationPortrait(cls,gender):heroImages[classes.indexOf(cls)];
  const slots=['Silah','Zırh','Kask','Ayakkabı','Kolye','Küpe'],eq=p.profile?.equipped||{};
- const tag=p.rank===1?({spirit:'Binek Tanrısı',power:'En Güçlü Lord',xp:'Savaş Tanrısı',fame:'Krallığın Şöhreti'}[valorRankTab]||''):'';
+ const tag=p.rank===1?({spirit:'Binek Tanrısı',power:'En Güçlü Lord',fame:'Savaş Tanrısı',popularity:'En Popüler Lord'}[valorRankTab]||''):'';
  const gear=slots.map(slot=>{const it=eq[slot];let img='';if(it){try{img='<img src="'+equipmentIcon({...it,cls:it.cls||cls})+'" alt="'+escapeAttr(it.name||slot)+'">'}catch{}}return '<div class="vp-slot '+(it&&it.epic?'is-epic':'')+'" title="'+escapeAttr(it?it.name+' +'+(it.plus||0):slot)+'">'+(img||'<span class="vp-empty">'+(icons[slot]||'✦')+'</span>')+(it?'<span class="vp-plus-badge">+'+(it.plus||0)+'</span>':'')+'</div>'});
- const stats=[['Savaş Gücü',money(p.power)],['Seviye',p.level+' / 100'],['Toplam EXP',money(p.xp)],['Binek Ruhu',money(p.spirit)],['Şöhret',money(p.fame)],['Sıra',p.rank+'.']];
+ const stats=[['Savaş Gücü',money(p.power)],['Seviye',p.level+' / 100'],['Toplam EXP',money(p.xp)],['Binek Ruhu',money(p.spirit)],['Şöhret',money(p.fame)],['Popülerlik',money(p.popularity||0)],['Sıra',p.rank+'.']];
  document.getElementById('valor-rank-modal')?.remove();
  const modal=document.createElement('div');modal.className='valor-rank-modal valor-rank-fullscreen';modal.id='valor-rank-modal';
  modal.innerHTML='<div class="valor-rank-full-profile" role="dialog" aria-modal="true" aria-label="'+escapeAttr(p.name)+' profili"><div class="valor-rank-profile-toolbar"><button type="button" class="valor-rank-back">‹ Sıralamaya Dön</button><span>OYUNCU PROFİLİ</span></div><div class="vp-wrap"><div class="vp-header"><strong>'+escapeAttr(p.name)+'</strong><span>'+cls+' · Sv. '+p.level+'</span></div><div class="vp-scene"><div class="vp-hero"><img src="'+hero+'" alt="'+cls+' karakteri"></div>'+(tag?'<div class="valor-profile-tag">✦ '+tag+' ✦</div>':'<div class="valor-profile-tag valor-tag-reserved"></div>')+'<div class="vp-gear vp-left">'+gear.slice(0,3).join('')+'</div><div class="vp-gear vp-right">'+gear.slice(3).join('')+'</div></div><div class="vp-stats"><h2>Karakter İstatistikleri</h2><div class="vp-statgrid">'+stats.map(([k,v])=>'<div class="vp-stat"><span>'+k+'</span><b>'+v+'</b></div>').join('')+'</div></div></div></div>';
