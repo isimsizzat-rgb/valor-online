@@ -13,7 +13,7 @@ function valorRideSelect(id){
 }
 function valorRideTile(summary,open){
  const mount=valorMounts.find(m=>m.id===summary?.riddenId);
- return '<button type="button" class="vp-slot vride-slot" aria-label="Binek bilgilerini aç" title="'+escapeAttr(mount?.name||'Binek seçilmedi')+'" '+(open?'onclick="valorRideOpen()"':'')+'>'+(mount?'<img src="'+vmMountImage(mount)+'" alt="'+escapeAttr(mount.name)+'">':'<span class="vp-empty vride-empty">♞</span>')+'<small class="vf-slot-caption">BİNEK</small></button>';
+ return '<button type="button" class="vp-slot vride-slot" aria-label="Binek bilgilerini aç" title="'+escapeAttr(mount?.name||'Binek seçilmedi')+'" '+(open?'onclick="valorRideOpen()"':'')+'><img class="vride-button-art" src="assets/mounts/riding-button.webp?v=1" alt="Binek"></button>';
 }
 let valorRideReturnFocus=null;
 function valorRideClose(){const dialog=document.getElementById('valor-ride-dialog');if(dialog){dialog.close();dialog.remove()}if(valorRideReturnFocus?.isConnected)valorRideReturnFocus.focus();valorRideReturnFocus=null}

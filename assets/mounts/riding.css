@@ -10,3 +10,9 @@ html body .valor-rank-full-profile .vp-scene.vride-remote .vp-gear{top:8px!impor
 /* Override the older equipment rule that forces every slot to position:relative. */
 html body #main .vp-wrap .vp-scene .vp-gear .vride-profile-pair>.vp-slot.vride-slot,
 html body .valor-rank-full-profile .vp-wrap .vp-scene .vp-gear .vride-profile-pair>.vp-slot.vride-slot{position:absolute!important;left:calc(100% + 8px)!important;top:0!important}
+
+/* The profile shortcut is a complete illustrated button; its label is part of the artwork. */
+html body #main .vp-wrap .vp-scene .vp-gear .vride-profile-pair>.vp-slot.vride-slot,
+html body .valor-rank-full-profile .vp-wrap .vp-scene .vp-gear .vride-profile-pair>.vp-slot.vride-slot{padding:0!important;overflow:hidden!important}
+html body #main .vp-wrap .vp-scene .vp-gear .vp-slot.vride-slot img.vride-button-art,
+html body .valor-rank-full-profile .vp-wrap .vp-scene .vp-gear .vp-slot.vride-slot img.vride-button-art{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;object-fit:cover!important;border-radius:0!important;transform:none!important}
