@@ -65,7 +65,7 @@ const VALOR_GUIDE_TOPICS=[
   'Günde 5 giriş hakkın var; Sefer Kağıdı +1 hak verir. Sahneyi bitirince:',
   ['Altın: 8.000 + seviye × 100','Ekipman düşme şansı: Kolay %4, Zor %8, Kabus %12','Kabus: ayrıca 1–5 Epik Taşı'],
   'Düşen ekipman +0 gelir ve aşaması zorluğa göre belirlenir (Normal / Epik / Ebedi / İlahi):',
-  ['Kolay: %80 / %17 / %3 / %0','Zor: %70 / %23 / %6 / %1','Kabus: %60 / %28 / %10 / %2'],
+  ['Kolay: %90 / %8 / %2 / %0','Zor: %83 / %12 / %4,5 / %0,5','Kabus: %75 / %15 / %8,5 / %1,5'],
   'Her bölgenin Kabus modunu ilk kez geçmek, Görevler’den 500 elmas kazandırır.'
  ],route:'Sahneler',link:'Sahneleri Aç'},
  {id:'zindan',category:'Savaşlar',title:'Zindan',tags:'kule kat boss zindan parası baskın market külpençe',text:[
