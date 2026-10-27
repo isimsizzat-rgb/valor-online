@@ -1362,7 +1362,7 @@ function valorArenaData(){let changed=false;if(!state.arenaV1){state.arenaV1={da
 
 function valorArenaStats(){const gear=equipmentBonuses(),mount=vmDerived(),tech=vsTechBonus(),out={};for(const key of ['Saldırı','Sihir','Savunma','Sihir Savunma','Can','Kritik','Bloke'])out[key]=Math.max(0,(Number(state.stats?.[key])||0)+(Number(gear[key])||0)+(Number(mount[key])||0)+(Number(tech[key])||0));return out}
 /* Level growth: every character level adds fixed stats by class. Computed from the level, never stored. */
-const VALOR_LEVEL_STATS={'Savaşçı':{Saldırı:15,Savunma:12,'Sihir Savunma':8,Can:40,Kritik:3,Bloke:6},'Büyücü':{Sihir:15,Savunma:8,'Sihir Savunma':12,Can:30,Kritik:3,Bloke:3},'Okçu':{Saldırı:15,Savunma:8,'Sihir Savunma':8,Can:30,Kritik:6,Bloke:3}};
+const VALOR_LEVEL_STATS={'Savaşçı':{Saldırı:15,Savunma:12,'Sihir Savunma':8,Can:40,Kritik:3,Bloke:6},'Büyücü':{Sihir:15,Savunma:8,'Sihir Savunma':12,Can:30,Kritik:3,Bloke:3},'Okçu':{Saldırı:18,Savunma:8,'Sihir Savunma':8,Can:30,Kritik:6,Bloke:3}};
 function valorLevelStats(){const per=VALOR_LEVEL_STATS[state?.class],lv=Math.max(1,Math.min(100,Math.floor(Number(state?.level)||1))),out={};if(per)for(const k in per)out[k]=per[k]*lv;return out}
 const valorLevelPreviousArenaStats=valorArenaStats;
 valorArenaStats=function(){const out=valorLevelPreviousArenaStats.apply(this,arguments),lv=valorLevelStats();for(const k in lv)out[k]=(Number(out[k])||0)+lv[k];return out};
@@ -1619,7 +1619,7 @@ profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.c
 
 <link rel="stylesheet" href="assets/market/change-cards.css?v=3"><script src="assets/market/change-cards.js?v=3"></script>
 
-<link rel="stylesheet" href="assets/hub/guide.css?v=2"><script src="assets/hub/guide.js?v=5"></script>
+<link rel="stylesheet" href="assets/hub/guide.css?v=2"><script src="assets/hub/guide.js?v=6"></script>
 <link rel="stylesheet" href="assets/hub/home-tabs.css?v=1"><script src="assets/hub/home-tabs.js?v=2"></script>
 
 <link rel="stylesheet" href="assets/mounts/riding.css?v=2"><script src="assets/mounts/riding.js?v=2"></script>

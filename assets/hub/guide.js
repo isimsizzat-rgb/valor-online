@@ -18,7 +18,7 @@ const VALOR_GUIDE_TOPICS=[
   ['Saldırısı yüksek olan önce vurur.','Fiziksel vuruşu Defans, büyü vuruşunu Sihirli Defans azaltır.','1 Can puanı 10 can eder.','Kritik vuruş %25 fazla, bloklanan vuruş %25 az hasar verir.'],
   'Kritik ve Bloke şansı puanla artar: 1.000 puanda %25, 5.000 puanda %100 olur. Rakibin bloke şansı senin kritik şansınla ayrı ayrı hesaplanır.',
   'Her seviye atladığında sınıfına göre kalıcı özellik kazanırsın:',
-  ['Savaşçı: +15 Saldırı, +12 Defans, +8 Sihirli Defans, +40 Can, +3 Kritik, +6 Bloke','Büyücü: +15 Sihir, +8 Defans, +12 Sihirli Defans, +30 Can, +3 Kritik, +3 Bloke','Okçu: +15 Saldırı, +8 Defans, +8 Sihirli Defans, +30 Can, +6 Kritik, +3 Bloke'],
+  ['Savaşçı: +15 Saldırı, +12 Defans, +8 Sihirli Defans, +40 Can, +3 Kritik, +6 Bloke','Büyücü: +15 Sihir, +8 Defans, +12 Sihirli Defans, +30 Can, +3 Kritik, +3 Bloke','Okçu: +18 Saldırı, +8 Defans, +8 Sihirli Defans, +30 Can, +6 Kritik, +3 Bloke'],
   'Diğer özelliklerin seviye, ekipman, mozaik taşları, binekler, muhafızlar, kanatlar, Teknoloji, Astroloji ve madalyondan gelir.'
  ],route:'Profil',link:'Profili Aç'},
  {id:'enerji',category:'Başlangıç',title:'Macera ve enerji',tags:'macera enerji şişe yenileme bölge altın exp binek taşı',text:[
