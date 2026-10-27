@@ -1,5 +1,5 @@
 /* Home hubs reuse the existing game schedules, navigation and account controls. */
-const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Rehber','rehber'],['Kurallar','kurallar'],['Ayarlar','ayarlar']];
+const VALOR_HOME_HUBS=[['Etkinlikler','etkinlikler'],['Rehber','rehber'],['Kurallar','kurallar'],['Destek','destek'],['Ayarlar','ayarlar']];
 // Keep related destinations together without changing the existing grid design.
 const VALOR_HOME_ORDER=[
  'Savaş','Zindan','Dünya Bossu',
@@ -7,7 +7,7 @@ const VALOR_HOME_ORDER=[
  'Atölye','Teknoloji','Astroloji',
  'Binek','Muhafız','Fashion',
  'Market','Çiftlik','Şans Çarkı',
- 'Etkinlikler','Rehber','Kurallar','Ayarlar'
+ 'Etkinlikler','Rehber','Kurallar','Destek','Ayarlar'
 ];
 function valorOrderHomeTiles(grid){
  if(!grid)return;
