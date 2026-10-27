@@ -1361,6 +1361,11 @@ veAddToPopup=function(id,popupId){const it=veFindItem(id),box=document.getElemen
 function valorArenaData(){let changed=false;if(!state.arenaV1){state.arenaV1={day:'',used:0,wins:0,losses:0,history:[]};changed=true}const d=state.arenaV1,day=vsToday();if(d.day!==day){d.day=day;d.used=0;changed=true}if(!Number.isFinite(state.fame)){state.fame=0;changed=true}if(!Array.isArray(d.history)){d.history=[];changed=true}if(changed)save();return d}
 
 function valorArenaStats(){const gear=equipmentBonuses(),mount=vmDerived(),tech=vsTechBonus(),out={};for(const key of ['Saldırı','Sihir','Savunma','Sihir Savunma','Can','Kritik','Bloke'])out[key]=Math.max(0,(Number(state.stats?.[key])||0)+(Number(gear[key])||0)+(Number(mount[key])||0)+(Number(tech[key])||0));return out}
+/* Level growth: every character level adds fixed stats by class. Computed from the level, never stored. */
+const VALOR_LEVEL_STATS={'Savaşçı':{Saldırı:15,Savunma:12,'Sihir Savunma':8,Can:40,Kritik:3,Bloke:6},'Büyücü':{Sihir:15,Savunma:8,'Sihir Savunma':12,Can:30,Kritik:3,Bloke:3},'Okçu':{Saldırı:15,Savunma:8,'Sihir Savunma':8,Can:30,Kritik:6,Bloke:3}};
+function valorLevelStats(){const per=VALOR_LEVEL_STATS[state?.class],lv=Math.max(1,Math.min(100,Math.floor(Number(state?.level)||1))),out={};if(per)for(const k in per)out[k]=per[k]*lv;return out}
+const valorLevelPreviousArenaStats=valorArenaStats;
+valorArenaStats=function(){const out=valorLevelPreviousArenaStats.apply(this,arguments),lv=valorLevelStats();for(const k in lv)out[k]=(Number(out[k])||0)+lv[k];return out};
 function valorArenaUnit(stats,cls){const magic=cls==='Büyücü',attack=10+Math.max(0,Number(stats[magic?'Sihir':'Saldırı'])||0),hp=Math.max(1,Math.round(100+(Number(stats.Can)||0)*10));return {stats,magic,attack,maxHp:hp,hp}}
 function valorArenaDamage(a,b){const defense=Math.max(0,Number(b.stats[a.magic?'Sihir Savunma':'Savunma'])||0);return Math.max(1,Math.round(a.attack*a.attack/(a.attack+defense)))}
 function valorArenaChance(value){const points=Math.max(0,Number(value)||0);return Math.min(1,points<=1000?points/4000:.25+(points-1000)*.75/4000)}
@@ -1614,7 +1619,7 @@ profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.c
 
 <link rel="stylesheet" href="assets/market/change-cards.css?v=3"><script src="assets/market/change-cards.js?v=3"></script>
 
-<link rel="stylesheet" href="assets/hub/guide.css?v=2"><script src="assets/hub/guide.js?v=4"></script>
+<link rel="stylesheet" href="assets/hub/guide.css?v=2"><script src="assets/hub/guide.js?v=5"></script>
 <link rel="stylesheet" href="assets/hub/home-tabs.css?v=1"><script src="assets/hub/home-tabs.js?v=2"></script>
 
 <link rel="stylesheet" href="assets/mounts/riding.css?v=2"><script src="assets/mounts/riding.js?v=2"></script>
