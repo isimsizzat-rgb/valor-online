@@ -4,7 +4,13 @@
 // so a player cannot change the result on their own device.
 //   POST { mode: "solo", target: "<user id>" }  → { battle }
 //   POST { mode: "team" }                        → { prep }   (caller must lead a team room)
+//   POST { mode: "duel_start", target }           → { duel, foe }   turn-based duel (resumes a live one)
+//   POST { mode: "duel_act", skill }              → { duel, foe }   skill = normal|strong|max|passive|auto
+//   POST { mode: "duel_state" }                   → { duel, foe } or { duel: null }
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import "./duel-core.js";   // same file as assets/arena/duel-core.js
+const D = globalThis.ValorDuelCore;
+const DUEL_STALE_MS = 10 * 60 * 1000;
 
 // ENGINE START — mirrors the game's arena engine (index.html + astrology.js + medallions/stats.js + pets/pets.js + team.js)
 const DAMAGE_MULTIPLIER = 1.5, FURY_START = 5, FURY_STEP = 0.10;
@@ -118,6 +124,52 @@ Deno.serve(async (req) => {
   if (authError || !auth?.user) return json({ error: "auth" }, 401);
   const me = auth.user.id;
   let body = {}; try { body = await req.json(); } catch { /* empty */ }
+
+
+  // ---- Turn-based duel: the attacker plays, the defender is the AI. State lives in arena_duels. ----
+  const loadDuel = async () => { const { data } = await db.from("arena_duels").select("*").eq("attacker", me).maybeSingle(); return data; };
+  const finishDuel = async (row) => {
+    const r = row.state.result;
+    const { data: stored, error: e } = await db.rpc("srv_arena_store", { attacker: me, target: row.target, won: !!r.win, was_draw: !!r.draw, fight_rounds: r.rounds | 0 });
+    await db.from("arena_duels").delete().eq("attacker", me);
+    return e ? e.message : stored;
+  };
+  const reply = (row, extra = {}) => json({ duel: D.view(row.state), foe: row.foe, now: Date.now(), ...extra });
+
+  if (body.mode === "duel_state") {
+    const row = await loadDuel();
+    return row ? reply(row) : json({ duel: null, now: Date.now() });
+  }
+
+  if (body.mode === "duel_start") {
+    let row = await loadDuel();
+    if (row && Date.now() - Date.parse(row.updated_at) < DUEL_STALE_MS) return reply(row, { resumed: true });
+    if (row) { D.autoplay(row.state, Date.now()); await finishDuel(row); }   // abandoned: play it out and record it
+    const { data: ctx, error } = await db.rpc("srv_arena_context", { attacker: me, target: body.target });
+    if (error) return json({ error: error.message }, 500);
+    if (ctx?.status !== "ok") return json({ error: ctx?.status || "invalid" });
+    const foe = { name: ctx.foe.name, class: ctx.foe.class, level: ctx.foe.level, gender: ctx.foe.gender };
+    const state = D.create({ name: ctx.me.name, cls: ctx.me.class, level: ctx.me.level, stats: ctx.me.combat },
+      { name: ctx.foe.name, cls: ctx.foe.class, level: ctx.foe.level, gender: ctx.foe.gender, stats: ctx.foe.combat }, Date.now(), Math.random);
+    row = { attacker: me, target: body.target, foe, state, updated_at: new Date().toISOString() };
+    const { error: e2 } = await db.from("arena_duels").insert(row);
+    if (e2) return json({ error: e2.message }, 500);
+    if (state.status === "done") { const s = await finishDuel(row); if (s !== "ok") return json({ error: s }); }
+    return reply(row);
+  }
+
+  if (body.mode === "duel_act") {
+    const row = await loadDuel();
+    if (!row) return json({ error: "no_duel", duel: null });
+    const before = row.updated_at;
+    if (!D.act(row.state, String(body.skill || ""), Date.now(), Math.random)) return reply(row, { error: "not_ready" });
+    if (row.state.status === "done") { const s = await finishDuel(row); return reply(row, s === "ok" ? {} : { error: s }); }
+    const updated_at = new Date().toISOString();
+    const { data: saved, error } = await db.from("arena_duels").update({ state: row.state, updated_at }).eq("attacker", me).eq("updated_at", before).select("attacker");
+    if (error) return json({ error: error.message }, 500);
+    if (!saved?.length) { const fresh = await loadDuel(); return fresh ? reply(fresh, { error: "stale" }) : json({ duel: null }); }
+    return reply({ ...row, updated_at });
+  }
 
   if (body.mode === "solo") {
     const { data: ctx, error } = await db.rpc("srv_arena_context", { attacker: me, target: body.target });

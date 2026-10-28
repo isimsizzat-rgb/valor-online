@@ -1,0 +1,27 @@
+/* Turn-based arena duel */
+.vdu-overlay{position:fixed;inset:0;z-index:12000;background:#030609e6;display:flex;align-items:center;justify-content:center;padding:10px;color:#e9e0d0;overscroll-behavior:contain}
+.vdu-dialog{width:min(96vw,520px);max-height:96dvh;overflow:auto;background:linear-gradient(160deg,#241c18,#0d0f15 70%);border:1px solid #a58954;border-radius:12px;box-shadow:0 20px 80px #000;padding:14px 14px 12px}
+.vdu-eyebrow{display:block;color:#ab9261;letter-spacing:2px;font-size:10px}
+.vdu-dialog h2{margin:2px 0 8px;color:#efd49b;font:700 20px Georgia,serif}
+.vdu-card{display:flex;gap:12px;align-items:center;padding:8px 10px;border:1px solid #4a3d2c;border-radius:9px;background:#12161e}
+.vdu-me{border-color:#6a5a3a}
+.vdu-portrait{position:relative;width:64px;min-width:64px;height:64px;border-radius:50%;border:2px solid #b58b4b;overflow:visible}
+.vdu-portrait img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.vdu-portrait.hit{animation:vdu-shake .35s}
+@keyframes vdu-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.vdu-info{flex:1;min-width:0}.vdu-info b{display:block;font:700 15px Georgia,serif;color:#f3e3c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vdu-info span{display:block;font-size:11px;color:#b9ab93}
+.vdu-hp{position:relative;height:10px;background:#07090d;border-radius:6px;overflow:hidden;margin:5px 0 3px}.vdu-hp i{display:block;height:100%;background:linear-gradient(90deg,#25664e,#69b295);transition:width .4s}.vdu-foe .vdu-hp i{background:linear-gradient(90deg,#842c35,#e07265)}.vdu-hp b{position:absolute;right:0;top:0;height:100%;background:#9fd3ffaa}
+.vdu-info small{font-size:11px;color:#d8cfbf}
+.vdu-turn{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:7px 12px;border:1px solid #6d5a38;border-radius:7px;background:#0b1320}.vdu-turn b{font:700 15px Georgia,serif;color:#e9d8bd}.vdu-turn span{font:700 16px system-ui;color:#f0c97e}.vdu-turn.mine{border-color:#f0c97e;box-shadow:0 0 12px #eeb55450}.vdu-turn.mine b{color:#ffd893}
+.vdu-ticker{display:flex;gap:6px;overflow-x:auto;white-space:nowrap;padding:2px 2px 8px;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 88%,transparent)}.vdu-ticker::-webkit-scrollbar{display:none}
+.vdu-ticker span{flex:0 0 auto;font-size:11px;padding:4px 9px;border-radius:12px;background:#0b1320;border:1px solid #2e3a46;color:#d8cfbf}.vdu-ticker span:first-child{border-color:#8f7349}.vdu-ticker .mine{color:#ffe0a0}.vdu-ticker .theirs{color:#ffb3a3}.vdu-ticker .pas{color:#9fd3ff}.vdu-ticker .burn{color:#ffa66b}
+.vdu-skills{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
+html body #valor-duel .vdu-skill{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px!important;min-height:0!important;border:1px solid #8f7349!important;border-radius:9px!important;background:linear-gradient(#2b2218,#15110d)!important;color:#f3e3c0!important;box-shadow:none!important;cursor:pointer}
+html body #valor-duel .vdu-skill:disabled{cursor:default}html body #valor-duel .vdu-skill:disabled img{filter:grayscale(.85) brightness(.55)}
+html body #valor-duel .vdu-skill:not(:disabled):active{transform:scale(.96)}
+.vdu-skill img{width:100%;max-width:72px;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block}
+.vdu-sname{font-size:10px;line-height:1.15;text-align:center;font-weight:700}
+.vdu-cd{position:absolute;top:28%;left:0;right:0;text-align:center;font:800 18px system-ui;color:#fff;text-shadow:0 2px 4px #000}
+.vdu-hint{display:block;min-height:14px;margin-top:6px;text-align:center;font-size:10px;color:#b9ab93}
+.vdu-float{position:absolute;left:50%;top:0;transform:translateX(-50%);font:800 16px system-ui;color:#ffd7cf;text-shadow:0 2px 4px #000;pointer-events:none;animation:vdu-float 1.2s forwards;white-space:nowrap;z-index:3}.vdu-float.crit{color:#ffcf5a;font-size:19px}.vdu-float.pas{color:#9fe0ff}
+@keyframes vdu-float{0%{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
