@@ -11,8 +11,8 @@ const root=path.resolve(__dirname,'../..');
   const check=await p.evaluate(()=>{const d=document.querySelector('.vzd-dialog');return {overflow:d.scrollWidth>d.clientWidth,badImages:Array.from(d.querySelectorAll('img')).filter(i=>i.complete&&!i.naturalWidth).length}});assert.equal(check.overflow,false);assert.equal(check.badImages,0);
   // Deterministic player fixtures keep test battles short and avoid changing global progression.
   await p.evaluate(()=>{state.valorDungeonV1.room.members[0].attack=1e9;state.valorDungeonV1.room.members[0].hp=1e9;state.valorDungeonV1.room.members[0].maxHp=1e9});
-  for(let f=1;f<=7;f++){await p.evaluate(()=>valorZindan.attack());assert.match(await p.locator('#vzd-overlay').innerText(),/Boss yenildi/);await p.evaluate(()=>valorZindan.next())}
-  await p.evaluate(()=>{const r=state.valorDungeonV1.room;r.boss.attack=1e12;r.members[0].attack=1;r.members[0].hp=1;valorZindan.attack()});
+  for(let f=1;f<=7;f++){await p.evaluate(()=>valorZindan.fight());assert.match(await p.locator('#vzd-overlay').innerText(),new RegExp(f+'\\. kat geçildi'))}
+  await p.evaluate(()=>{const r=state.valorDungeonV1.room;r.boss.attack=1e12;r.members[0].attack=1;r.members[0].hp=1;valorZindan.fight()});
   assert.match(await p.locator('#vzd-title').innerText(),/Takım Yenildi/);assert.equal(await p.evaluate(()=>state.valorDungeonV1.chests),7);
   const before=await p.evaluate(()=>({diamonds:state.diamonds,shards:state.shards,stones:state.stones[1]||0,stock:Object.fromEntries(['energyBottle','expeditionPaper','petFood'].map(id=>[id,state.inventory.filter(x=>x.marketItemId===id).reduce((s,x)=>s+(x.count||1),0)]))}));
   await p.evaluate(()=>valorZindan.chests());assert.equal(await p.locator('.vzd-reward').count(),6);await p.evaluate(()=>valorZindan.openChests(true));

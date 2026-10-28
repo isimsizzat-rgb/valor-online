@@ -9,5 +9,15 @@
  function hit(a,b,rng=Math.random){const defense=Math.max(0,Number(b.stats[a.cls==='Büyücü'?'Sihir Savunma':'Savunma'])||0),chance=n=>Math.min(.75,Math.max(0,Number(n)||0)/(Math.max(0,Number(n)||0)+1000)),critical=rng()<chance(a.stats.Kritik),blocked=rng()<chance(b.stats.Bloke),damage=Math.max(1,Math.round(a.attack*a.attack/(a.attack+defense)*(1+(critical?.25:0)-(blocked?.25:0))));b.hp=Math.max(0,b.hp-damage);return {damage,critical,blocked}}
  function nextTurn(room){let i=room.turn+1;while(i<room.members.length&&room.members[i].hp<=0)i++;room.turn=i}
  function step(room,rng=Math.random){if(room.status!=='battle')return room;const a=room.turn<room.members.length?room.members[room.turn]:room.boss,b=a===room.boss?room.members.find(p=>p.hp>0):room.boss;if(!a||a.hp<=0||!b)return room;const h=hit(a,b,rng);room.log.push({name:a.name,target:b.name,...h});room.log=room.log.slice(-8);if(room.boss.hp<=0){room.cleared=room.floor;room.status=room.floor===30?'complete':'cleared'}else if(!room.members.some(p=>p.hp>0)){room.status='lost'}else if(a===room.boss){room.round++;room.turn=0;while(room.members[room.turn]?.hp<=0)room.turn++}else nextTurn(room);room.version++;return room}
- const api={bosses,chapters,unit,hit,step,nextTurn};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
+ /* One tap = one whole floor. The team and the boss trade blows until one side falls; the log keeps
+    only a short summary. On a win the room moves straight to the next floor with HP carried over. */
+ function fight(room,nextBoss,rng=Math.random){if(room.status==='cleared'&&room.floor<30)advance(room,nextBoss);if(room.status!=='battle')return room;
+  const floor=room.floor,name=room.boss.name,start=room.members.reduce((s,p)=>s+p.hp,0);let dealt=0,guard=0;
+  while(room.status==='battle'&&guard++<5000){const before=room.boss.hp;step(room,rng);dealt+=Math.max(0,before-room.boss.hp)}
+  const taken=Math.max(0,start-room.members.reduce((s,p)=>s+p.hp,0)),won=room.status!=='lost';
+  room.last={floor,name,won,rounds:room.round,dealt,taken};room.log=[];
+  if(room.status==='cleared')advance(room,nextBoss);
+  return room}
+ function advance(room,nextBoss){room.floor++;room.boss=nextBoss(room.floor);room.round=1;room.turn=0;while(room.members[room.turn]?.hp<=0)room.turn++;room.status='battle';room.version++}
+ const api={bosses,chapters,unit,hit,step,nextTurn,fight,advance};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

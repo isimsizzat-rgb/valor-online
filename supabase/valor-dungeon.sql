@@ -1,5 +1,5 @@
 -- Valor Zindanı. Apply after schema.sql, arena.sql, chat.sql, guard3.sql and profiles.sql.
--- All room membership, turns, kills and chest balances are server-authoritative.
+-- All room membership, fights and chest balances are server-authoritative. Safe to re-run.
 begin;
 create table if not exists public.valor_dungeon_bosses (
  floor integer primary key check(floor between 1 and 30), name text not null,
@@ -14,6 +14,8 @@ create table if not exists public.valor_dungeon_runs (
  log jsonb not null default '[]', paid boolean not null default false,
  invite_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
+-- One-tap floors: summary of the last fight (floor, boss, won, rounds, dealt, taken).
+alter table public.valor_dungeon_runs add column if not exists last jsonb;
 create table if not exists public.valor_dungeon_members (
  user_id uuid primary key references auth.users(id) on delete cascade,
  room_id uuid not null references public.valor_dungeon_runs(id) on delete cascade
@@ -78,7 +80,7 @@ end; $$;
 create or replace function public.valor_dungeon_action(op text, rid uuid default null, expected_version integer default null, quantity integer default 1)
 returns jsonb language plpgsql security definer set search_path=public as $$
 declare me uuid:=auth.uid(); r valor_dungeon_runs%rowtype; room_id uuid; p jsonb; members jsonb; h jsonb;
- i integer; j integer; k integer; n integer; alive integer; target integer; new_id uuid; bal integer:=0; qty integer; revn integer; inv jsonb; d jsonb; st jsonb; response text:='ok';
+ i integer; j integer; k integer; n integer; alive integer; target integer; new_id uuid; bal integer:=0; hp0 numeric; hp1 numeric; dealt numeric; fought integer; bname text; qty integer; revn integer; inv jsonb; d jsonb; st jsonb; response text:='ok';
 begin
  if me is null then return jsonb_build_object('status','invalid'); end if;
  if is_banned(me) then return jsonb_build_object('status','banned'); end if;
@@ -138,38 +140,48 @@ begin
    members:='[]';for p in select value from jsonb_array_elements(r.members) loop members:=members||jsonb_build_array(vzd_player((p->>'uid')::uuid));end loop;
    r.members:=members;r.status:='battle';r.version:=r.version+1;
   end if;
- elsif op='attack' then
-  if r.status<>'battle' then response:='invalid';
-  elsif r.members->r.turn->>'uid'<>me::text then response:='not_turn';
+ elsif op='fight' then
+  -- One tap resolves a whole floor: members attack in order, the boss strikes after each full round.
+  if r.leader<>me then response:='not_leader';
+  elsif r.status not in ('battle','cleared') then response:='invalid';
   else
-   p:=r.members->r.turn;h:=vzd_hit(p,r.boss);
-   r.boss:=jsonb_set(r.boss,'{hp}',to_jsonb(greatest(0,(r.boss->>'hp')::numeric-(h->>'damage')::numeric)));
-   r.log:=r.log||jsonb_build_array(h);
-   if (r.boss->>'hp')::numeric<=0 then
-    r.cleared:=r.floor;r.status:=case when r.floor=30 then 'complete' else 'cleared' end;
-   else
-    r.turn:=r.turn+1;n:=jsonb_array_length(r.members);
-    while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;
-    if r.turn>=n then
-     -- Boss attacks one living member after every complete team round.
-     alive:=0;for i in 0..n-1 loop if (r.members->i->>'hp')::numeric>0 then alive:=alive+1;end if;end loop;
-     k:=(r.round-1)%greatest(alive,1);target:=0;
-     for i in 0..n-1 loop if (r.members->i->>'hp')::numeric>0 then if k=0 then target:=i;exit;end if;k:=k-1;end if;end loop;
-     p:=r.members->target;h:=vzd_hit(r.boss,p);p:=jsonb_set(p,'{hp}',to_jsonb(greatest(0,(p->>'hp')::numeric-(h->>'damage')::numeric)));
-     r.members:=jsonb_set(r.members,array[target::text],p);r.log:=r.log||jsonb_build_array(h);
-     r.turn:=0;while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;
-     r.round:=r.round+1;if r.turn>=n then r.status:='lost';end if;
+   n:=jsonb_array_length(r.members);
+   if r.status='cleared' and r.floor<30 then
+    r.floor:=r.floor+1;r.boss:=vzd_boss(r.floor);r.round:=1;r.turn:=0;
+    while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;r.status:='battle';
+   end if;
+   if r.status='battle' then
+    hp0:=0;for i in 0..n-1 loop hp0:=hp0+(r.members->i->>'hp')::numeric;end loop;
+    dealt:=0;j:=0;fought:=r.floor;bname:=r.boss->>'name';
+    while r.status='battle' and j<5000 loop
+     j:=j+1;
+     p:=r.members->r.turn;h:=vzd_hit(p,r.boss);dealt:=dealt+least((r.boss->>'hp')::numeric,(h->>'damage')::numeric);
+     r.boss:=jsonb_set(r.boss,'{hp}',to_jsonb(greatest(0,(r.boss->>'hp')::numeric-(h->>'damage')::numeric)));
+     if (r.boss->>'hp')::numeric<=0 then
+      r.cleared:=r.floor;r.status:=case when r.floor=30 then 'complete' else 'cleared' end;
+     else
+      r.turn:=r.turn+1;
+      while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;
+      if r.turn>=n then
+       alive:=0;for i in 0..n-1 loop if (r.members->i->>'hp')::numeric>0 then alive:=alive+1;end if;end loop;
+       k:=(r.round-1)%greatest(alive,1);target:=0;
+       for i in 0..n-1 loop if (r.members->i->>'hp')::numeric>0 then if k=0 then target:=i;exit;end if;k:=k-1;end if;end loop;
+       p:=r.members->target;h:=vzd_hit(r.boss,p);p:=jsonb_set(p,'{hp}',to_jsonb(greatest(0,(p->>'hp')::numeric-(h->>'damage')::numeric)));
+       r.members:=jsonb_set(r.members,array[target::text],p);
+       r.turn:=0;while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;
+       r.round:=r.round+1;if r.turn>=n then r.status:='lost';end if;
+      end if;
+     end if;
+    end loop;
+    hp1:=0;for i in 0..n-1 loop hp1:=hp1+(r.members->i->>'hp')::numeric;end loop;
+    r.last:=jsonb_build_object('floor',fought,'name',bname,'won',r.status<>'lost','rounds',r.round,'dealt',dealt,'taken',greatest(0,hp0-hp1));
+    r.log:='[]';
+    if r.status='cleared' then
+     r.floor:=r.floor+1;r.boss:=vzd_boss(r.floor);r.round:=1;r.turn:=0;
+     while r.turn<n and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;r.status:='battle';
     end if;
    end if;
    r.version:=r.version+1;
-  end if;
- elsif op='next' then
-  if r.leader<>me then response:='not_leader';
-  elsif r.status<>'cleared' or r.floor>=30 then response:='invalid';
-  else
-   r.floor:=r.floor+1;r.boss:=vzd_boss(r.floor);r.round:=1;r.log:='[]';r.turn:=0;
-   while r.turn<jsonb_array_length(r.members) and (r.members->r.turn->>'hp')::numeric<=0 loop r.turn:=r.turn+1;end loop;
-   r.status:='battle';r.version:=r.version+1;
   end if;
  elsif op='finish' then
   if r.status not in ('battle','cleared') then response:='invalid';
@@ -212,7 +224,7 @@ begin
   -- Preserve chronological order after trimming.
   select coalesce(jsonb_agg(value order by ord desc),'[]') into r.log from jsonb_array_elements(r.log) with ordinality x(value,ord);
   update valor_dungeon_runs set leader=r.leader,status=r.status,floor=r.floor,cleared=r.cleared,members=r.members,boss=r.boss,
-   turn=r.turn,round=r.round,version=r.version,log=r.log,invite_at=r.invite_at,updated_at=now() where id=r.id;
+   turn=r.turn,round=r.round,version=r.version,log=r.log,last=r.last,invite_at=r.invite_at,updated_at=now() where id=r.id;
   perform vzd_settle(r.id);
  end if;
  select * into r from valor_dungeon_runs where id=room_id;

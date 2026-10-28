@@ -5,7 +5,7 @@ New map/scene card with the approved entrance artwork; thirty separately preview
 ## Rules
 
 - A room holds 1–3 real players. The leader posts a world-chat invitation; clicking it joins a waiting room. Joining is locked after battle starts.
-- Players attack in join order. Dead players are skipped; the boss attacks once after each full team round. The next floor preserves surviving players' HP. Only the leader advances floors.
+- One tap per floor: the leader presses **Savaş** and the whole floor is resolved at once (members hit in join order, the boss strikes after each full round). On a win the room moves straight to the next floor; surviving players keep their HP. The screen shows a one-line summary (rounds, damage dealt and taken).
 - Loss or voluntary leader withdrawal pays each participating member one chest per completed floor, once. Full completion pays 30 chests. Failed floors pay nothing.
 - Each chest contains **all six**: 25 diamonds, one energy bottle, one expedition paper, one epic stone, one level-1 luck stone and one pet food. No random drop rates were specified, so all six are guaranteed.
 - A withdrawing non-leader is marked defeated and remains eligible for the party's final completed-floor reward. Waiting-room leadership transfers when the leader leaves.
