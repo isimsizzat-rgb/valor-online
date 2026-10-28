@@ -1,0 +1,33 @@
+/* Warm stone surfaces. Artwork keeps its original colours in both themes. */
+.valor-theme-picker{margin:16px 0 22px}
+.valor-theme-picker>p:first-child{font-weight:700}
+.valor-theme-picker>[role=group]{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.valor-theme-picker button{min-height:48px}
+.valor-theme-picker button[aria-pressed=true]{outline:2px solid #d8b66b;outline-offset:2px}
+.valor-theme-picker button:focus-visible{outline:3px solid #3d80ad;outline-offset:3px}
+html[data-valor-theme=light]{--bg:#e9e1d1;--panel:#f7f1e5;--panel2:#e6dcc7;--gold:#76501e;--text:#30291f;--muted:#665c4c;--border:#ad956e;--green:#28603c;background:#e9e1d1;color-scheme:light}
+html[data-valor-theme=light] body,
+html[data-valor-theme=light] body:not(.character-selection){background:linear-gradient(#f1e9d9e8,#e3dac9ed),url('../home-fantasy/castle.webp') center/cover fixed!important;color:var(--text)!important}
+html[data-valor-theme=light][data-valor-booting]::after{background:#e9e1d1!important}
+html[data-valor-theme=light] body::before{background:none!important}
+html[data-valor-theme=light] body :is(.panel,.nav,.card,.vhub-card,.vwiki-topic,.vhub-event,.vp-stats,.vp-header,.vp-stat,.valor-item-dialog,.bag-popup-dialog,.ve-gem-dialog,.vm-market-purchase-dialog,.valor-rank-full-profile,.valor-diamond-package,.valor-news-row,.valor-news-empty,.vm-market-card,.vm-limited-product,.log,.notice){background:linear-gradient(145deg,#faf6ed,#e9dfcc)!important;color:#30291f!important;border-color:#b39a71!important;box-shadow:0 4px 14px #56432418!important}
+html[data-valor-theme=light] body :is(h1,h2,h3,.logo,.home-heading,.vp-header strong,.vp-stat b,.vp-stat span,.vhub-heading span,.valor-player-nick,.valor-gold,.valor-diamonds,.valor-level-block small,.bottom-label){color:#68451b!important;text-shadow:none!important}
+html[data-valor-theme=light] body :is(.muted,.small,.empty,.vhub-note,.vhub-card p,.vhub-heading p,.vwiki-content,.vwiki-count,.vp-hint,.vm-market-stats,.vm-market-price,.valor-news-row p,.valor-news-row time,.valor-diamond-purchase-page p){color:#665c4c!important;text-shadow:none!important}
+html[data-valor-theme=light] body :is(input,select,textarea){background:#fffaf1!important;color:#30291f!important;border-color:#99805c!important}
+html[data-valor-theme=light] body input::placeholder,html[data-valor-theme=light] body textarea::placeholder{color:#756b5c!important;opacity:1}
+html[data-valor-theme=light] body button:not(.mmorpg-home-tile):not(.valor-portrait-button):not(.bottom-item):not(.hero-choice){background:linear-gradient(#f5e8cb,#d9c19a)!important;color:#483317!important;border-color:#a0804e!important;text-shadow:none!important;box-shadow:0 2px 5px #5643241a!important}
+html[data-valor-theme=light] body :is(button.active,button[aria-selected=true],button[aria-pressed=true]):not(.mmorpg-home-tile):not(.bottom-item){background:#cdb07a!important;color:#30200f!important}
+html[data-valor-theme=light] body button.danger-button{background:#8b302b!important;color:#fff5e9!important;border-color:#8b302b!important}
+html[data-valor-theme=light] body header.top.valor-resource-bar{background:linear-gradient(120deg,#f8f1e5ed,#dfd0b7ed)!important;box-shadow:0 4px 14px #56432420!important}
+html[data-valor-theme=light] body header.top.valor-resource-bar :is(.valor-gold,.valor-diamonds,.valor-hud-energy){background:#f4ead7!important;color:#503b1f!important;text-shadow:none!important;border-color:#b7a17d!important}
+html[data-valor-theme=light] body header.top.valor-resource-bar .valor-hud-energy b{color:#315d32!important}
+html[data-valor-theme=light] body header.top.valor-resource-bar .valor-player-nick{color:#503b1f!important;text-shadow:none!important}
+html[data-valor-theme=light] body .bottom-nav{background:#dfd2b9!important;box-shadow:0 -3px 18px #56432424!important}
+html[data-valor-theme=light] body .bottom-nav .bottom-item.active{outline:2px solid #a47b38;outline-offset:-3px}
+html[data-valor-theme=light] body .valor-theme-picker button[aria-pressed=true]{outline-color:#795326}
+html[data-valor-theme=light] body :is(.pill,.vm-market-limit,.vm-spirit-stat){background:#e9ddc4!important;color:#5b411e!important;border-color:#a68a5f!important}
+html[data-valor-theme=light] body :is(.good,.stat-bonus){color:#28603c!important}
+html[data-valor-theme=light] body .bad{color:#a22c25!important}
+html[data-valor-theme=light] body .valor-news-player{color:#72501e!important}
+html[data-valor-theme=light] body .valor-news-item{color:#805b20!important}
+html[data-valor-theme=light] body .is-epic .valor-news-item{color:#79449b!important}
