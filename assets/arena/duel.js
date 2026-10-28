@@ -9,7 +9,7 @@
  const now=()=>Date.now()+(duel.kind==='online'?duel.skew:0);
  const secs=ms=>Math.max(0,Math.ceil(ms/1000));
  const esc=s=>escapeAttr(String(s??''));
- const skillIcon=(k,u)=>k==='passive'?D.passiveOf(u).icon:D.SKILLS[k].icon;
+ const skillIcon=(k,u)=>(k==='passive'?D.passiveOf(u).icon:D.SKILLS[k].icon)+'?v=art1';
  const skillName=(k,u)=>k==='passive'?D.passiveOf(u).name:D.SKILLS[k].name;
  const skillText=(k,u)=>k==='passive'?D.passiveOf(u).text+' · sıranı harcar':k==='normal'?'Normal hasar':k==='strong'?'%130 hasar':'%175 hasar';
  const fallbackIcon="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Crect width=%2210%22 height=%2210%22 rx=%222%22 fill=%22%23333%22/%3E%3C/svg%3E'";
