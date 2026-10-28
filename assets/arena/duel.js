@@ -14,7 +14,12 @@
   const src=k==='passive'?D.passiveOf(u).icon:folder?'assets/arena/skills/'+folder+'/'+k+'.webp':D.SKILLS[k].icon;
   return src+'?v=art2';
  };
- const skillName=(k,u)=>k==='passive'?D.passiveOf(u).name:D.SKILLS[k].name;
+ const classSkillNames={
+  'Savaşçı':{normal:'Kılıç Darbesi',strong:'Alevli Darbe',max:'Alev Kılıcı'},
+  'Büyücü':{normal:'Büyü Küresi',strong:'Güç Küresi',max:'Meteor'},
+  'Okçu':{normal:'Ok Atışı',strong:'Delici Ok',max:'Ok Yağmuru'}
+ };
+ const skillName=(k,u)=>k==='passive'?D.passiveOf(u).name:classSkillNames[u.cls]?.[k]||D.SKILLS[k]?.name||'';
  const skillText=(k,u)=>k==='passive'?D.passiveOf(u).text+' · sıranı harcar':k==='normal'?'Normal hasar':k==='strong'?'%130 hasar':'%175 hasar';
  const fallbackIcon="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Crect width=%2210%22 height=%2210%22 rx=%222%22 fill=%22%23333%22/%3E%3C/svg%3E'";
 
@@ -22,7 +27,7 @@
  function card(u,side,portrait){return '<div class="vdu-card vdu-'+side+'" data-side="'+side+'"><div class="vdu-portrait"><img src="'+portrait+'" alt=""></div><div class="vdu-info"><b>'+esc(u.name)+'</b><span>'+esc(u.cls)+' · Sv. '+u.level+'</span>'+hpBar(u)+'</div></div>'}
  function chip(e){const who=e.side==='me'?'Sen':esc(duel.st.foe.name);if(e.skill==='burn')return '<span class="burn">🔥 Yanık '+money(e.damage)+'</span>';
   if(e.skill==='passive')return '<span class="pas">'+who+' · '+esc(D.PASSIVES[(e.side==='me'?duel.st.me:duel.st.foe).cls]?.name||'Pasif')+(e.shield?' 🛡'+money(e.shield):e.healed?' +'+money(e.healed):e.focus?' 🎯':'')+'</span>';
-  return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(D.SKILLS[e.skill]?.name||'')+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' 🛡'+money(e.hit.absorbed):'')+(e.auto&&e.side==='me'?' ⏱':'')+'</span>'}
+  return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(skillName(e.skill,e.side==='me'?duel.st.me:duel.st.foe))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' 🛡'+money(e.hit.absorbed):'')+(e.auto&&e.side==='me'?' ⏱':'')+'</span>'}
  function skillButton(k,mine,t){const u=duel.st.me,cd=secs((u.cd[k]||0)-t),ok=mine&&!cd&&!duel.busy;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorDuel.use(\''+k+'\')" title="'+esc(skillText(k,u))+'"><img src="'+skillIcon(k,u)+'" alt="" onerror="'+fallbackIcon+'"><span class="vdu-sname">'+esc(skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
  function markup(){const st=duel.st,t=now(),mine=st.status==='battle'&&st.turn==='me',left=secs(D.TURN_MS-(t-(st.turnAt||t))),me=st.me,portraitMe=valorBattlePortraitMine(),portraitFoe=duel.rival?.portrait||(duel.kind==='training'?portraitMe:heroImages[Math.max(0,classes.indexOf(st.foe.cls))]);
   const log=duel.all.slice(-10).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
