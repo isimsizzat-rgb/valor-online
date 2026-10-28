@@ -16,9 +16,9 @@
 .vdu-ticker{display:flex;gap:6px;overflow-x:auto;white-space:nowrap;padding:2px 2px 8px;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 88%,transparent)}.vdu-ticker::-webkit-scrollbar{display:none}
 .vdu-ticker span{flex:0 0 auto;font-size:11px;padding:4px 9px;border-radius:12px;background:#0b1320;border:1px solid #2e3a46;color:#d8cfbf}.vdu-ticker span:first-child{border-color:#8f7349}.vdu-ticker .mine{color:#ffe0a0}.vdu-ticker .theirs{color:#ffb3a3}.vdu-ticker .pas{color:#9fd3ff}.vdu-ticker .burn{color:#ffa66b}
 .vdu-skills{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
-html body :is(#valor-duel,#valor-tduel) .vdu-skill{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px!important;min-height:0!important;border:1px solid #8f7349!important;border-radius:9px!important;background:linear-gradient(#2b2218,#15110d)!important;color:#f3e3c0!important;box-shadow:none!important;cursor:pointer}
-html body :is(#valor-duel,#valor-tduel) .vdu-skill:disabled{cursor:default}html body :is(#valor-duel,#valor-tduel) .vdu-skill:disabled img{filter:grayscale(.85) brightness(.55)}
-html body :is(#valor-duel,#valor-tduel) .vdu-skill:not(:disabled):active{transform:scale(.96)}
+html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px!important;min-height:0!important;border:1px solid #8f7349!important;border-radius:9px!important;background:linear-gradient(#2b2218,#15110d)!important;color:#f3e3c0!important;box-shadow:none!important;cursor:pointer}
+html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:disabled{cursor:default}html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:disabled img{filter:grayscale(.85) brightness(.55)}
+html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:not(:disabled):active{transform:scale(.96)}
 .vdu-skill img{width:100%;max-width:72px;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block}
 .vdu-sname{font-size:10px;line-height:1.15;text-align:center;font-weight:700}
 .vdu-cd{position:absolute;top:28%;left:0;right:0;text-align:center;font:800 18px system-ui;color:#fff;text-shadow:0 2px 4px #000}

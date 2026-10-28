@@ -1,0 +1,27 @@
+/* Macera seferi (10 steps). Fight parts reuse the arena duel styles (assets/arena/duel.css). */
+.vex-dialog{position:relative}
+html body .vex-close{position:absolute;top:8px;right:8px;width:32px;height:32px;min-height:0!important;padding:0!important;border:1px solid #6d5a38!important;border-radius:50%!important;background:#0b1320!important;color:#e9d8bd!important;font-size:14px;line-height:1;box-shadow:none!important}
+.vex-trail{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:0 0 10px}
+.vex-trail span{display:flex;align-items:center;justify-content:center;height:24px;border-radius:6px;border:1px solid #3a3226;background:#0b1018;color:#7d7260;font-size:12px}
+.vex-trail span.done{border-color:#5f8a62;background:#13251a;color:#cfe8cf}
+.vex-trail span.now{border-color:#f0c97e;background:#2a2112;color:#ffe2a6;box-shadow:0 0 10px #eeb55440}
+.vex-scene{position:relative;height:150px;border-radius:10px;overflow:hidden;border:1px solid #4a3d2c;background:#12161e}
+.vex-scene img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.8)}
+.vex-scene-tag{position:absolute;left:10px;bottom:10px;padding:4px 10px;border-radius:12px;background:#000000b0;border:1px solid #a58954;color:#f3e3c0;font-size:12px;font-weight:700}
+.vex-story{margin:12px 2px;font:16px/1.5 Georgia,serif;color:#efe4cf;min-height:72px}
+html body .vex-go{display:block;width:100%;margin-top:10px;padding:12px!important;border:1px solid #d1a85c!important;border-radius:10px!important;background:linear-gradient(180deg,#8a6428,#5a3e17)!important;color:#fff3d6!important;font:700 16px Georgia,serif!important;box-shadow:0 6px 18px #0008!important}
+.vex-chest,.vex-result{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:18px 10px;border:1px solid #4a3d2c;border-radius:10px;background:#12161e}
+.vex-chest-icon,.vex-result>span{font-size:58px;line-height:1}
+.vex-chest.opening .vex-chest-icon{animation:vex-wobble .45s infinite}
+.vex-chest.open .vex-chest-icon{animation:vex-pop .5s}
+.vex-chest b,.vex-result b{font:700 17px Georgia,serif;color:#efd49b}
+.vex-chest strong,.vex-result strong{font-size:16px;color:#ffe2a6}
+.vex-result small{color:#d8cfbf}
+.vex-result em{margin-top:4px;font-style:normal;font-size:11px;letter-spacing:1px;color:#ab9261;text-transform:uppercase}
+.vex-result.loss b{color:#ffb3a3}
+@keyframes vex-wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg) translateY(-2px)}75%{transform:rotate(9deg) translateY(-2px)}}
+@keyframes vex-pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+html body .vex-resume{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin:0 0 12px;padding:12px 14px!important;border:1px solid #f0c97e!important;border-radius:12px!important;background:linear-gradient(135deg,#2a2112,#141019)!important;color:#f3e3c0!important;text-align:left;box-shadow:0 0 14px #eeb55430!important}
+.vex-resume span{font-size:11px;letter-spacing:1px;color:#d6b779}
+.vex-resume b{font:700 16px Georgia,serif;color:#ffe2a6}
+.vex-resume em{font-style:normal;font-size:12px;color:#e9d8bd}
