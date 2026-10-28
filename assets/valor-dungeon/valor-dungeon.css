@@ -9,3 +9,4 @@
 .vzd-log p.vzd-log-skill{color:#9fd3ff}.vzd-log p.vzd-log-aoe{color:#ffb19e}.vzd-log p.vzd-log-floor{color:#8fd8a0;font-weight:700}.vzd-skill-text{display:block;text-align:center;font-size:11px;color:#c5b8a4;margin-top:2px}
 .vzd-boss{max-width:190px}
 .vzd-reward span b{display:block;color:#f0c97e;font-size:12px;margin-top:2px}
+.vzd-actions>button.vzd-skill-button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;padding:8px!important;text-align:left}.vzd-skill-button>.vzd-skill-art{display:block;width:48px;height:48px;min-width:48px;flex:0 0 48px;object-fit:contain;border-radius:5px;margin:0}.vzd-skill-label{display:block;min-width:0}.vzd-skill-label strong{display:block;font-size:12px;line-height:1.3;overflow-wrap:anywhere}.vzd-skill-label small{display:block;margin-top:4px;font-size:10px;color:inherit;opacity:.8}.vzd-skill-button:disabled .vzd-skill-art{filter:saturate(.4)}
