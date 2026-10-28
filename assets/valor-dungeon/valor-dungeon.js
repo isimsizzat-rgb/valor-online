@@ -9,7 +9,7 @@
  let skew=0;const now=()=>Date.now()+(online()?skew:0);
  const secs=ms=>Math.max(0,Math.ceil(ms/1000));
  const balance=()=>online()?net.balance:Math.max(0,Number(data().chests)||0);
- const icon='<span class="vzd-chest-icon" aria-hidden="true">🧰</span>';
+ const icon='<img class="vzd-chest-icon" src="assets/valor-dungeon/valor-chest.webp" alt="Valor Sandığı" width="512" height="512">';
  const description='Her Valor Sandığından şansına göre tek bir ödül çıkar; değerli ödüller daha nadirdir.';
  const rewardArt={luck:'assets/img/luck-stone-1.jpg',diamonds:'assets/images/valor-gems.webp',petFood:'assets/pets/pet-food.webp',epic:'assets/img/cc97e577821b056a.webp',energyBottle:'assets/items/energy-bottle-v2.webp',expeditionPaper:'assets/items/expedition-paper-v2.webp'};
  function art(floor,extra=''){const i=floor-1;return '<div role="img" aria-label="'+esc(C.bosses[i].name)+'" class="vzd-boss-art '+extra+'" style="background-position:'+(i%6*20)+'% '+(Math.floor(i/6)*25)+'%"></div>'}
