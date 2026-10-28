@@ -1,0 +1,13 @@
+/* Shared, deterministic rules. No save writes or DOM dependencies. */
+(function(root){
+ 'use strict';
+ const names=['Paslı Nöbetçi','Lağım Kralı','Mağara Trolü','Zümrüt Örümcek','Demir Gardiyan','Ayaz Hayaleti','Buz Şövalyesi','Ak Kurt','Kristal Dev','Ayaz Ejderhası','Gölge Celladı','Karanlık Büyücü','Uçurum Gözü','Kara Şövalye','Gölge Kralı','Kızıl Rahip','Kan Paladini','Taş Kanat','Lav Devi','Kor Ejderhası','Kadim Otomat','Dört Kollu Muhafız','Yıldırım Devi','Ölümsüz Kral','Gece Hükümdarı','Zümrüt Lich','Zincirli Şövalye','Uçurum Prensi','Düşmüş Melek','Valor Hükümdarı'];
+ const chapters=['Demir Kapılar','Donmuş Dehliz','Gölge Salonu','Kızıl Ocak','Kadim Mühür','Valor Tahtı'];
+ const magical=new Set([6,9,10,12,13,15,16,20,24,25,26,28,29,30]);
+ const bosses=names.map((name,i)=>{const floor=i+1,magic=magical.has(floor),attack=Math.round(90*1.2**i),defense=Math.round(35*1.18**i);return {floor,name,chapter:chapters[Math.floor(i/5)],cls:magic?'Büyücü':'Savaşçı',stats:{Saldırı:magic?10:attack,Sihir:magic?attack:10,Savunma:defense,'Sihir Savunma':defense,Can:Math.round(120*1.18**i),Kritik:floor*4,Bloke:floor*3}}});
+ function unit(p){const stats={...p.stats},attack=10+Math.max(0,Number(stats[p.cls==='Büyücü'?'Sihir':'Saldırı'])||0),maxHp=Math.max(1,Math.round(100+(Number(stats.Can)||0)*10));return {...p,stats,attack,maxHp,hp:maxHp}}
+ function hit(a,b,rng=Math.random){const defense=Math.max(0,Number(b.stats[a.cls==='Büyücü'?'Sihir Savunma':'Savunma'])||0),chance=n=>Math.min(.75,Math.max(0,Number(n)||0)/(Math.max(0,Number(n)||0)+1000)),critical=rng()<chance(a.stats.Kritik),blocked=rng()<chance(b.stats.Bloke),damage=Math.max(1,Math.round(a.attack*a.attack/(a.attack+defense)*(1+(critical?.25:0)-(blocked?.25:0))));b.hp=Math.max(0,b.hp-damage);return {damage,critical,blocked}}
+ function nextTurn(room){let i=room.turn+1;while(i<room.members.length&&room.members[i].hp<=0)i++;room.turn=i}
+ function step(room,rng=Math.random){if(room.status!=='battle')return room;const a=room.turn<room.members.length?room.members[room.turn]:room.boss,b=a===room.boss?room.members.find(p=>p.hp>0):room.boss;if(!a||a.hp<=0||!b)return room;const h=hit(a,b,rng);room.log.push({name:a.name,target:b.name,...h});room.log=room.log.slice(-8);if(room.boss.hp<=0){room.cleared=room.floor;room.status=room.floor===30?'complete':'cleared'}else if(!room.members.some(p=>p.hp>0)){room.status='lost'}else if(a===room.boss){room.round++;room.turn=0;while(room.members[room.turn]?.hp<=0)room.turn++}else nextTurn(room);room.version++;return room}
+ const api={bosses,chapters,unit,hit,step,nextTurn};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
