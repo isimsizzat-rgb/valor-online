@@ -5,6 +5,7 @@
      2 Güçlü Vuruş  130% hit             5 s cooldown
      3 Son Darbe    175% hit (max)      15 s cooldown
      4 Pasif        class effect, uses the turn, 10 s cooldown
+                    (Savaşçı shield and Okçu damage boost last 3 turns; Büyücü heals at once)
    A player who does not act within 5 seconds gets an automatic choice. */
 (function (root) {
   'use strict';
@@ -30,15 +31,15 @@
   };
   /* Class passives (calibrated with tools/arena/duel-balance.cjs). They use the turn. */
   const PASSIVES = {
-    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .09, text: 'Canının %9\'u kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
-    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .11, text: 'Canının %11\'i kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
-    'Okçu': { id: 'focus', name: 'Odaklan', value: 1.8, text: 'Sonraki vuruş %180 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
+    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .10, turns: 3, text: '3 tur, canının %10\'u kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
+    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .12, text: 'Canının %12\'si kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
+    'Okçu': { id: 'focus', name: 'Odaklan', value: 0.9, turns: 3, text: '3 tur boyunca %90 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
   };
   const TURN_MS = 5000, GRACE_MS = 1200, MAX_ROUNDS = 200, ORDER = ['normal', 'strong', 'max', 'passive'];
   const passiveOf = (u) => PASSIVES[u.cls] || PASSIVES['Savaşçı'];
   const ready = (u, k, t) => t >= (u.cd[k] || 0);
 
-  function fighter(p) { const u = arenaUnit({ ...p.stats }, p.cls); return { ...u, name: p.name, cls: p.cls, level: p.level || 1, gender: p.gender || 'male', cd: { normal: 0, strong: 0, max: 0, passive: 0 }, shield: 0, focus: 0, burn: null }; }
+  function fighter(p) { const u = arenaUnit({ ...p.stats }, p.cls); return { ...u, name: p.name, cls: p.cls, level: p.level || 1, gender: p.gender || 'male', cd: { normal: 0, strong: 0, max: 0, passive: 0 }, shield: 0, shieldTurns: 0, focus: 0, focusTurns: 0, burn: null }; }
 
   /* AI: defensive passive when it pays, otherwise the strongest ready hit. */
   function choose(u, t) {
@@ -46,7 +47,7 @@
     if (ready(u, 'passive', t)) {
       if (pas.id === 'shield' && !u.shield && u.hp < u.maxHp * .8) return 'passive';
       if (pas.id === 'heal' && u.hp < u.maxHp * .65) return 'passive';
-      if (pas.id === 'focus' && !u.focus && ready(u, 'max', t)) return 'passive';
+      if (pas.id === 'focus' && !u.focusTurns && ready(u, 'max', t)) return 'passive';
     }
     if (ready(u, 'max', t)) return 'max';
     if (ready(u, 'strong', t)) return 'strong';
@@ -70,15 +71,16 @@
     a.cd[skill] = t + SKILLS[skill].cd; if (skill !== 'normal') a.cd.normal = Math.max(a.cd.normal, t + SKILLS.normal.cd);
     if (skill === 'passive') {
       const p = passiveOf(a); ev.passive = p.id;
-      if (p.id === 'shield') { a.shield = Math.max(a.shield, Math.round(a.maxHp * p.value)); ev.shield = a.shield; }
+      if (p.id === 'shield') { a.shield = Math.max(a.shield, Math.round(a.maxHp * p.value)); a.shieldTurns = p.turns; ev.shield = a.shield; }
       else if (p.id === 'heal') { const h = Math.min(a.maxHp - a.hp, Math.round(a.maxHp * p.value)); a.hp += h; ev.healed = h; }
-      else { a.focus = p.value; ev.focus = p.value; }
+      else { a.focus = p.value; a.focusTurns = p.turns; ev.focus = p.value; }
     } else {
-      let mult = SKILLS[skill].mult; if (a.focus) { mult *= 1 + a.focus; ev.focused = true; a.focus = 0; }
+      let mult = SKILLS[skill].mult; if (a.focusTurns > 0) { mult *= 1 + a.focus; ev.focused = true; if (--a.focusTurns <= 0) a.focus = 0; }
       const s = strike(st, a, b, mult, rng); let total = s.damage;
       if (a.stats.petBuff?.id === 'gecegaga' && b.hp > 0 && rng() < a.stats.petBuff.chance) { const x = strike(st, a, b, 1, rng); total += x.damage; s.hit.shadow = x.damage; }
       ev.damage = total; ev.hit = s.hit;
     }
+    if (b.shieldTurns > 0 && --b.shieldTurns <= 0) b.shield = 0;
     ev.myHp = st.me.hp; ev.enemyHp = st.foe.hp; ev.myShield = st.me.shield; ev.enemyShield = st.foe.shield;
     st.events.push(ev); st.log = st.log.concat(ev).slice(-8);
     if (st.me.hp <= 0 || st.foe.hp <= 0) return finish(st);
