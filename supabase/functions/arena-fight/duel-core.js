@@ -9,7 +9,7 @@
 (function (root) {
   'use strict';
   // ---- classic arena engine (keep in sync with supabase/functions/arena-fight) ----
-  const DAMAGE_MULTIPLIER = 1.5, FURY_START = 5, FURY_STEP = 0.10;
+  const DAMAGE_MULTIPLIER = 1.5, FURY_START = 5, FURY_STEP = 0.05;   // classic arena uses 0.10; duels are longer
   function arenaUnit(stats, cls) { const magic = cls === 'Büyücü', attack = 10 + Math.max(0, Number(stats[magic ? 'Sihir' : 'Saldırı']) || 0), hp = Math.max(1, Math.round(100 + (Number(stats.Can) || 0) * 10)); return { stats, magic, attack, maxHp: hp, hp }; }
   function baseDamage(a, b) { const defense = Math.max(0, Number(b.stats[a.magic ? 'Sihir Savunma' : 'Savunma']) || 0); return Math.max(1, Math.round(a.attack * a.attack / (a.attack + defense))); }
   function arenaDamage(a, b) { const pierce = Math.max(0, Math.min(100, Number(a?.stats?.medallionArmorPierce) || 0)) / 100; if (!pierce) return baseDamage(a, b); const key = a.magic ? 'Sihir Savunma' : 'Savunma'; return baseDamage(a, { ...b, stats: { ...b.stats, [key]: (Number(b.stats[key]) || 0) * (1 - pierce) } }); }
@@ -31,8 +31,8 @@
   /* Class passives (calibrated with tools/arena/duel-balance.cjs). They use the turn. */
   const PASSIVES = {
     'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .09, text: 'Canının %9\'u kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
-    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .12, text: 'Canının %12\'si kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
-    'Okçu': { id: 'focus', name: 'Odaklan', value: 1.35, text: 'Sonraki vuruş %135 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
+    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .11, text: 'Canının %11\'i kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
+    'Okçu': { id: 'focus', name: 'Odaklan', value: 1.8, text: 'Sonraki vuruş %180 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
   };
   const TURN_MS = 5000, GRACE_MS = 1200, MAX_ROUNDS = 200, ORDER = ['normal', 'strong', 'max', 'passive'];
   const passiveOf = (u) => PASSIVES[u.cls] || PASSIVES['Savaşçı'];
