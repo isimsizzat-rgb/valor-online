@@ -1,12 +1,12 @@
 # Arena skill icons
 
-Final transparent artwork. Square, 256×256, WebP. The first three attack icons are shared by all classes; the passive icon is selected by class.
+Final transparent artwork. Square, 256×256, WebP. Attack and passive icons are selected by character class. Root attack files are for Savaşçı; `buyucu/` and `okcu/` each provide their own `normal.webp`, `strong.webp`, and `max.webp`.
 
 | File | Skill |
 |---|---|
-| `normal.webp` | 1 · Saldırı (normal hit, 1 s) |
-| `strong.webp` | 2 · Güçlü Vuruş (130%, 5 s) |
-| `max.webp` | 3 · Son Darbe (175%, 15 s) |
+| `normal.webp` | Savaşçı · 1 · Saldırı (normal hit, 1 s) |
+| `strong.webp` | Savaşçı · 2 · Güçlü Vuruş (130%, 5 s) |
+| `max.webp` | Savaşçı · 3 · Son Darbe (175%, 15 s) |
 | `passive-savasci.webp` | 4 · Savaşçı pasif: Demir Duruş (shield 9% max HP, 10 s) |
 | `passive-buyucu.webp` | 4 · Büyücü pasif: Yenilenme (heal 11% max HP, 10 s) |
 | `passive-okcu.webp` | 4 · Okçu pasif: Odaklan (next hit +180%, 10 s) |
