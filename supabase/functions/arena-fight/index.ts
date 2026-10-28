@@ -7,6 +7,9 @@
 //   POST { mode: "duel_start", target }           → { duel, foe }   turn-based duel (resumes a live one)
 //   POST { mode: "duel_act", skill }              → { duel, foe }   skill = normal|strong|max|passive|auto
 //   POST { mode: "duel_state" }                   → { duel, foe } or { duel: null }
+//   POST { mode: "tduel_start" }                  → { tduel }   leader starts a turn-based team fight
+//   POST { mode: "tduel_state" }                  → { tduel }   any member; also plays idle turns after 5 s
+//   POST { mode: "tduel_act", skill }             → { tduel }   the member whose turn it is
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import "./duel-core.js";   // same file as assets/arena/duel-core.js
 const D = globalThis.ValorDuelCore;
@@ -169,6 +172,63 @@ Deno.serve(async (req) => {
     if (error) return json({ error: error.message }, 500);
     if (!saved?.length) { const fresh = await loadDuel(); return fresh ? reply(fresh, { error: "stale" }) : json({ duel: null }); }
     return reply({ ...row, updated_at });
+  }
+
+
+  // ---- Turn-based team fight: room members play, rivals are the AI. State lives in team_duels. ----
+  const myRoom = async () => { const { data } = await db.from("team_room_members").select("room_id").eq("user_id", me).maybeSingle(); return data?.room_id || null; };
+  const loadTeam = async (room) => { const { data } = await db.from("team_duels").select("*").eq("room_id", room).maybeSingle(); return data; };
+  const treply = (row, extra = {}) => json({ tduel: { ...D.teamView(row.state), meta: row.meta }, now: Date.now(), ...extra });
+  const saveTeam = async (row, before) => {
+    if (row.state.status === "done") {
+      const r = row.state.result, size = row.meta.size, rivalSize = row.meta.rivalSize;
+      const prep = { reporter: null, server: true, duel: true, duelId: row.meta.id, size, rivalSize, label: size + "v" + rivalSize, start: row.meta.start, battle: r };
+      // Claim the finish first so two members ending the same turn cannot store it twice.
+      const { data: claimed } = await db.from("team_duels").delete().eq("room_id", row.room_id).eq("updated_at", before).select("room_id");
+      if (!claimed?.length) return "stale";
+      const { data: stored, error } = await db.rpc("srv_team_store", { room: row.room_id, fight: prep, won: !!r.win, was_draw: !!r.draw });
+      return error ? error.message : stored;
+    }
+    const updated_at = new Date().toISOString();
+    const { data } = await db.from("team_duels").update({ state: row.state, updated_at }).eq("room_id", row.room_id).eq("updated_at", before).select("room_id");
+    if (!data?.length) return "stale";
+    row.updated_at = updated_at; return "ok";
+  };
+
+  if (body.mode === "tduel_start") {
+    const { data: ctx, error } = await db.rpc("srv_team_context", { leader: me });
+    if (error) return json({ error: error.message }, 500);
+    if (ctx?.status !== "ok") return json({ error: ctx?.status || "invalid" });
+    const live = await loadTeam(ctx.room);
+    if (live) return treply(live, { resumed: true });
+    const members = (ctx.members || []).filter((m) => m.combat && CLASSES.includes(m.class));
+    const rivalSize = Math.random() < 0.7 ? 3 : 2;
+    const { data: rivals, error: e2 } = await db.rpc("srv_team_rivals", { room: ctx.room, n: rivalSize });
+    if (e2) return json({ error: e2.message }, 500);
+    const foes = (rivals || []).filter((r) => r.combat && CLASSES.includes(r.class));
+    if (!foes.length) return json({ error: "no_rivals" });
+    const A = members.map((m) => ({ uid: m.user_id, name: m.name, cls: m.class, level: m.level, gender: m.gender, stats: m.combat, human: true }));
+    const B = foes.map((r) => ({ uid: r.user_id, name: r.name, cls: r.class, level: r.level, gender: r.gender, stats: r.combat }));
+    const state = D.teamCreate(A, B, Date.now(), Math.random);
+    const start = state.units.map((u) => ({ uid: u.uid, name: u.name, cls: u.cls, side: u.side, me: false, maxHp: u.maxHp, level: u.level, gender: u.gender }));
+    const row = { room_id: ctx.room, state, meta: { id: crypto.randomUUID(), size: A.length, rivalSize: B.length, start }, updated_at: new Date().toISOString() };
+    const { error: e3 } = await db.from("team_duels").insert(row);
+    if (e3) { const again = await loadTeam(ctx.room); return again ? treply(again, { resumed: true }) : json({ error: e3.message }, 500); }
+    if (state.status === "done") { const s2 = await saveTeam(row, (await loadTeam(ctx.room))?.updated_at); if (s2 !== "ok") return json({ error: s2 }); }
+    return treply(row);
+  }
+
+  if (body.mode === "tduel_state" || body.mode === "tduel_act") {
+    const room = await myRoom();
+    if (!room) return json({ tduel: null, error: body.mode === "tduel_act" ? "gone" : undefined, now: Date.now() });
+    const row = await loadTeam(room);
+    if (!row) return json({ tduel: null, now: Date.now() });
+    const before = row.updated_at;
+    const changed = body.mode === "tduel_act" ? D.teamAct(row.state, me, String(body.skill || ""), Date.now(), Math.random) : D.teamTick(row.state, Date.now(), Math.random);
+    if (!changed) return treply(row, body.mode === "tduel_act" ? { error: "not_ready" } : {});
+    const s3 = await saveTeam(row, before);
+    if (s3 === "stale") { const fresh = await loadTeam(room); return fresh ? treply(fresh, { error: "stale" }) : json({ tduel: null, now: Date.now() }); }
+    return treply(row, s3 === "ok" ? {} : { error: s3 });
   }
 
   if (body.mode === "solo") {

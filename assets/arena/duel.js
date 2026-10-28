@@ -87,5 +87,5 @@
  let checked=false;const prevPage=valorArenaPage;valorArenaPage=function(){const html=prevPage.apply(this,arguments);
   if(!checked&&valorArenaIsOnline()){checked=true;server({mode:'duel_state'}).then(r=>{if(r?.duel&&r.duel.status==='battle'&&!duel.st){duel.kind='online';duel.all=[];duel.shown=0;duel.rival={name:r.foe?.name,cls:r.foe?.class,level:r.foe?.level,portrait:valorArenaPortrait(r.foe?.class,r.foe?.gender)};adopt(r.duel);open()}}).catch(()=>{})}
   return html};
- window.valorDuel={use,state:()=>duel,close};
+ window.valorDuel={use,state:()=>duel,close,skillIcon,skillName,skillText,fallbackIcon};
 })();

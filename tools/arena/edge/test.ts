@@ -14,11 +14,11 @@ r=await call({mode:'duel_act',skill:'auto'});assert(r.error==='not_ready','auto 
 // play out with real time skipped: patch Date.now
 let t=Date.now();const realNow=Date.now;Date.now=()=>t;
 let n=0;while(r.duel&&r.duel.status==='battle'&&n++<500){t+=2500;r=await call({mode:'duel_act',skill:'normal'})}
-assert(r.duel.status==='done','finished '+n);assert(store.log.length===1,'stored once');assert(!store.duels.has('u1'),'row deleted');
+assert(r.duel.status==='done','finished '+n);assert(store.log.length===1,'stored once');assert(!store.tables.arena_duels.some(x=>x.attacker==='u1'),'row deleted');
 console.log('result',JSON.stringify(r.duel.result),'turns',n);
 // abandoned duel older than 10 min gets played out and recorded on next start
-r=await call({mode:'duel_start',target:'t1'});store.duels.get('u1').updated_at=new Date(t-11*60000).toISOString();
+r=await call({mode:'duel_start',target:'t1'});store.tables.arena_duels.find(x=>x.attacker==='u1').updated_at=new Date(t-11*60000).toISOString();
 r=await call({mode:'duel_start',target:'t3'});assert(store.log.length===2,'abandoned recorded');assert(r.duel.status==='battle'&&!r.resumed,'fresh duel');
-store.limit=2;store.duels.clear();r=await call({mode:'duel_start',target:'t1'});assert(r.error==='limit','limit');
+store.limit=2;store.tables.arena_duels.length=0;r=await call({mode:'duel_start',target:'t1'});assert(r.error==='limit','limit');
 r=await call({mode:'duel_state'},'bad');assert(r.error==='auth','auth');
 Date.now=realNow;console.log('EDGE DUEL PASS');

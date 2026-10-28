@@ -16,12 +16,22 @@
 .vdu-ticker{display:flex;gap:6px;overflow-x:auto;white-space:nowrap;padding:2px 2px 8px;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 88%,transparent)}.vdu-ticker::-webkit-scrollbar{display:none}
 .vdu-ticker span{flex:0 0 auto;font-size:11px;padding:4px 9px;border-radius:12px;background:#0b1320;border:1px solid #2e3a46;color:#d8cfbf}.vdu-ticker span:first-child{border-color:#8f7349}.vdu-ticker .mine{color:#ffe0a0}.vdu-ticker .theirs{color:#ffb3a3}.vdu-ticker .pas{color:#9fd3ff}.vdu-ticker .burn{color:#ffa66b}
 .vdu-skills{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
-html body #valor-duel .vdu-skill{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px!important;min-height:0!important;border:1px solid #8f7349!important;border-radius:9px!important;background:linear-gradient(#2b2218,#15110d)!important;color:#f3e3c0!important;box-shadow:none!important;cursor:pointer}
-html body #valor-duel .vdu-skill:disabled{cursor:default}html body #valor-duel .vdu-skill:disabled img{filter:grayscale(.85) brightness(.55)}
-html body #valor-duel .vdu-skill:not(:disabled):active{transform:scale(.96)}
+html body :is(#valor-duel,#valor-tduel) .vdu-skill{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px 7px!important;min-height:0!important;border:1px solid #8f7349!important;border-radius:9px!important;background:linear-gradient(#2b2218,#15110d)!important;color:#f3e3c0!important;box-shadow:none!important;cursor:pointer}
+html body :is(#valor-duel,#valor-tduel) .vdu-skill:disabled{cursor:default}html body :is(#valor-duel,#valor-tduel) .vdu-skill:disabled img{filter:grayscale(.85) brightness(.55)}
+html body :is(#valor-duel,#valor-tduel) .vdu-skill:not(:disabled):active{transform:scale(.96)}
 .vdu-skill img{width:100%;max-width:72px;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block}
 .vdu-sname{font-size:10px;line-height:1.15;text-align:center;font-weight:700}
 .vdu-cd{position:absolute;top:28%;left:0;right:0;text-align:center;font:800 18px system-ui;color:#fff;text-shadow:0 2px 4px #000}
 .vdu-hint{display:block;min-height:14px;margin-top:6px;text-align:center;font-size:10px;color:#b9ab93}
 .vdu-float{position:absolute;left:50%;top:0;transform:translateX(-50%);font:800 16px system-ui;color:#ffd7cf;text-shadow:0 2px 4px #000;pointer-events:none;animation:vdu-float 1.2s forwards;white-space:nowrap;z-index:3}.vdu-float.crit{color:#ffcf5a;font-size:19px}.vdu-float.pas{color:#9fe0ff}
 @keyframes vdu-float{0%{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
+/* Team (3v3) duel */
+.vtd-dialog h2{margin-bottom:6px}
+.vtd-side{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.vtd-unit{position:relative;min-width:0;padding:6px 5px;border:1px solid #3d3428;border-radius:8px;background:#12161e;text-align:center}
+.vtd-unit .vdu-portrait{width:44px;min-width:44px;height:44px;margin:0 auto 3px}
+.vtd-unit>b{display:block;font-size:11px;color:#f3e3c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vtd-unit .vdu-hp{height:7px;margin:3px 0 2px}.vtd-unit small{display:block;font-size:10px;color:#d8cfbf;white-space:nowrap}
+.foes .vtd-unit .vdu-hp i{background:linear-gradient(90deg,#842c35,#e07265)}
+.vtd-unit.active{border-color:#f0c97e;box-shadow:0 0 10px #eeb55460}.vtd-unit.me{background:#1b1a14}.vtd-unit.down{opacity:.4}
+.vtd-label{margin:2px 0 6px;font:700 12px Georgia,serif;color:#b9ab93;letter-spacing:1px}
