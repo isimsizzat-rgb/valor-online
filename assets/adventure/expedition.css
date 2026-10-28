@@ -45,3 +45,18 @@ html body .vex-go .vex-icon{width:26px;height:26px;margin-right:6px}
 .vex-dialog .vdu-info small .vex-icon,.vex-dialog .vdu-ticker .vex-icon,.vex-dialog .vdu-float .vex-icon{width:18px;height:18px}
 .vex-resume .vex-icon{width:18px;height:18px;vertical-align:middle;color:#e4c17d}
 @media(prefers-reduced-motion:reduce){.vex-chest.opening .vex-chest-icon,.vex-chest.open .vex-chest-icon{animation:none}}
+
+/* Illustrated encounters: creature art stays square to avoid clipping an atlas tile. */
+.vex-enemy-art{display:block;width:100%;height:100%;aspect-ratio:1;background-color:#10151d;overflow:hidden;border-radius:inherit}
+.vex-enemy-atlas{background-image:url('../valor-dungeon/bosses.webp');background-size:600% 500%;background-repeat:no-repeat}
+.vex-dialog .vex-enemy-art img{display:block;width:100%;height:100%;object-fit:cover;filter:none;border-radius:inherit}
+.vex-scene.vex-encounter{height:216px;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#303127,#0c1017 75%)}
+.vex-scene.vex-encounter>.vex-enemy-art{flex:none;width:216px;height:216px;border-radius:0;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.vex-scene.vex-boss-scene{border-color:#b98b41;box-shadow:inset 0 0 24px #c38b2920}
+.vex-boss-scene .vex-scene-tag{color:#ffe2a6;border-color:#d1a85c;background:#1d1009e8}
+.vex-dialog .vdu-foe .vdu-portrait{width:96px;min-width:96px;height:96px;border-radius:12px;border-color:#876346}
+.vex-dialog .vex-boss-card{border-color:#b98b41;background:linear-gradient(120deg,#2d2119,#12161e)}
+.vex-dialog .vex-boss-card .vdu-portrait{width:112px;min-width:112px;height:112px;border-color:#d4aa61}
+.vex-dialog .vex-result.win{padding-top:0;overflow:hidden}
+.vex-dialog .vex-result>.vex-victory-art{display:block;width:calc(100% + 20px);max-width:none;height:auto;aspect-ratio:3/2;max-height:216px;object-fit:cover;object-position:center 48%;margin:0 -10px 4px;border-radius:9px 9px 0 0;mask-image:linear-gradient(#000 82%,transparent)}
+@media(max-width:380px){.vex-dialog .vdu-foe .vdu-portrait{width:82px;min-width:82px;height:82px}.vex-dialog .vex-boss-card .vdu-portrait{width:94px;min-width:94px;height:94px}}
