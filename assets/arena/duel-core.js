@@ -31,9 +31,9 @@
   };
   /* Class passives (calibrated with tools/arena/duel-balance.cjs). They use the turn. */
   const PASSIVES = {
-    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .10, turns: 3, text: '3 tur, canının %10\'u kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
-    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .12, text: 'Canının %12\'si kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
-    'Okçu': { id: 'focus', name: 'Odaklan', value: 0.9, turns: 3, text: '3 tur boyunca %90 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
+    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .25, turns: 3, text: '3 tur, canının %25\'i kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
+    'Büyücü': { id: 'heal', name: 'Yenilenme', value: .25, text: 'Canının %25\'i kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
+    'Okçu': { id: 'focus', name: 'Odaklan', value: .25, turns: 3, text: '3 tur boyunca %25 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
   };
   const TURN_MS = 5000, GRACE_MS = 1200, MAX_ROUNDS = 200, ORDER = ['normal', 'strong', 'max', 'passive'];
   const passiveOf = (u) => PASSIVES[u.cls] || PASSIVES['Savaşçı'];
