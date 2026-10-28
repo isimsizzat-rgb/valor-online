@@ -16,7 +16,7 @@ html body .vex-go{display:block;width:100%;margin-top:10px;padding:12px!importan
 .vex-chest.open .vex-chest-icon{animation:vex-pop .5s}
 .vex-chest b,.vex-result b{font:700 17px Georgia,serif;color:#efd49b}
 .vex-chest strong,.vex-result strong{font-size:16px;color:#ffe2a6}
-.vex-result small{color:#d8cfbf}
+.vex-result small,.vex-chest small{color:#d8cfbf}
 .vex-result em{margin-top:4px;font-style:normal;font-size:11px;letter-spacing:1px;color:#ab9261;text-transform:uppercase}
 .vex-result.loss b{color:#ffb3a3}
 @keyframes vex-wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg) translateY(-2px)}75%{transform:rotate(9deg) translateY(-2px)}}

@@ -23,9 +23,10 @@
   if(prize.gold){state.gold+=prize.gold;got.gold=prize.gold}
   if(prize.xp){earnXP(prize.xp);got.xp=window.valorLastXpGain||prize.xp}
   if(prize.stone){giveStone();got.stone=prize.stone}
+  if(prize.luck){state.stones=state.stones||{};state.stones[1]=(Number(state.stones[1])||0)+prize.luck;if(typeof syncDirectStones==='function')syncDirectStones();got.luck=prize.luck}
   for(const k in got)r.earned[k]=(r.earned[k]||0)+got[k];
   return got}
- function prizeText(p,sep=' · '){return [p.gold&&'🪙 +'+money(p.gold)+' Altın',p.xp&&'✦ +'+p.xp+' EXP',p.stone&&'💎 +'+p.stone+' Binek Taşı'].filter(Boolean).join(sep)||'Ödül yok'}
+ function prizeText(p,sep=' · '){return [p.gold&&'🪙 +'+money(p.gold)+' Altın',p.xp&&'✦ +'+p.xp+' EXP',p.stone&&'💎 +'+p.stone+' Binek Taşı',p.luck&&'🔷 +'+p.luck+' Şans Taşı',p.hearts&&'❤ +'+p.hearts+' Kalp'].filter(Boolean).join(sep)||'Ödül yok'}
  function logEnd(r,won){const z=zoneOf(r);state.logs=state.logs||[];state.logs.unshift((won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+z.name+' ('+(won?10:r.i+1)+'/10): '+prizeText(r.earned,', ')+' · −10 Enerji');state.logs=state.logs.slice(0,30)}
 
  /* ---------- flow ---------- */
@@ -39,11 +40,21 @@
  }
  function next(){const r=run();if(!r)return;
   if(r.phase==='story'){const s=r.steps[r.i];
-   if(s.kind==='chest'){r.last=give(r,X.chest(r.zone));r.phase='chest';ui.chestAt=Date.now();save();paint(true);clearTimeout(ui.chestTimer);ui.chestTimer=setTimeout(()=>paint(true),1700);return}
+   if(s.kind==='chest'){r.last=give(r,X.chest(r.zone));if(heartsOnline()){r.last.heartReq=crypto.randomUUID();r.last.heartsPending=true;claimHearts(r)}r.phase='chest';ui.chestAt=Date.now();save();paint(true);clearTimeout(ui.chestTimer);ui.chestTimer=setTimeout(()=>paint(true),1700);return}
    const foe=X.enemy(r.zone,s);r.duel=D.create({name:state.name||'Sen',cls:state.class,level:state.level,stats:valorArenaStats()},foe,Date.now());r.phase='fight';ui.all=[];ui.shown=0;collect(r);save();paint(true);if(r.duel.status==='done')fightOver(r);return}
   if(r.phase==='chest'||r.phase==='won'){r.i++;r.phase='story';r.duel=null;r.last=null;save();paint(true);return}
   if(r.phase==='lost'||r.phase==='done'){finish();}
  }
+ /* 1-3 Kalp per chest, rolled and stored by the server (signed-in players only; 30 chests a day). */
+ function heartsOnline(){return typeof valorHeartsOnline==='function'&&valorHeartsOnline()}
+ async function claimHearts(r){const last=r.last;if(!last?.heartsPending||!last.heartReq)return;
+  let res=null;try{res=await valorCloudFetch('/rest/v1/rpc/heart_adventure_chest',{method:'POST',body:JSON.stringify({request_id:last.heartReq})})}catch(e){res=null}
+  if(run()!==r||r.last!==last)return;
+  last.heartsPending=false;
+  if(res&&Number(res.hearts)>0){last.hearts=Number(res.hearts);r.earned.hearts=(r.earned.hearts||0)+last.hearts}
+  if(res&&res.limit)last.heartLimit=true;
+  if(res&&Number.isFinite(Number(res.balance))&&typeof valorHearts!=='undefined'){valorHearts.balance=Number(res.balance);valorHearts.at=Date.now();if(typeof valorHeartMirror==='function')valorHeartMirror(valorHearts.balance)}
+  save();paint(true)}
  function collect(r){const v=D.view(r.duel);if(Array.isArray(v.events))ui.all=ui.all.concat(v.events)}
  function use(skill){const r=run();if(!r||r.phase!=='fight'||!r.duel||r.duel.status!=='battle')return;
   if(!D.act(r.duel,skill,Date.now()))return;collect(r);
@@ -80,7 +91,7 @@
    +'<p class="vex-story">'+esc(s.story)+'</p>'
    +'<button type="button" class="vex-go" onclick="valorExpedition.next()">'+(s.kind==='chest'?'🎁 Sandığı aç':s.boss?'👑 Bossa saldır':'⚔ Savaş')+'</button>'}
  function chestView(r){const opening=Date.now()-(ui.chestAt||0)<1600;
-  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+(opening?'🎁':'✨')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeText(r.last||{})+'</strong>')+'</div>'
+  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+(opening?'🎁':'✨')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeText(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>❤ Kalpler geliyor…</small>':r.last?.heartLimit?'<small>Bugünkü sandık kalbi sınırına ulaştın (30 sandık)</small>':''))+'</div>'
    +(opening?'':'<button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>')}
  function resultView(r){const s=r.steps[r.i];
   if(r.phase==='won')return '<div class="vex-result win"><span>🏆</span><b>'+esc(s.foe)+' yenildi!</b><strong>'+prizeText(r.last||{})+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>';
@@ -101,6 +112,7 @@
   if(r.phase==='fight'&&r.duel&&r.duel.status==='battle'){const v=D.view(r.duel);if(v.turn==='me'&&Date.now()-(v.turnAt||0)>=D.TURN_MS){use('auto');return}}
   paint()}
  function open(){const r=run();if(!r)return;
+  if(r.phase==='chest'&&r.last?.heartsPending)claimHearts(r);
   if(r.phase==='fight'&&r.duel){if(r.duel.status==='battle')r.duel.turnAt=Date.now();else{r.phase='fight';fightOver(r)}ui.all=(r.duel.log||[]).slice();ui.shown=ui.all.length}
   document.getElementById('valor-adv')?.remove();const el=document.createElement('div');el.id='valor-adv';el.className='vdu-overlay vex-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';ui.stable=null;paint(true);clearInterval(ui.timer);ui.timer=setInterval(tick,250)}
  function close(){clearInterval(ui.timer);ui.timer=null;document.getElementById('valor-adv')?.remove();document.documentElement.style.overflow='';if(page==='Macera')render()}

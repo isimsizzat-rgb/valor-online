@@ -3,7 +3,7 @@
    Foe strength follows the reference players (tools/valor-dungeon/refstats.json) at the zone's entry
    level; calibrated with tools/adventure/balance.cjs.
    Rewards add up to about the old single-fight win: 6 foes x 6% + boss 40% of the zone's gold/EXP,
-   3 chests with gold or EXP (10-20%) or, rarely, a Binek Taşı; the boss also rolls the zone's
+   3 chests with 1-3 Kalp (server, signed-in players) plus gold (10-20%) or a Sv.1 Şans Taşı; the boss also rolls the zone's
    Binek Taşı chance as before. */
 (function (root) {
   'use strict';
@@ -72,12 +72,12 @@
     const z = zones[zi], k = boss ? .40 : .06;
     return { gold: Math.round(z.gold * k), xp: Math.max(1, Math.round(z.xp * k)), stone: boss && rng() < z.stoneChance ? 1 : 0 };
   }
-  /* A chest holds one prize: gold (55%), EXP (41%) or a Binek Taşı (4%). */
+  /* A chest holds gold (70%, 10-20% of the zone's gold) or a Sv.1 Şans Taşı (30%). The 1-3 Kalp come
+     from the server (heart_adventure_chest in supabase/hearts-adventure.sql). */
   function chest(zi, rng = Math.random) {
-    const z = zones[zi], x = rng(), k = .10 + rng() * .10;
-    if (x < .55) return { gold: Math.round(z.gold * k / 10) * 10 };
-    if (x < .96) return { xp: Math.max(1, Math.round(z.xp * k)) };
-    return { stone: 1 };
+    const z = zones[zi];
+    if (rng() < .70) return { gold: Math.round(z.gold * (.10 + rng() * .10) / 10) * 10 };
+    return { luck: 1 };
   }
   const api = { TUNE, STEPS, CHESTS, zones, power, enemyStats, plan, enemy, fightReward, chest };
   root.ValorExpedition = api; if (typeof module !== 'undefined') module.exports = api;
