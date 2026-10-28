@@ -102,3 +102,13 @@ html[data-valor-theme=light] body .vr-strip{grid-template-columns:repeat(2,minma
 html[data-valor-theme=light] body .vr-card{min-width:0}
 html[data-valor-theme=light] body .vr-card .vr-card-text{flex:1}
 html[data-valor-theme=light] body .vr-card .vr-card-text b{white-space:normal;line-height:1.25}
+
+/* Light theme: content cards that were built as dark (often half-transparent) panels turn grey and
+   muddy over the pale page. Give them the same warm paper surface; theme-contrast.js then darkens
+   their text. Artwork, banners, progress tracks, badges and the stage selector keep their dark look. */
+html[data-valor-theme=light] body #main :is(.stage-daily-limit,.adventure-energy,.vdg-encounter,.vdg-battle-card,.vdg-battle-card>div,.vdg-raid,.wb-card,.wb-rank-row,.wb-countdown,.vct-note,.vct-status,.vct-roster,.vc-player-board,.arena-summary>div,.arena-training,.arena-rival,.arena-ranking,.vpet-summary,.vpet-bonus,.vpet-card,.vpet-buff,.vpet-guide,.vf-summary>div,.vf-level,.farm-growth-plot,.vsys-card,.vsocial-intro,.vsocial-empty,.vsup-card,.valor-rank-row,.vm-market-categories){
+ background:linear-gradient(145deg,#fbf7ef,#ebe1ce)!important;border-color:#b39a71!important;box-shadow:0 3px 10px #5643241a!important}
+html[data-valor-theme=light] body #main :is(.vpet-card .vpet-copy,.arena-rival>div){background:transparent!important}
+html[data-valor-theme=light] body #main :is(.valor-rank-row.mine,.vct-row.vct-mine,.vpet-card.vpet-equipped,.vpet-buff.active){
+ background:linear-gradient(145deg,#f6e7c6,#e3cc9e)!important;border-color:#a47b38!important}
+html[data-valor-theme=light] body #main .farm-growth-plot.farm-locked{background:linear-gradient(145deg,#ece5d8,#dcd2c0)!important;filter:none!important}
