@@ -16,6 +16,11 @@
  const sname=(k,u)=>dv().skillName?dv().skillName(k,u):(k==='passive'?D.passiveOf(u).name:D.SKILLS[k].name);
  const stext=(k,u)=>dv().skillText?dv().skillText(k,u):'';
  const fallback=()=>dv().fallbackIcon||'';
+ const art={hearts:'assets/hearts/heart.webp',luck:'assets/img/luck-stone-1.jpg',chest:'assets/valor-dungeon/valor-chest.webp',gold:'assets/img/516a0f843e980d4f.webp',stone:'assets/items/mount-stone-v2.webp',shield:'assets/arena/skills/passive-savasci.webp',heal:'assets/arena/skills/passive-buyucu.webp',focus:'assets/arena/skills/passive-okcu.webp'};
+ const paths={xp:'M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6z',battle:'M7 3l14 14-4 4L3 7V3h4z M14 7l3-4h4v4l-4 3 M3 21l5-5 M16 16l5 5 M3 17l4 4',boss:'M3 7l4 4 5-7 5 7 4-4-2 13H5L3 7z M6 16h12',mystery:'M9 8a3 3 0 116 0c0 2-3 2-3 5 M12 17h.01',loss:'M8 8l8 8 M16 8l-8 8 M12 2a10 10 0 100 20 10 10 0 000-20',win:'M8 3h8v6a4 4 0 01-8 0V3z M8 5H4v3a4 4 0 004 4 M16 5h4v3a4 4 0 01-4 4 M12 13v6 M8 21h8',compass:'M12 2a10 10 0 100 20 10 10 0 000-20 M16 8l-3 5-5 3 3-5 5-3z',burn:'M12 2c2 6-3 6 0 10 1-2 3-3 4-4 5 6 3 14-4 14S3 15 6 10c0 4 2 4 2 4-1-5 5-7 4-12z',clock:'M12 2a10 10 0 100 20 10 10 0 000-20 M12 6v6l4 2'};
+ function mark(k){return art[k]?'<img class="vex-icon" src="'+art[k]+'" alt="" aria-hidden="true">':'<svg class="vex-icon vex-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(paths[k]||paths.mystery)+'"/></svg>'}
+ function prizeHtml(p){return '<span class="vex-rewards">'+[['gold','Altın'],['xp','EXP'],['stone','Binek Taşı'],['luck','Şans Taşı Sv.1'],['hearts','Kalp']].filter(([k])=>p[k]).map(([k,label])=>'<span class="vex-reward">'+mark(k)+'<span><b>+'+money(p[k])+'</b><small>'+label+'</small></span></span>').join('')+'</span>'}
+
 
  /* ---------- rewards ---------- */
  function giveStone(){const stack=(state.inventory||[]).find(it=>it.marketItemId==='mountStone');if(stack)stack.count=(Number(stack.count)||1)+1;else state.inventory.push({id:valorUniqueItemId(),slot:'Eşya',marketItemId:'mountStone',name:'Binek Taşı',count:1})}
@@ -69,33 +74,33 @@
  function finish(){state.adventureRun=null;save();close();render()}
 
  /* ---------- screen ---------- */
- function trail(r){return '<div class="vex-trail" aria-label="Adım '+(r.i+1)+' / 10">'+r.steps.map((s,k)=>{const known=k<r.i||(k===r.i&&r.phase!=='story')||k===9;const mark=!known?'•':s.kind==='chest'?'🎁':s.boss?'👑':'⚔';return '<span class="'+(k<r.i?'done':k===r.i?'now':'')+'">'+mark+'</span>'}).join('')+'</div>'}
- function head(r){const z=zoneOf(r);return '<small class="vdu-eyebrow">MACERA · ADIM '+(r.i+1)+' / 10</small><h2 id="vex-title">'+z.icon+' '+esc(z.name)+'</h2>'+trail(r)}
- function hpBar(u){return '<div class="vdu-hp"><i style="width:'+Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+money(Math.max(0,u.hp))+' / '+money(u.maxHp)+(u.shield>0?' · 🛡 '+money(u.shield)+(u.shieldTurns?' ('+u.shieldTurns+' tur)':''):'')+(u.focusTurns>0?' · 🎯 +%'+Math.round(u.focus*100)+' ('+u.focusTurns+' tur)':'')+'</small>'}
+ function trail(r){return '<div class="vex-trail" aria-label="Adım '+(r.i+1)+' / 10">'+r.steps.map((s,k)=>{const known=k<r.i||(k===r.i&&r.phase!=='story')||k===9;const symbol=!known?'<i class="vex-unknown"></i>':mark(s.kind==='chest'?'chest':s.boss?'boss':'battle');return '<span class="'+(k<r.i?'done':k===r.i?'now':'')+'">'+symbol+'</span>'}).join('')+'</div>'}
+ function head(r){const z=zoneOf(r);return '<small class="vdu-eyebrow">MACERA · ADIM '+(r.i+1)+' / 10</small><h2 id="vex-title">'+esc(z.name)+'</h2>'+trail(r)}
+ function hpBar(u){return '<div class="vdu-hp"><i style="width:'+Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+money(Math.max(0,u.hp))+' / '+money(u.maxHp)+(u.shield>0?' · '+mark('shield')+money(u.shield)+(u.shieldTurns?' ('+u.shieldTurns+' tur)':''):'')+(u.focusTurns>0?' · '+mark('focus')+' +%'+Math.round(u.focus*100)+' ('+u.focusTurns+' tur)':'')+'</small>'}
  function card(u,side,portrait,sub){return '<div class="vdu-card vdu-'+side+'"><div class="vdu-portrait"><img src="'+portrait+'" alt=""></div><div class="vdu-info"><b>'+esc(u.name)+'</b><span>'+sub+'</span>'+hpBar(u)+'</div></div>'}
- function chip(e,st){const who=e.side==='me'?'Sen':esc(st.foe.name);if(e.skill==='burn')return '<span class="burn">🔥 Yanık '+money(e.damage)+'</span>';
-  if(e.skill==='passive')return '<span class="pas">'+who+' · '+esc(D.passiveOf(e.side==='me'?st.me:st.foe).name)+(e.shield?' 🛡'+money(e.shield):e.healed?' +'+money(e.healed):e.focus?' 🎯':'')+'</span>';
-  return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(sname(e.skill,e.side==='me'?st.me:st.foe))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' 🛡'+money(e.hit.absorbed):'')+(e.auto&&e.side==='me'?' ⏱':'')+'</span>'}
+ function chip(e,st){const who=e.side==='me'?'Sen':esc(st.foe.name);if(e.skill==='burn')return '<span class="burn">'+mark('burn')+' Yanık '+money(e.damage)+'</span>';
+  if(e.skill==='passive')return '<span class="pas">'+who+' · '+esc(D.passiveOf(e.side==='me'?st.me:st.foe).name)+(e.shield?' '+mark('shield')+money(e.shield):e.healed?' '+mark('heal')+' +'+money(e.healed):e.focus?' '+mark('focus'):'')+'</span>';
+  return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(sname(e.skill,e.side==='me'?st.me:st.foe))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' '+mark('shield')+money(e.hit.absorbed):'')+(e.auto&&e.side==='me'?' '+mark('clock'):'')+'</span>'}
  function skillBtn(k,u,mine,t){const cd=secs((u.cd[k]||0)-t),ok=mine&&!cd;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorExpedition.use(\''+k+'\')" title="'+esc(stext(k,u))+'"><img src="'+icon(k,u)+'" alt="" onerror="'+fallback()+'"><span class="vdu-sname">'+esc(sname(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
  function fightView(r){const st=D.view(r.duel),t=Date.now(),s=r.steps[r.i],z=zoneOf(r),mine=st.status==='battle'&&st.turn==='me',left=secs(D.TURN_MS-(t-(st.turnAt||t)));
   const log=ui.all.slice(-10).reverse().map(e=>chip(e,st)).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
-  return card(st.foe,'foe',z.image,(s.boss?'👑 Bölge Bossu':'Düşman')+' · Sv. '+st.foe.level)
+  return card(st.foe,'foe',z.image,(s.boss?mark('boss')+' Bölge Bossu':'Düşman')+' · Sv. '+st.foe.level)
    +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?(st.result?.win?'Kazandın!':'Yenildin…'):mine?'Sıra sende!':'Düşman saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'Tur '+st.round)+'</span></div>'
    +'<div class="vdu-ticker" aria-live="polite">'+log+'</div>'
    +card(st.me,'me',valorBattlePortraitMine(),esc(st.me.cls)+' · Sv. '+st.me.level)
    +'<div class="vdu-skills">'+D.ORDER.map(k=>skillBtn(k,st.me,mine,t)).join('')+'</div>'
    +'<small class="vdu-hint">'+(mine?'Pasif: '+esc(D.passiveOf(st.me).text)+' · sıranı harcar':'')+'</small>'}
  function storyView(r){const s=r.steps[r.i],z=zoneOf(r);
-  return '<div class="vex-scene"><img src="'+z.image+'" alt="" onerror="this.hidden=true"><span class="vex-scene-tag">'+(s.boss?'👑 Bölge Bossu':s.kind==='chest'?'❔ Gizem':'⚔ Karşılaşma')+'</span></div>'
+  return '<div class="vex-scene"><img src="'+z.image+'" alt="" onerror="this.hidden=true"><span class="vex-scene-tag">'+(s.boss?mark('boss')+' Bölge Bossu':s.kind==='chest'?mark('mystery')+' Gizem':mark('battle')+' Karşılaşma')+'</span></div>'
    +'<p class="vex-story">'+esc(s.story)+'</p>'
-   +'<button type="button" class="vex-go" onclick="valorExpedition.next()">'+(s.kind==='chest'?'🎁 Sandığı aç':s.boss?'👑 Bossa saldır':'⚔ Savaş')+'</button>'}
+   +'<button type="button" class="vex-go" onclick="valorExpedition.next()">'+(s.kind==='chest'?mark('chest')+' Sandığı aç':s.boss?mark('boss')+' Bossa saldır':mark('battle')+' Savaş')+'</button>'}
  function chestView(r){const opening=Date.now()-(ui.chestAt||0)<1600;
-  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+(opening?'🎁':'✨')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeText(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>❤ Kalpler geliyor…</small>':''))+'</div>'
+  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+mark('chest')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeHtml(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>'+mark('hearts')+' Kalpler geliyor…</small>':''))+'</div>'
    +(opening?'':'<button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>')}
  function resultView(r){const s=r.steps[r.i];
-  if(r.phase==='won')return '<div class="vex-result win"><span>🏆</span><b>'+esc(s.foe)+' yenildi!</b><strong>'+prizeText(r.last||{})+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>';
+  if(r.phase==='won')return '<div class="vex-result win"><span class="vex-result-icon">'+mark('win')+'</span><b>'+esc(s.foe)+' yenildi!</b><strong>'+prizeHtml(r.last||{})+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>';
   const won=r.phase==='done';
-  return '<div class="vex-result '+(won?'win':'loss')+'"><span>'+(won?'👑':'💀')+'</span><b>'+(won?'Macera tamamlandı! '+esc(s.foe)+' yenildi.':'Yenildin… Macera '+(r.i+1)+'. adımda bitti.')+'</b>'+(won&&r.last?'<small>Boss ödülü: '+prizeText(r.last)+'</small>':'')+'<em>Toplam kazanç</em><strong>'+prizeText(r.earned)+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Tamam</button>'}
+  return '<div class="vex-result '+(won?'win':'loss')+'"><span>'+mark(won?'win':'loss')+'</span><b>'+(won?'Macera tamamlandı! '+esc(s.foe)+' yenildi.':'Yenildin… Macera '+(r.i+1)+'. adımda bitti.')+'</b>'+(won&&r.last?'<small>Boss ödülü: '+prizeHtml(r.last)+'</small>':'')+'<em>Toplam kazanç</em><strong>'+prizeHtml(r.earned)+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Tamam</button>'}
  function markup(){const r=run();if(!r)return '';
   const body=r.phase==='fight'&&r.duel?fightView(r):r.phase==='story'?storyView(r):r.phase==='chest'?chestView(r):resultView(r);
   const canLeave=r.phase!=='done'&&r.phase!=='lost';
@@ -106,7 +111,7 @@
   ui.stable=stable;el.innerHTML=html;floatNew()}
  function floatNew(){const list=ui.all.slice(ui.shown);ui.shown=ui.all.length;list.forEach((e,i)=>setTimeout(()=>{
   const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),host=document.querySelector('#valor-adv .vdu-'+target+' .vdu-portrait');if(!host)return;
-  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡 '+money(e.shield):e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*550))}
+  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.innerHTML=e.skill==='passive'?(e.shield?mark('shield')+' '+money(e.shield):e.healed?mark('heal')+' +'+money(e.healed):mark('focus')):'-'+money(e.damage||0);host.appendChild(f);if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*550))}
  function tick(){if(document.hidden)return;const r=run();if(!r)return close();
   if(r.phase==='fight'&&r.duel&&r.duel.status==='battle'){const v=D.view(r.duel);if(v.turn==='me'&&Date.now()-(v.turnAt||0)>=D.TURN_MS){use('auto');return}}
   paint()}
@@ -129,7 +134,7 @@
  valorAdventureConfirm=function(i){if(run()){open();return}return prevConfirm.apply(this,arguments)};
  const prevPage=valorAdventurePage;
  valorAdventurePage=function(){let html=prevPage.apply(this,arguments);const r=run();
-  if(r){const z=zoneOf(r);html=html.replace('<div class="adventure-zone-grid">','<button type="button" class="vex-resume" onclick="valorExpedition.open()"><span>🧭 Yarım kalan macera</span><b>'+z.icon+' '+esc(z.name)+' · Adım '+(r.i+1)+' / 10</b><em>Devam et ❯</em></button><div class="adventure-zone-grid">')}
+  if(r){const z=zoneOf(r);html=html.replace('<div class="adventure-zone-grid">','<button type="button" class="vex-resume" onclick="valorExpedition.open()"><span>'+mark('compass')+' Yarım kalan macera</span><b>'+esc(z.name)+' · Adım '+(r.i+1)+' / 10</b><em>Devam et ❯</em></button><div class="adventure-zone-grid">')}
   return html};
  battle=valorAdventurePage;
  window.valorExpedition={use,next,open,close,state:run};
