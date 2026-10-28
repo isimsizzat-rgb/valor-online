@@ -44,7 +44,9 @@ const C=require('../../assets/valor-dungeon/core.js');
  assert.equal((await call(0,'finish',null,r.room.version)).status,'invalid');assert.equal((await call(0,'state')).balance,7);
  let opened=await call(0,'open',null,null,3);assert.equal(opened.opened,3);assert.equal(opened.balance,4);
  let st=(await db.query('select data from saves where user_id=$1',[ids[0]])).rows[0].data.state;
- assert.equal(st.diamonds,80);assert.equal(st.shards,5);assert.equal(st.stones['1'],5);for(const item of ['petFood','energyBottle','expeditionPaper'])assert.equal(st.inventory.find(x=>x.marketItemId===item).count,3);
+ // Exactly one prize per chest, and the save receives exactly what was reported.
+ const w=opened.won,cnt=id=>st.inventory.find(x=>x.marketItemId===id)?.count||0;assert.equal(w.luck+w.diamonds/25+w.petFood+w.epic+w.energyBottle+w.expeditionPaper,3);
+ assert.equal(st.diamonds,5+w.diamonds);assert.equal(st.shards,2+w.epic);assert.equal(st.stones['1'],2+w.luck);assert.equal(cnt('petFood'),w.petFood);assert.equal(cnt('energyBottle'),w.energyBottle);assert.equal(cnt('expeditionPaper'),w.expeditionPaper);
  assert.equal((await call(0,'open',null,null,999)).opened,4);assert.equal((await call(0,'open')).status,'empty');assert.equal((await call(1,'state')).balance,7);
  // New one-player run: all 30 floors are sequential; final reward is exactly 30 once.
  await db.query(`update saves set combat=combat||'{"Saldırı":1000000000,"Can":100000000}'::jsonb where user_id=$1`,[ids[0]]);
@@ -53,5 +55,6 @@ const C=require('../../assets/valor-dungeon/core.js');
  assert.equal(r.room.status,'complete');assert.equal(r.balance,30);assert.equal((await call(0,'state')).balance,30);assert.equal((await call(0,'attack',null,r.room.version)).status,'invalid');
  // Waiting-room leave transfers leadership and rejects an obsolete invite once empty.
  await call(3,'leave');await call(1,'leave');await call(2,'leave');r=await call(1,'create');const second=r.room.id;await call(2,'join',second);await call(1,'leave');r=await call(2,'state');assert.equal(r.room.leader,ids[2]);await call(2,'leave');assert.equal((await call(3,'join',second)).status,'gone');
- console.log('PASS: 30 bosses, 1–3-player rooms, capacity, leader permissions, turn order, skills and cooldown, 7s auto attack, duplicate rejection, 7-floor loss, per-member rewards, one-time settlement, all six chest rewards, 30-floor completion and room lifecycle.');await db.close();
+ await db.query(`update valor_dungeon_wallets set balance=1000 where user_id=$1`,[ids[1]]);const big=(await call(1,'open',null,null,1000)).won;assert.ok(big.luck>340&&big.luck<500,'luck '+big.luck);assert.ok(big.expeditionPaper>10&&big.expeditionPaper<80,'paper '+big.expeditionPaper);
+ console.log('PASS: 30 bosses, 1–3-player rooms, capacity, leader permissions, turn order, skills and cooldown, 7s auto attack, duplicate rejection, 7-floor loss, per-member rewards, one-time settlement, weighted single-prize chests, 30-floor completion and room lifecycle.');await db.close();
 })().catch(e=>{console.error(e);process.exitCode=1});

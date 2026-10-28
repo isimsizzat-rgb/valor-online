@@ -10,7 +10,7 @@ New map/scene card with the approved entrance artwork; thirty separately preview
 - Boss HP scales with party size (×1/×2/×3). Bosses are calibrated with `tools/valor-dungeon/balance.cjs` against the balance reference players: a full 3-class team reaches about floor 5 on day 0, 11 on day 10, 17 on day 30, 22 on day 60, 27 on day 90 and clears 30 at the top end. Without skills the same teams stall far earlier.
 - Cleared floors advance automatically; surviving HP and shields carry over.
 - Loss or voluntary leader withdrawal pays each participating member one chest per completed floor, once. Full completion pays 30 chests. Failed floors pay nothing.
-- Each chest contains **all six**: 25 diamonds, one energy bottle, one expedition paper, one epic stone, one level-1 luck stone and one pet food. No random drop rates were specified, so all six are guaranteed.
+- Each chest gives **one** prize, rarer the more valuable (chance ∝ 1 / diamond value): Sv.1 Şans Taşı 42%, 25 Elmas 17%, Pet Yemi 17%, Epik Taşı 11%, Enerji Şişesi 9%, Sefer Kağıdı 4%. The server rolls online chests and returns what was won.
 - A withdrawing non-leader is marked defeated and remains eligible for the party's final completed-floor reward. Waiting-room leadership transfers when the leader leaves.
 - Offline/guest accounts have persisted solo runs. Cloud accounts require the server migration; they never silently fall back to a fake multiplayer room.
 

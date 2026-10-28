@@ -151,7 +151,7 @@ end; $$;
 create or replace function public.valor_dungeon_action(op text, rid uuid default null, expected_version integer default null, quantity integer default 1)
 returns jsonb language plpgsql security definer set search_path=public as $$
 declare me uuid:=auth.uid(); r valor_dungeon_runs%rowtype; room_id uuid; p jsonb; members jsonb; h jsonb;
- i integer; j integer; k integer; n integer; alive integer; target integer; new_id uuid; bal integer:=0; hp0 numeric; hp1 numeric; dealt numeric; fought integer; bname text; qty integer; revn integer; inv jsonb; d jsonb; st jsonb; response text:='ok';
+ i integer; j integer; k integer; n integer; alive integer; target integer; new_id uuid; bal integer:=0; hp0 numeric; hp1 numeric; dealt numeric; fought integer; bname text; qty integer; revn integer; inv jsonb; d jsonb; st jsonb; response text:='ok'; x numeric; w_luck integer; w_dia integer; w_food integer; w_epic integer; w_energy integer; w_paper integer;
 begin
  if me is null then return jsonb_build_object('status','invalid'); end if;
  if is_banned(me) then return jsonb_build_object('status','banned'); end if;
@@ -167,17 +167,25 @@ begin
   qty:=least(bal,greatest(1,coalesce(quantity,1)),1000);
   select data,rev into d,revn from saves where user_id=me for update;
   if d is null then return jsonb_build_object('status','no_character'); end if;
+  -- One prize per chest, rarer the more valuable (must match CHEST in core.js):
+  -- Sv.1 Şans Taşı 42%, 25 Elmas 17%, Pet Yemi 17%, Epik Taşı 11%, Enerji Şişesi 9%, Sefer Kağıdı 4%.
+  w_luck:=0;w_dia:=0;w_food:=0;w_epic:=0;w_energy:=0;w_paper:=0;
+  for k in 1..qty loop x:=random()*100;
+   if x<42 then w_luck:=w_luck+1; elsif x<59 then w_dia:=w_dia+25; elsif x<76 then w_food:=w_food+1;
+   elsif x<87 then w_epic:=w_epic+1; elsif x<96 then w_energy:=w_energy+1; else w_paper:=w_paper+1; end if;
+  end loop;
   st:=d->'state';inv:=coalesce(st->'inventory','[]');
-  inv:=vzd_stack(inv,'energyBottle','Enerji Şişesi',qty);
-  inv:=vzd_stack(inv,'expeditionPaper','Sefer Kağıdı',qty);
-  inv:=vzd_stack(inv,'petFood','Pet Yemi',qty);
-  st:=st||jsonb_build_object('inventory',inv,'diamonds',coalesce((st->>'diamonds')::numeric,0)+25*qty,
-   'shards',coalesce((st->>'shards')::numeric,0)+qty,
-   'stones',coalesce(st->'stones','{}')||jsonb_build_object('1',coalesce((st->'stones'->>'1')::integer,0)+qty));
+  if w_energy>0 then inv:=vzd_stack(inv,'energyBottle','Enerji Şişesi',w_energy); end if;
+  if w_paper>0 then inv:=vzd_stack(inv,'expeditionPaper','Sefer Kağıdı',w_paper); end if;
+  if w_food>0 then inv:=vzd_stack(inv,'petFood','Pet Yemi',w_food); end if;
+  st:=st||jsonb_build_object('inventory',inv,'diamonds',coalesce((st->>'diamonds')::numeric,0)+w_dia,
+   'shards',coalesce((st->>'shards')::numeric,0)+w_epic,
+   'stones',coalesce(st->'stones','{}')||jsonb_build_object('1',coalesce((st->'stones'->>'1')::integer,0)+w_luck));
   perform set_config('valor.server_write','1',true);
   update saves set data=jsonb_set(d,'{state}',st),rev=rev+1,updated_at=now() where user_id=me returning rev into revn;
   update valor_dungeon_wallets set balance=balance-qty where user_id=me returning balance into bal;
-  return jsonb_build_object('status','ok','opened',qty,'balance',bal,'rev',revn);
+  return jsonb_build_object('status','ok','opened',qty,'balance',bal,'rev',revn,
+   'won',jsonb_build_object('luck',w_luck,'diamonds',w_dia,'petFood',w_food,'epic',w_epic,'energyBottle',w_energy,'expeditionPaper',w_paper));
  end if;
 
  if op='create' then

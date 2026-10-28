@@ -82,5 +82,9 @@
  /* Legacy step for tools: one action by whoever is up (attack), used by older checks. */
  function step(room,rng=Math.random){return attack(room,Date.now(),rng)}
 
- const api={bosses,chapters,skills,unit,partyBoss,raw,skill,canSkill,attack,tick,start,step,TURN_MS,SKILL_MS,AOE_EVERY,PARTY_HP};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
+ /* Valor Sandığı: one prize per chest, rarer the more valuable (chance ∝ 1 / diamond value).
+    Values: Sv.1 Şans Taşı ~10, 25 Elmas 25, Pet Yemi 25 (market), Epik Taşı ~40, Enerji Şişesi 50, Sefer Kağıdı 99 (market). */
+ const CHEST=[{id:'luck',name:'Sv.1 Şans Taşı',amount:1,weight:42},{id:'diamonds',name:'Elmas',amount:25,weight:17},{id:'petFood',name:'Pet Yemi',amount:1,weight:17},{id:'epic',name:'Epik Taşı',amount:1,weight:11},{id:'energyBottle',name:'Enerji Şişesi',amount:1,weight:9},{id:'expeditionPaper',name:'Sefer Kağıdı',amount:1,weight:4}];
+ function rollChests(n,rng=Math.random){const won={};for(let k=0;k<n;k++){let x=rng()*100,pick=CHEST[CHEST.length-1];for(const c of CHEST){if(x<c.weight){pick=c;break}x-=c.weight}won[pick.id]=(won[pick.id]||0)+pick.amount}return won}
+ const api={CHEST,rollChests,bosses,chapters,skills,unit,partyBoss,raw,skill,canSkill,attack,tick,start,step,TURN_MS,SKILL_MS,AOE_EVERY,PARTY_HP};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -8,3 +8,4 @@
 .vzd-player{position:relative}.vzd-shield{display:block;margin-top:4px;font-size:10px;color:#9fd3ff}.vzd-cd{display:block;margin-top:3px;font-size:10px;color:#d8c39d}
 .vzd-log p.vzd-log-skill{color:#9fd3ff}.vzd-log p.vzd-log-aoe{color:#ffb19e}.vzd-log p.vzd-log-floor{color:#8fd8a0;font-weight:700}.vzd-skill-text{display:block;text-align:center;font-size:11px;color:#c5b8a4;margin-top:2px}
 .vzd-boss{max-width:190px}
+.vzd-reward span b{display:block;color:#f0c97e;font-size:12px;margin-top:2px}
