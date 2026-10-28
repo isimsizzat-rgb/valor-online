@@ -1,7 +1,7 @@
 /* Warm stone surfaces. Artwork keeps its original colours in both themes. */
 .valor-theme-picker{margin:16px 0 22px}
 .valor-theme-picker>p:first-child{font-weight:700}
-.valor-theme-picker>[role=group]{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.valor-theme-picker>[role=group]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .valor-theme-picker button{min-height:48px}
 .valor-theme-picker button[aria-pressed=true]{outline:2px solid #d8b66b;outline-offset:2px}
 .valor-theme-picker button:focus-visible{outline:3px solid #3d80ad;outline-offset:3px}
