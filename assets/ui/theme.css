@@ -7,8 +7,8 @@
 .valor-theme-picker button:focus-visible{outline:3px solid #3d80ad;outline-offset:3px}
 html[data-valor-theme=light]{--bg:#e9e1d1;--panel:#f7f1e5;--panel2:#e6dcc7;--gold:#76501e;--text:#30291f;--muted:#665c4c;--border:#ad956e;--green:#28603c;background:#e9e1d1;color-scheme:light}
 html[data-valor-theme=light] body,
-html[data-valor-theme=light] body:not(.character-selection){background:linear-gradient(#f1e9d9e8,#e3dac9ed),url('../home-fantasy/castle.webp') center/cover fixed!important;color:var(--text)!important}
-html[data-valor-theme=light][data-valor-booting]::after{background:#e9e1d1!important}
+html[data-valor-theme=light] body:not(.character-selection){background:#d7e6e9 url('../home-fantasy/gothic-city-daylight.webp') center/cover fixed!important;color:var(--text)!important}
+html[data-valor-theme=light][data-valor-booting]::after{background:#d7e6e9 url('../home-fantasy/gothic-city-daylight.webp') center/cover no-repeat!important}
 html[data-valor-theme=light] body::before{background:none!important}
 html[data-valor-theme=light] body :is(.panel,.nav,.card,.vhub-card,.vwiki-topic,.vhub-event,.vp-stats,.vp-header,.vp-stat,.valor-item-dialog,.bag-popup-dialog,.ve-gem-dialog,.vm-market-purchase-dialog,.valor-rank-full-profile,.valor-diamond-package,.valor-news-row,.valor-news-empty,.vm-market-card,.vm-limited-product,.log,.notice){background:linear-gradient(145deg,#faf6ed,#e9dfcc)!important;color:#30291f!important;border-color:#b39a71!important;box-shadow:0 4px 14px #56432418!important}
 html[data-valor-theme=light] body :is(h1,h2,h3,.logo,.home-heading,.vp-header strong,.vp-stat b,.vp-stat span,.vhub-heading span,.valor-player-nick,.valor-gold,.valor-diamonds,.valor-level-block small,.bottom-label){color:#68451b!important;text-shadow:none!important}
@@ -31,3 +31,52 @@ html[data-valor-theme=light] body .bad{color:#a22c25!important}
 html[data-valor-theme=light] body .valor-news-player{color:#72501e!important}
 html[data-valor-theme=light] body .valor-news-item{color:#805b20!important}
 html[data-valor-theme=light] body .is-epic .valor-news-item{color:#79449b!important}
+
+/* Match the existing page selectors so their dark !important panels cannot win. */
+html[data-valor-theme=light] body:not(.character-selection):not(.valor-account-screen):not(.valor-home) #main.panel{
+ background:rgba(250,246,237,.97)!important;color:#30291f!important;
+ border-color:#ad956e!important;box-shadow:0 8px 26px #41341e26!important;
+}
+html[data-valor-theme=light] body.valor-home:not(.character-selection):not(.valor-account-screen) #main.panel{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+}
+
+/* Text belongs to the pale content surfaces; art and its captions retain their contrast. */
+html[data-valor-theme=light] body :is(.vhub-page,.vp-wrap,.valor-diamond-purchase-page){color:#30291f!important}
+html[data-valor-theme=light] body :is(.vhub-page,.vwiki-topic,.vp-stats,.vp-header,.valor-item-dialog,.ve-gem-dialog,.vm-market-purchase-dialog,.valor-diamond-package) :is(p,span,b,strong,small,label,li,td,th,summary){color:#423626!important;text-shadow:none!important}
+html[data-valor-theme=light] body :is(.vhub-toggle small,.vhub-account>span,.vhub-event small,.vwiki-topic summary small,.vwiki-search label,.valor-diamond-package-tag){color:#66553e!important}
+html[data-valor-theme=light] body :is(.vhub-status[data-open=true],.valor-cloud-status[data-state=ok]){color:#28603c!important}
+html[data-valor-theme=light] body .vwiki-search{background:#eee3ce!important;border-color:#ad956e!important}
+
+/* Workshop has its own highly specific dark rules, including nested item names. */
+html[data-valor-theme=light] body #main .vw-shell.valor-forge,
+html[data-valor-theme=light] body #main .vw-shell.valor-forge>.vw-panel{
+ background:#f5eddf!important;color:#30291f!important;box-shadow:none!important;border-color:#ad956e!important;
+}
+html[data-valor-theme=light] body #main .vw-shell.valor-forge .forge-nav{background:#e8dac1!important;border-color:#b29a72!important}
+html[data-valor-theme=light] body #main .vw-shell.valor-forge .vw-panel .vw-item-list>.vw-item,
+html[data-valor-theme=light] body #main .vw-shell.valor-forge .vw-action{background:#eee1ca!important;color:#30291f!important;border-color:#ad956e!important;box-shadow:none!important}
+html[data-valor-theme=light] body #main .vw-shell.valor-forge .vw-panel .vw-item-list>.vw-item.active{background:#dfc89f!important;border-color:#795326!important}
+html[data-valor-theme=light] body #main .vw-shell.valor-forge :is(h2,h3,p,b,span,small,.forge-item-name,.vw-muted,.va-refine-help,.forge-empty,.vw-gc-info){color:#423626!important;text-shadow:none!important}
+html[data-valor-theme=light] body #main .vw-shell.valor-forge .forge-equipped{background:#d3e1ce!important;color:#234c30!important;border-color:#7d9975!important}
+
+/* Chat bubbles and their nested names, timestamps and messages form one readable surface. */
+html[data-valor-theme=light] body :is(.vch-list,.vch-msg,.vch-msg.mine){background:#f0e5d2!important;color:#30291f!important;border-color:#b7a07c!important}
+html[data-valor-theme=light] body .vch-msg.mine{background:#e0d0ad!important}
+html[data-valor-theme=light] body :is(.vch-page,.valor-news-panel) :is(p,span,b,strong,small,time,.vch-rules,.vch-count,.vch-channel,.vch-empty){color:#423626!important;text-shadow:none!important}
+html[data-valor-theme=light] body .vch-error{background:#f8e2dc!important;color:#842c27!important}
+
+html[data-valor-theme=light] body :is(.vm-market-card,.vm-limited-product,.vm-market-dragon,.vm-market-limit,.vm-spirit-stat,.valor-diamond-package) :is(p,span,b,strong,small){color:#503b1f!important;text-shadow:none!important}
+html[data-valor-theme=light] body :is(.vm-market-dragon,.ve-owned-gem){background:#eee1ca!important;color:#30291f!important;border-color:#ad956e!important}
+html[data-valor-theme=light] body :is(.vm-market-total,.vm-market-qty strong,.vm-limited-price,.vm-market-purchase-kicker){color:#503b1f!important}
+html[data-valor-theme=light] body :is(.vp-stat b,.vp-stat span,.detail-stats,.detail-stats div,.detail-stats span,.detail-stats b){color:#423626!important;text-shadow:none!important}
+html[data-valor-theme=light] body :is(.valor-item-dialog,.ve-gem-dialog) :is(.good,.stat-bonus){color:#28603c!important}
+html[data-valor-theme=light] body :is(.valor-item-dialog,.ve-gem-dialog) .bad{color:#a22c25!important}
+
+/* Keep on-art labels light: these surfaces intentionally stay illustrated and dark. */
+html[data-valor-theme=light] body .vp-scene .valor-profile-tag,
+html[data-valor-theme=light] body .vp-scene .vp-plus-badge{color:#fff0c8!important;text-shadow:0 1px 3px #000!important}
+html[data-valor-theme=light] body .valor-news-panel .is-epic .valor-news-item{color:#79449b!important}
+@media(prefers-reduced-transparency:reduce){
+ html[data-valor-theme=light] body:not(.character-selection):not(.valor-account-screen):not(.valor-home) #main.panel{background:#faf6ed!important}
+}
