@@ -16,7 +16,7 @@ create table if not exists public.valor_dungeon_runs (
 );
 -- One-tap floors: summary of the last fight (floor, boss, won, rounds, dealt, taken).
 alter table public.valor_dungeon_runs add column if not exists last jsonb;
--- Turn-based rooms: when the current turn started (7-second auto attack) and the archer's damage boost.
+-- Turn-based rooms: when the current turn started (7-second auto attack) and how many rounds the archer's damage boost has left.
 alter table public.valor_dungeon_runs add column if not exists turn_at timestamptz;
 alter table public.valor_dungeon_runs add column if not exists boost integer not null default 0;
 create table if not exists public.valor_dungeon_members (
@@ -120,6 +120,8 @@ begin
    r.log:=vzd_logged(r.log,h||jsonb_build_object('kind','hit','name',r.boss->>'name','target',r.members->t->>'name','absorbed',w->'absorbed'));
   end loop;
  end if;
+ -- The archer's boost lasts 3 rounds (counted down at the end of each round).
+ if r.boost>0 then r.boost:=r.boost-1; end if;
  r.round:=r.round+1;r.turn:=vzd_first_alive(r.members);
  if r.turn>=n then r.status:='lost'; end if;
  return r;
@@ -239,7 +241,7 @@ begin
      r.members:=jsonb_set(r.members,array[i::text,'shield'],to_jsonb(greatest(coalesce((r.members->i->>'shield')::numeric,0),round((r.members->i->>'maxHp')::numeric*.25))));
     end if;
    end if; end loop;
-   if p->>'cls'='Okçu' then r.boost:=1; end if;
+   if p->>'cls'='Okçu' then r.boost:=3; end if;
    r.members:=jsonb_set(r.members,array[r.turn::text,'cdUntil'],to_jsonb(vzd_now_ms()+60000));
    r.members:=jsonb_set(r.members,array[r.turn::text,'skillUsedTurn'],'true');
    r.log:=vzd_logged(r.log,jsonb_build_object('kind','skill','name',p->>'name','skill',case p->>'cls' when 'Büyücü' then 'Şifa Dalgası' when 'Okçu' then 'Av Ruhu' else 'Kalkan Duvarı' end));

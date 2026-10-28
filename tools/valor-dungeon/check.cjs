@@ -27,7 +27,7 @@ const C=require('../../assets/valor-dungeon/core.js');
  await db.query(`update valor_dungeon_runs set members=(select jsonb_agg(value||'{"attack":50}'::jsonb) from jsonb_array_elements(members)) where id=$1`,[rid]);r=await call(0,'state');
  r=await call(0,'attack',null,r.room.version);assert.equal(r.room.turn,1);r=await call(1,'attack',null,r.room.version);assert.equal(r.room.turn,2);
  await db.query(`update valor_dungeon_runs set members=jsonb_set(members,'{2,cls}','"Okçu"') where id=$1`,[rid]);r=await call(2,'state');
- r=await call(2,'skill',null,r.room.version);assert.equal(r.room.boost,1);r=await call(2,'attack',null,r.room.version);assert.equal(r.room.turn,0);assert.equal(r.room.round,2);
+ r=await call(2,'skill',null,r.room.version);assert.equal(r.room.boost,3);r=await call(2,'attack',null,r.room.version);assert.equal(r.room.turn,0);assert.equal(r.room.round,2);
  // Tick only acts after 7 idle seconds; then the idle player attacks automatically.
  assert.equal((await call(1,'tick')).status,'wait');await db.query(`update valor_dungeon_runs set turn_at=now()-interval '8 seconds' where id=$1`,[rid]);
  r=await call(1,'tick');assert.equal(r.status,'ok');assert.equal(r.room.turn,1);assert.equal(r.room.log.at(-1).auto,true);

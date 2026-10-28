@@ -40,11 +40,11 @@
  ];
  const bosses=names.map((name,i)=>{const floor=i+1,magic=magical.has(floor),s=BOSS_STATS[i];return {floor,name,chapter:chapters[Math.floor(i/5)],cls:magic?'Büyücü':'Savaşçı',stats:{Saldırı:magic?10:s.atk,Sihir:magic?s.atk:10,Savunma:s.def,'Sihir Savunma':s.def,Can:s.can,Kritik:s.crit,Bloke:s.block}}});
 
- const TURN_MS=7000,SKILL_MS=60000,SKILL_SHARE=.25,AOE_EVERY=3,AOE_SHARE=1.5,PARTY_HP=[1,1,2,3];
+ const BOOST_ROUNDS=3,TURN_MS=7000,SKILL_MS=60000,SKILL_SHARE=.25,AOE_EVERY=3,AOE_SHARE=1.5,PARTY_HP=[1,1,2,3];
  const skills={
   'Savaşçı':{id:'shield',name:'Kalkan Duvarı',icon:'🛡',text:'Takıma canının %25\'i kadar kalkan'},
   'Büyücü':{id:'heal',name:'Şifa Dalgası',icon:'✚',text:'Takıma canının %25\'i kadar can'},
-  'Okçu':{id:'boost',name:'Av Ruhu',icon:'➶',text:'Takım hasarı bu kat boyunca %25 artar'}
+  'Okçu':{id:'boost',name:'Av Ruhu',icon:'➶',text:'Takım hasarı 3 raunt boyunca %25 artar'}
  };
  function unit(p){const stats={...p.stats},attack=10+Math.max(0,Number(stats[p.cls==='Büyücü'?'Sihir':'Saldırı'])||0),maxHp=Math.max(1,Math.round(100+(Number(stats.Can)||0)*10));return {...p,stats,attack,maxHp,hp:maxHp,shield:0,cdUntil:0}}
  const chance=n=>Math.min(.75,Math.max(0,Number(n)||0)/(Math.max(0,Number(n)||0)+1000));
@@ -59,7 +59,7 @@
  function skill(room,now){const p=room.members[room.turn];if(!p||p.hp<=0||room.status!=='battle'||p.skillUsedTurn||now<(p.cdUntil||0))return false;const s=skills[p.cls]||skills['Savaşçı'];
   if(s.id==='shield')for(const m of alive(room))m.shield=Math.max(m.shield||0,Math.round(m.maxHp*SKILL_SHARE));
   else if(s.id==='heal')for(const m of alive(room))m.hp=Math.min(m.maxHp,m.hp+Math.round(m.maxHp*SKILL_SHARE));
-  else room.boost=1;
+  else room.boost=BOOST_ROUNDS;
   p.cdUntil=now+SKILL_MS;p.skillUsedTurn=true;log(room,{kind:'skill',name:p.name,skill:s.name});room.version++;return true}
  function attack(room,now,rng=Math.random,auto=false){if(room.status!=='battle')return false;const p=room.members[room.turn];if(!p||p.hp<=0)return false;
   const h=raw(p,room.boss,room.boost>0?1+SKILL_SHARE:1,rng);room.boss.hp=Math.max(0,room.boss.hp-h.damage);room.dealt=(room.dealt||0)+h.damage;log(room,{kind:'hit',name:p.name,target:room.boss.name,auto,...h});p.skillUsedTurn=false;
@@ -70,6 +70,7 @@
  function bossTurn(room,rng){const b=room.boss,targets=alive(room);if(!targets.length){room.status='lost';return}
   if(room.round%AOE_EVERY===0){for(const t of targets){const h=raw(b,t,AOE_SHARE,rng),abs=wound(t,h.damage);room.taken=(room.taken||0)+h.damage-abs}log(room,{kind:'aoe',name:b.name})}
   else for(let k=0;k<targets.length;k++){const live=alive(room);if(!live.length)break;const t=live[Math.floor(rng()*live.length)],h=raw(b,t,1,rng),abs=wound(t,h.damage);room.taken=(room.taken||0)+h.damage-abs;log(room,{kind:'hit',name:b.name,target:t.name,...h,absorbed:abs})}
+  if(room.boost>0)room.boost--;
   room.round++;room.turn=firstAlive(room);if(room.turn>=room.members.length)room.status='lost'}
  function partyBoss(room,floor){const b=unit(bosses[floor-1]),k=PARTY_HP[room.members.length]||1;b.maxHp=b.hp=Math.round(b.maxHp*k);return b}
  function clearFloor(room,now){room.cleared=room.floor;room.last={floor:room.floor,name:room.boss.name,won:true,rounds:room.round};
@@ -86,5 +87,5 @@
     Values: Sv.1 Şans Taşı ~10, 25 Elmas 25, Pet Yemi 25 (market), Epik Taşı ~40, Enerji Şişesi 50, Sefer Kağıdı 99 (market). */
  const CHEST=[{id:'luck',name:'Sv.1 Şans Taşı',amount:1,weight:42},{id:'diamonds',name:'Elmas',amount:25,weight:17},{id:'petFood',name:'Pet Yemi',amount:1,weight:17},{id:'epic',name:'Epik Taşı',amount:1,weight:11},{id:'energyBottle',name:'Enerji Şişesi',amount:1,weight:9},{id:'expeditionPaper',name:'Sefer Kağıdı',amount:1,weight:4}];
  function rollChests(n,rng=Math.random){const won={};for(let k=0;k<n;k++){let x=rng()*100,pick=CHEST[CHEST.length-1];for(const c of CHEST){if(x<c.weight){pick=c;break}x-=c.weight}won[pick.id]=(won[pick.id]||0)+pick.amount}return won}
- const api={CHEST,rollChests,bosses,chapters,skills,unit,partyBoss,raw,skill,canSkill,attack,tick,start,step,TURN_MS,SKILL_MS,AOE_EVERY,PARTY_HP};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
+ const api={BOOST_ROUNDS,CHEST,rollChests,bosses,chapters,skills,unit,partyBoss,raw,skill,canSkill,attack,tick,start,step,TURN_MS,SKILL_MS,AOE_EVERY,PARTY_HP};root.ValorDungeonCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
