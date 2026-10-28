@@ -45,14 +45,13 @@
   if(r.phase==='chest'||r.phase==='won'){r.i++;r.phase='story';r.duel=null;r.last=null;save();paint(true);return}
   if(r.phase==='lost'||r.phase==='done'){finish();}
  }
- /* 1-3 Kalp per chest, rolled and stored by the server (signed-in players only; 30 chests a day). */
+ /* 1-3 Kalp per chest, rolled and stored by the server (signed-in players only). */
  function heartsOnline(){return typeof valorHeartsOnline==='function'&&valorHeartsOnline()}
  async function claimHearts(r){const last=r.last;if(!last?.heartsPending||!last.heartReq)return;
   let res=null;try{res=await valorCloudFetch('/rest/v1/rpc/heart_adventure_chest',{method:'POST',body:JSON.stringify({request_id:last.heartReq})})}catch(e){res=null}
   if(run()!==r||r.last!==last)return;
   last.heartsPending=false;
   if(res&&Number(res.hearts)>0){last.hearts=Number(res.hearts);r.earned.hearts=(r.earned.hearts||0)+last.hearts}
-  if(res&&res.limit)last.heartLimit=true;
   if(res&&Number.isFinite(Number(res.balance))&&typeof valorHearts!=='undefined'){valorHearts.balance=Number(res.balance);valorHearts.at=Date.now();if(typeof valorHeartMirror==='function')valorHeartMirror(valorHearts.balance)}
   save();paint(true)}
  function collect(r){const v=D.view(r.duel);if(Array.isArray(v.events))ui.all=ui.all.concat(v.events)}
@@ -91,7 +90,7 @@
    +'<p class="vex-story">'+esc(s.story)+'</p>'
    +'<button type="button" class="vex-go" onclick="valorExpedition.next()">'+(s.kind==='chest'?'🎁 Sandığı aç':s.boss?'👑 Bossa saldır':'⚔ Savaş')+'</button>'}
  function chestView(r){const opening=Date.now()-(ui.chestAt||0)<1600;
-  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+(opening?'🎁':'✨')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeText(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>❤ Kalpler geliyor…</small>':r.last?.heartLimit?'<small>Bugünkü sandık kalbi sınırına ulaştın (30 sandık)</small>':''))+'</div>'
+  return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+(opening?'🎁':'✨')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeText(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>❤ Kalpler geliyor…</small>':''))+'</div>'
    +(opening?'':'<button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>')}
  function resultView(r){const s=r.steps[r.i];
   if(r.phase==='won')return '<div class="vex-result win"><span>🏆</span><b>'+esc(s.foe)+' yenildi!</b><strong>'+prizeText(r.last||{})+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>';
