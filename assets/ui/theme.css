@@ -80,3 +80,25 @@ html[data-valor-theme=light] body .valor-news-panel .is-epic .valor-news-item{co
 @media(prefers-reduced-transparency:reduce){
  html[data-valor-theme=light] body:not(.character-selection):not(.valor-account-screen):not(.valor-home) #main.panel{background:#faf6ed!important}
 }
+
+
+/* Reward cards have their own nested colours; pale buttons need explicit readable text. */
+html[data-valor-theme=light] body .vr-card .vr-card-text b{color:#483317!important;text-shadow:none!important}
+html[data-valor-theme=light] body .vr-card .vr-card-text small{color:#59462e!important;text-shadow:none!important}
+html[data-valor-theme=light] body .vr-card.vr-ready .vr-card-text small{color:#245231!important}
+html[data-valor-theme=light] body .vr-card .vr-cal b{color:#f3d294!important;text-shadow:none!important}
+html[data-valor-theme=light] body .vr-card .vr-cal small{color:#e5cda5!important;text-shadow:none!important}
+/* Match the strip with its calendar and chest dialogs, including claimed days. */
+html[data-valor-theme=light] body .vr-dialog{background:linear-gradient(#faf6ed,#e9dfcc)!important;color:#30291f!important;border-color:#ad956e!important}
+html[data-valor-theme=light] body .vr-dialog :is(h2,.vr-eyebrow,.vr-day b,.vr-item small){color:#483317!important;text-shadow:none!important}
+html[data-valor-theme=light] body .vr-dialog .vr-lead{color:#66553e!important}
+html[data-valor-theme=light] body .vr-dialog .vr-day{background:#efe4ce!important;border-color:#ad956e!important}
+html[data-valor-theme=light] body .vr-dialog .vr-day.vr-today{background:#e2d0a9!important;border-color:#795326!important}
+html[data-valor-theme=light] body .vr-dialog .vr-done{opacity:1;background:#e7e2d7!important}
+html[data-valor-theme=light] body .vr-dialog .vr-check{color:#28603c!important;text-shadow:0 1px 2px #faf6ed!important}
+html[data-valor-theme=light] body .vr-dialog .vr-claim:disabled{opacity:1;background:#e7e2d7!important;color:#66553e!important;border-color:#ad956e!important}
+
+html[data-valor-theme=light] body .vr-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-valor-theme=light] body .vr-card{min-width:0}
+html[data-valor-theme=light] body .vr-card .vr-card-text{flex:1}
+html[data-valor-theme=light] body .vr-card .vr-card-text b{white-space:normal;line-height:1.25}
