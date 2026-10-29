@@ -29,7 +29,7 @@
   const energyLabel=energy.querySelector('#valor-hud-energy-current')?.parentElement;if(energyLabel)for(const node of energyLabel.childNodes)if(node.nodeType===3)node.textContent=node.textContent.replace('Enerji:','');
   const resources=document.createElement('div');resources.className='vc-resources';resources.append(gold,diamonds,energy);h.append(resources);
  }
- function headerValues(){if(!modern()||!state.class)return;const cls=document.getElementById('vc-header-class'),power=document.getElementById('vc-header-power');if(cls)cls.textContent=state.class+' · Seviye '+state.level;if(power)power.textContent=money(combatPower());const diamond=document.getElementById('diamonds');if(diamond){diamond.textContent=short(state.diamonds);diamond.title=money(state.diamonds)+' Elmas'}}
+ function headerValues(){if(!modern()||!state.class)return;const hud=document.querySelector('.top.valor-resource-bar[data-crimson-header]');if(hud&&typeof valorCreationPortrait==='function'){const source=valorCreationPortrait(state.class,state.gender);hud.style.setProperty('--vc-header-art','url("'+source+'")')}const cls=document.getElementById('vc-header-class'),power=document.getElementById('vc-header-power');if(cls)cls.textContent=state.class+' · Seviye '+state.level;if(power)power.textContent=money(combatPower());const diamond=document.getElementById('diamonds');if(diamond){diamond.textContent=short(state.diamonds);diamond.title=money(state.diamonds)+' Elmas'}}
  function activeTab(){if(['Anasayfa','Çanta','Profil','Sohbet'].includes(page))return page;return 'Harita'}
  nav=function(){
   if(!modern())return legacy.nav.apply(this,arguments);
