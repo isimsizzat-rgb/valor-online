@@ -301,16 +301,26 @@ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-
 /* Crop the upper third of the full character art to a quiet shoulder portrait. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{
  display:block!important;position:absolute!important;z-index:0;top:0;right:0;
- width:100%;height:calc(100% - 44px);overflow:hidden;pointer-events:none;opacity:1;
+ width:54%;height:126px;overflow:hidden;pointer-events:none;opacity:1;
  /* The lower-right triangle is artwork; dissolve toward the diagonal
     running from the lower-left corner to the upper-right corner. */
- -webkit-mask-image:linear-gradient(to bottom right,transparent 48%,#000 64%,#000 100%);
- mask-image:linear-gradient(to bottom right,transparent 48%,#000 64%,#000 100%);
+ -webkit-mask-image:linear-gradient(to bottom right,transparent 0%,#000 38%,#000 100%);
+ mask-image:linear-gradient(to bottom right,transparent 0%,#000 38%,#000 100%);
 }
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{
  display:block!important;position:absolute!important;top:0!important;left:0!important;
  width:100%!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important;
- border:0!important;border-radius:0!important;object-fit:cover!important;object-position:center 25%!important;
+ border:0!important;border-radius:0!important;object-fit:contain!important;object-position:right center!important;
  opacity:1!important;filter:none!important;transform:none!important;
- -webkit-mask-image:none!important;mask-image:none!important;
+ -webkit-mask-image:linear-gradient(to right,transparent,#000 30%)!important;
+ mask-image:linear-gradient(to right,transparent,#000 30%)!important;
+}
+
+/* Size the shoulder portrait to the identity row, above the XP information.
+   Keep the face away from the diagonal blend on the left of the artwork. */
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .valor-level-block{
+ background:var(--vc-card)!important;padding-top:8px!important;
+}
+@media(max-width:700px){
+ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{height:116px}
 }
