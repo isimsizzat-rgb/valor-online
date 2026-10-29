@@ -19,7 +19,7 @@
  if(!valorMounts.some(m=>m.id===king.id))valorMounts.push(king);
  const oldMountArt=vmMountImage;
  vmMountImage=function(m){return oldMountArt(m.id===king.id?{...m,id:'yildonumu50'}:m)};
- const fashionBag={id:'wheelFashionBag',name:'Fashion Çantası',description:'İçinden dört kanat türünden rastgele bir Sv.1 kanat çıkar.',icon:'<img src="assets/wheel/mosaic-bag.webp" alt="">' };
+ const fashionBag={id:'wheelFashionBag',name:'Fashion Çantası',description:'İçinden dört kanat türünden rastgele bir Sv.1 kanat çıkar.',icon:'<img src="assets/items/reward-bags/fashion.webp" alt="">' };
  const oldProduct=marketProduct;
  marketProduct=function(id){return id===fashionBag.id?fashionBag:oldProduct.apply(this,arguments)};
  const oldUse=useInventoryStack;
@@ -54,16 +54,16 @@
  function pick(ticket){let cumulative=0;for(let i=0;i<prizes.length;i++){cumulative+=prizes[i].weight;if(ticket<cumulative)return i}return prizes.length-1}
  function art(id){
   switch(id){
-   case 'mosaic':return '<img src="assets/wheel/mosaic-bag.webp" alt="">';
+   case 'mosaic':return '<img src="assets/items/reward-bags/mosaic.webp" alt="">';
    case 'gold':return '<img src="'+valorFarmGoldArt[2]+'" alt="">';
    case 'crystal':return '<img src="'+valorFarmGrowthArt[2]+'" alt="">';
    case 'mountStone':return mountStoneGraphic();
    case 'king':return vmDrawing(king);
-   case 'luck':return '<img src="assets/wheel/luck-bag.webp" alt="">';
+   case 'luck':return '<img src="assets/items/reward-bags/luck.webp" alt="">';
    case 'epic':return epicStoneGraphic();
    case 'wing':return '<img src="'+valorWingArt(valorWings[0])+'" alt="">';
    case 'energy':return marketProduct('energyBottle').icon;
-   case 'food':return '<img src="assets/pets/pet-food-bag.webp" alt="">';
+   case 'food':return '<img src="assets/items/reward-bags/food.webp" alt="">';
    case 'health':return vgArt('Can',10);
    case 'fashion':return fashionBag.icon;
   }

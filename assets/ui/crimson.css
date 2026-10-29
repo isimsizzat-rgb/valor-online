@@ -155,3 +155,25 @@ html[data-valor-layout=crimson] body #main .vc-war-tile.vc-war-dungeon{backgroun
 html[data-valor-layout=crimson] body #main .vc-war-tile.vc-war-arena{background-position:right center!important}
 html[data-valor-layout=crimson][data-valor-theme] body .vc-masthead button[aria-label]{background:transparent!important;border:0!important;box-shadow:none!important}
 html[data-valor-layout=crimson] body.valor-chat-page header.top.valor-resource-bar[data-crimson-header]{display:none!important}
+
+/* Transparent illustrated game icons, one asset per destination. */
+html[data-valor-layout=crimson] img.vc-icon-art{display:block;flex:0 0 auto;width:28px;height:28px;max-width:none;object-fit:contain;object-position:center;background:transparent!important;border:0!important;border-radius:0;box-shadow:none!important;padding:0;filter:drop-shadow(0 1px 1px #2f1c1820)}
+html[data-valor-layout=crimson] .vc-shortcut img.vc-icon-art,
+html[data-valor-layout=crimson] .vc-menu-tile img.vc-icon-art{width:48px;height:48px}
+html[data-valor-layout=crimson] body #main .vc-shortcut.mmorpg-home-tile{min-height:96px!important;gap:7px!important}
+html[data-valor-layout=crimson] body #main .vc-menu-tile.valor-map-choice{min-height:104px!important}
+html[data-valor-layout=crimson] body .bottom-nav#bottomNav .vc-bottom-item img.vc-icon-art{width:34px;height:34px;transition:transform .15s ease}
+html[data-valor-layout=crimson] body .bottom-nav#bottomNav .vc-home-seal img.vc-icon-art{width:36px;height:36px}
+html[data-valor-layout=crimson] body .bottom-nav#bottomNav .vc-bottom-item.active img.vc-icon-art{filter:drop-shadow(0 1px 2px #7c352b50)}
+html[data-valor-layout=crimson] .vc-war-tile .vc-icon-art{width:29px;height:29px;filter:drop-shadow(0 1px 3px #0009)}
+html[data-valor-layout=crimson] .vc-boss-mark img.vc-icon-art{width:37px;height:37px}
+html[data-valor-layout=crimson] .vc-power img.vc-icon-art{width:20px;height:20px}
+html[data-valor-layout=crimson] .vc-daily img.vc-icon-art{width:35px;height:35px}
+html[data-valor-layout=crimson] body #main .vc-utilities button.mmorpg-home-tile{display:flex!important;flex-direction:column;align-items:center;gap:4px;padding:5px 7px!important}
+html[data-valor-layout=crimson] .vc-utilities img.vc-icon-art{width:30px;height:30px}
+@media(max-width:600px){
+ html[data-valor-layout=crimson] .vc-shortcut img.vc-icon-art,
+ html[data-valor-layout=crimson] .vc-menu-tile img.vc-icon-art{width:43px;height:43px}
+ html[data-valor-layout=crimson] body #main .vc-shortcut.mmorpg-home-tile{min-height:90px!important}
+}
+@media(prefers-reduced-motion:reduce){html[data-valor-layout=crimson] img.vc-icon-art{transition:none!important}}

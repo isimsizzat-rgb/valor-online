@@ -380,8 +380,8 @@ function buyMarketMount(id){const m=valorMounts.find(x=>x.id===id&&x.price);if(!
 const MAX_ADVENTURE_ENERGY=100;
 let marketPurchaseId=null,marketPurchaseQty=1;
 function anniversaryBoxGraphic(){return '<img class="valor-anniversary-box-art" src="assets/items/anniversary-box-v2.webp" alt="Yıldönümü Kutusu" style="width:100%;height:100%;object-fit:contain">'}
-function mosaicStoneBagGraphic(){return '<img class="valor-small-bag-art mosaic-bag-art" src="assets/img/af1b09a43ef73453.jpg" alt="Mozaik Taş Çantası">'}
-function luckStoneBagGraphic(){return '<img class="valor-small-bag-art luck-bag-art" src="assets/img/4cb6feb44211c390.jpg" alt="Şans Taşı Çantası">'}
+function mosaicStoneBagGraphic(){return '<img class="valor-small-bag-art mosaic-bag-art" src="assets/items/reward-bags/mosaic.webp" alt="Mozaik Taş Çantası">'}
+function luckStoneBagGraphic(){return '<img class="valor-small-bag-art luck-bag-art" src="assets/items/reward-bags/luck.webp" alt="Şans Taşı Çantası">'}
 function luckStoneGraphic(level){const lv=Math.max(1,Math.min(8,Number(level)||1));return '<img class="valor-luck-stone-art" src="assets/img/luck-stone-'+lv+'.jpg" alt="Şans Taşı Sv.'+lv+'">'}
 
 const marketProducts=[
@@ -1641,4 +1641,4 @@ profile=function(){const stats=valorArenaStats(),hp=valorArenaUnit(stats,state.c
 
 <link rel="stylesheet" href="assets/valor-dungeon/valor-dungeon.css?v=11"><script src="assets/valor-dungeon/core.js?v=5"></script><script src="assets/valor-dungeon/valor-dungeon.js?v=13"></script>
 
-<link rel="stylesheet" href="assets/ui/crimson.css?v=1"><script src="assets/ui/crimson.js?v=1"></script>
+<link rel="stylesheet" href="assets/ui/crimson.css?v=2-icons"><script src="assets/ui/crimson.js?v=2-icons"></script>
