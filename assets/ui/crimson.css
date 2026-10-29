@@ -187,3 +187,85 @@ html[data-valor-layout=crimson] body #main.panel :is(.vc-home,.vc-menu-grid,.vc-
 html[data-valor-layout=crimson] body #main.panel :is(.vc-home,.vc-menu-grid,.vc-page-heading,.vc-menu-filters) *{
  text-shadow:none!important;
 }
+
+/* Account entry uses the same crimson accents and light parchment as the hub. */
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal){
+ --vc-card:#fffaf2;--vc-line:#d8c9b6;--vc-ink:#342c23;--vc-muted:#766653;--vc-red:#88342b;
+ background:radial-gradient(ellipse at 50% 0,#fffaf5,#eee7dc 75%)!important;
+ color:var(--vc-ink)!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal)::before{display:none!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal{
+ width:100%;max-width:460px;background:var(--vc-card)!important;border:1px solid var(--vc-line);
+ border-radius:12px;box-shadow:0 12px 40px #5c322416;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal,
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal *{text-shadow:none!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-mythic-cover{
+ background:#4c211e;border-bottom:3px solid var(--vc-red);
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-mythic-cover img{
+ mask-image:none;-webkit-mask-image:none;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-mythic-cover::after{
+ background:linear-gradient(180deg,transparent 65%,#4c211e38);
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-panel{
+ padding:24px;background:var(--vc-card)!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-tabs{
+ margin:0 0 22px;padding:4px;gap:5px;background:#efe6da;border:1px solid var(--vc-line);border-radius:8px;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-tabs button{
+ min-height:46px;background:transparent!important;border:1px solid transparent!important;
+ border-radius:5px;color:var(--vc-muted)!important;box-shadow:none!important;font:600 14px system-ui,sans-serif;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-tabs button.is-active{
+ background:var(--vc-red)!important;color:#fffaf4!important;border-color:var(--vc-red)!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-form>label{
+ color:var(--vc-ink)!important;font-size:13px;font-weight:600;line-height:1.5;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-form input:not([type=checkbox]){
+ min-height:50px;background:#fff!important;color:var(--vc-ink)!important;
+ border:1px solid #c7b6a0!important;border-radius:6px;box-shadow:none!important;font:16px/1.4 system-ui,sans-serif;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-form input::placeholder{color:#827567;opacity:1;font-size:14px}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-form input{accent-color:var(--vc-red);color-scheme:light}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal :is(button,input,summary):focus-visible{
+ outline:2px solid var(--vc-red)!important;outline-offset:3px;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-primary{
+ min-height:50px;background:var(--vc-red)!important;color:#fffaf4!important;
+ border:1px solid var(--vc-red)!important;border-radius:6px;box-shadow:none!important;font:600 15px system-ui,sans-serif;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-text-button,
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-legacy button{
+ background:transparent!important;color:var(--vc-red)!important;border:0!important;box-shadow:none!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-saved-picker,
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-legacy{
+ background:#f2eade!important;border:1px solid var(--vc-line);border-radius:6px;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-saved-picker summary{color:var(--vc-ink);font-size:13px}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-account{
+ background:#fffaf4!important;border:1px solid var(--vc-line)!important;color:var(--vc-ink)!important;box-shadow:none!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-account.is-selected{
+ border-color:var(--vc-red)!important;background:#f3e2da!important;
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal :is(.vauth-account b,.vauth-legacy b){color:var(--vc-ink)!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-portal :is(.vauth-account small,.vauth-legacy small,.vauth-check small,.vauth-storage-note,.vauth-saved-picker summary>span){color:var(--vc-muted)!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-error{color:#a12521!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-storage-note{border-top-color:var(--vc-line);font-size:11px!important}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-story{
+ padding:20px 24px 26px;background:#f3ebdf;border-top:1px solid var(--vc-line);
+}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-story>span{color:var(--vc-red)}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-story h2{color:var(--vc-red)!important;font-size:21px}
+html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-story p{color:var(--vc-muted);font-size:12px;line-height:1.8}
+@media(max-width:600px){
+ html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .shell{padding:14px!important}
+ html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-panel{padding:20px}
+ html[data-valor-layout=crimson] body.valor-account-screen:has(.vauth-portal) .vauth-story{padding:18px 20px 22px}
+}
