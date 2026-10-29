@@ -3,7 +3,7 @@
   const KEY = 'valor-color-theme-v1';
   const root = document.documentElement;
   const choices = ['light', 'dark', 'auto'];
-  let selected = 'auto';
+  let selected = 'light';
   function apply() {
     const hour = new Date().getHours();
     const theme = selected === 'auto' ? (hour >= 7 && hour < 19 ? 'light' : 'dark') : selected;

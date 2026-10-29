@@ -20,7 +20,7 @@ function valorGuideFinish(){state.guide={done:true,finished:true};state.diamonds
 function valorGuideSkip(){state.guide={done:true,skipped:true};save();valorGuideRemove();render()}
 function valorGuideRemove(){document.getElementById('vg-card')?.remove();document.querySelectorAll('.vg-focus').forEach(e=>e.classList.remove('vg-focus'));document.body.classList.remove('vg-on')}
 /* Where the player should tap next to reach the step's page. */
-function valorGuideTarget(st){if(!st.page||page===st.page)return null;if(st.via==='Harita'){if(page==='Harita')return document.querySelector('.valor-map-choice[aria-label="'+st.label+'"]');return document.querySelector('#bottomNav [aria-label="Harita"]')}if(st.via==='Anasayfa'){if(page==='Anasayfa')return document.querySelector('.mmorpg-home-tile[aria-label="'+st.page+'"]');return document.querySelector('#bottomNav [aria-label="Anasayfa"]')}return document.querySelector('#bottomNav [aria-label="'+st.page+'"]')}
+function valorGuideTarget(st){if(!st.page||page===st.page)return null;if(st.via==='Harita'){if(page==='Harita')return document.querySelector('.valor-map-choice[aria-label="'+st.label+'"]');return document.querySelector('#bottomNav [aria-label="Harita"], #bottomNav [data-valor-menu]')}if(st.via==='Anasayfa'){if(page==='Anasayfa')return document.querySelector('.mmorpg-home-tile[aria-label="'+st.page+'"]');return document.querySelector('#bottomNav [aria-label="Anasayfa"]')}return document.querySelector('#bottomNav [aria-label="'+st.page+'"]')}
 function valorGuideGo(){const st=valorGuideStep();if(st.page)go(st.page)}
 function valorGuideDraw(){
  document.querySelectorAll('.vg-focus').forEach(e=>e.classList.remove('vg-focus'));
@@ -31,7 +31,7 @@ function valorGuideDraw(){
  const progress=i>0?'<div class="vg-progress"><i style="width:'+(i/total*100)+'%"></i></div>':'';
  card.innerHTML='<div class="vg-head"><span class="vg-badge">REHBER'+(i>0?' · '+i+' / '+total:'')+'</span><button type="button" class="vg-skip" onclick="valorGuideSkip()">Rehberi geç</button></div>'+progress+
   (here?'<h3>'+st.title+'</h3><p>'+st.text+'</p>'+(st.final?'<div class="vg-reward"><span>+'+VALOR_GUIDE_REWARD.diamonds+' Elmas</span><span>+'+money(VALOR_GUIDE_REWARD.gold)+' Altın</span></div>':'')+'<button type="button" class="vg-btn" onclick="valorGuideNext()">'+(st.button||'Anladım ›')+'</button>'
-  :'<h3>Sıradaki: '+st.title+'</h3><p>'+(st.via&&page!==st.via?'Önce '+(st.via==='Harita'?'alttaki <b>Harita</b>':'alttaki <b>Anasayfa</b>')+' düğmesine, sonra <b>'+st.label+'</b> bölümüne dokun.':'Parlayan <b>'+st.label+'</b> düğmesine dokun.')+'</p><button type="button" class="vg-btn vg-ghost" onclick="valorGuideGo()">Beni Götür ›</button>');
+  :'<h3>Sıradaki: '+st.title+'</h3><p>'+(st.via&&page!==st.via?'Önce '+(st.via==='Harita'?'alttaki <b>'+(document.documentElement.dataset.valorLayout==='crimson'?'Menü':'Harita')+'</b>':'alttaki <b>Anasayfa</b>')+' düğmesine, sonra <b>'+st.label+'</b> bölümüne dokun.':'Parlayan <b>'+st.label+'</b> düğmesine dokun.')+'</p><button type="button" class="vg-btn vg-ghost" onclick="valorGuideGo()">Beni Götür ›</button>');
  const nav=document.getElementById('bottomNav'),r=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect():null;card.style.bottom=r&&r.height?Math.round(window.innerHeight-r.top+8)+'px':'12px';
  const t=valorGuideTarget(st);if(t){t.classList.add('vg-focus');if(!t.closest('#bottomNav'))t.scrollIntoView({block:'center',behavior:'smooth'})}
 }
