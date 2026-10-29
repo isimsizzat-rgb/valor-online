@@ -8,7 +8,7 @@
  const iconNames=new Set(['bag','grid','home','user','chat','settings','swords','map','door','boss','gift','forge','book','farm','horse','wing','pet','gem','shop','group','medal','quest','wheel','arena','castle','event','rank','social','guide','support']);
  function icon(name){
   if(name==='search')return '<svg class="vc-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>';
-  return '<img class="vc-icon vc-icon-art" src="assets/ui/icons/'+(iconNames.has(name)?name:'grid')+'.webp" width="64" height="64" alt="" aria-hidden="true" decoding="async">';
+  return '<img class="vc-icon vc-icon-art" src="assets/ui/icons-realistic/'+(iconNames.has(name)?name:'grid')+'.webp" width="64" height="64" alt="" aria-hidden="true" decoding="async">';
  }
  const modern=()=>root.dataset.valorLayout!=='classic';
  const esc=value=>escapeAttr(String(value??'')).replace(/'/g,'&#39;');
