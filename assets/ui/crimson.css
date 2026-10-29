@@ -180,3 +180,10 @@ html[data-valor-layout=crimson] .vc-utilities img.vc-icon-art{width:30px;height:
  html[data-valor-layout=crimson] body #main .vc-shortcut.mmorpg-home-tile{min-height:90px!important}
 }
 @media(prefers-reduced-motion:reduce){html[data-valor-layout=crimson] img.vc-icon-art{transition:none!important}}
+
+/* Legacy button shadows are inherited by the new parchment labels. Reset the
+   whole label subtree, including rules that put a shadow directly on children. */
+html[data-valor-layout=crimson] body #main.panel :is(.vc-home,.vc-menu-grid,.vc-page-heading,.vc-menu-filters),
+html[data-valor-layout=crimson] body #main.panel :is(.vc-home,.vc-menu-grid,.vc-page-heading,.vc-menu-filters) *{
+ text-shadow:none!important;
+}
