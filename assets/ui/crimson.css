@@ -294,3 +294,17 @@ html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-res
  html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-identity{min-height:116px;padding-right:26%}
  html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-power{flex-wrap:wrap}
 }
+
+/* Render character artwork as a real foreground image: legacy pseudo-element
+   resets and Safari negative stacking must not hide the selected character. */
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header]::before{display:none!important;content:none!important}
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > img.vc-header-character-art{
+ display:block!important;position:absolute!important;z-index:0!important;
+ top:0!important;right:0!important;left:auto!important;bottom:auto!important;
+ width:52%!important;height:calc(100% - 44px)!important;max-width:none!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ object-fit:cover!important;object-position:center 22%!important;
+ opacity:.8!important;pointer-events:none;filter:none!important;transform:none!important;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%)!important;
+ mask-image:linear-gradient(90deg,transparent,#000 45%)!important;
+}
