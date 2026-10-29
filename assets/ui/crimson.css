@@ -308,9 +308,9 @@ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-
  mask-image:linear-gradient(to bottom right,transparent 48%,#000 64%,#000 100%);
 }
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{
- display:block!important;position:absolute!important;top:-65%!important;left:0!important;
- width:100%!important;height:520%!important;max-width:none!important;margin:0!important;padding:0!important;
- border:0!important;border-radius:0!important;object-fit:cover!important;object-position:left top!important;
+ display:block!important;position:absolute!important;top:0!important;left:0!important;
+ width:100%!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;object-fit:cover!important;object-position:center 25%!important;
  opacity:1!important;filter:none!important;transform:none!important;
  -webkit-mask-image:none!important;mask-image:none!important;
 }
