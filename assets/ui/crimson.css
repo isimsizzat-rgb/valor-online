@@ -47,6 +47,9 @@ html[data-valor-layout=crimson] body .bottom-nav#bottomNav .bottom-label{display
 html[data-valor-layout=crimson] .vc-home-seal{display:grid;place-items:center;width:46px;height:48px;margin-top:-20px;background:linear-gradient(#a04435,#73251f);color:#f6e8c7;border:1px solid #b88a54;clip-path:polygon(10% 0,90% 0,100% 12%,100% 72%,50% 100%,0 72%,0 12%);box-shadow:inset 0 0 0 3px #d2a0573b}
 html[data-valor-layout=crimson] body.character-selection #bottomNav,html[data-valor-layout=crimson] body.valor-account-screen #bottomNav,html[data-valor-layout=crimson] body.vch-kb #bottomNav{display:none!important}
 html[data-valor-layout=crimson] body.character-selection .vc-masthead,html[data-valor-layout=crimson] body.valor-account-screen .vc-masthead{display:none!important}
+/* Account and character creation screens must override the themed HUD display rule. */
+html[data-valor-layout=crimson] body.valor-account-screen header.top.valor-resource-bar[data-crimson-header],
+html[data-valor-layout=crimson] body.character-selection header.top.valor-resource-bar[data-crimson-header]{display:none!important}
 /* Home: four equal battle tiles and a compact progression grid. */
 html[data-valor-layout=crimson] #main .vc-home{display:block;max-width:none;margin:0;padding:0}
 html[data-valor-layout=crimson] #main .vc-ribbon{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--vc-line);padding:0 0 13px;margin-bottom:22px}
