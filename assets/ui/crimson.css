@@ -301,15 +301,16 @@ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-
 /* Crop the upper third of the full character art to a quiet shoulder portrait. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{
  display:block!important;position:absolute!important;z-index:0;top:0;right:0;
- width:48%;height:calc(100% - 44px);overflow:hidden;pointer-events:none;opacity:1;
- /* Keep the lower half fully visible; fade only toward the upper edge. */
- -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 50%,#000 100%);
- mask-image:linear-gradient(to bottom,transparent 0%,#000 50%,#000 100%);
+ width:100%;height:calc(100% - 44px);overflow:hidden;pointer-events:none;opacity:1;
+ /* The lower-right triangle is artwork; dissolve toward the diagonal
+    running from the lower-left corner to the upper-right corner. */
+ -webkit-mask-image:linear-gradient(to bottom right,transparent 48%,#000 64%,#000 100%);
+ mask-image:linear-gradient(to bottom right,transparent 48%,#000 64%,#000 100%);
 }
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{
- display:block!important;position:absolute!important;top:-28%!important;left:0!important;
- width:100%!important;height:360%!important;max-width:none!important;margin:0!important;padding:0!important;
- border:0!important;border-radius:0!important;object-fit:cover!important;object-position:center top!important;
+ display:block!important;position:absolute!important;top:-65%!important;left:0!important;
+ width:100%!important;height:520%!important;max-width:none!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;object-fit:cover!important;object-position:left top!important;
  opacity:1!important;filter:none!important;transform:none!important;
  -webkit-mask-image:none!important;mask-image:none!important;
 }
