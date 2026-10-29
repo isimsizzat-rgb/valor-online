@@ -15,7 +15,7 @@ html[data-valor-layout=crimson] .vc-masthead{display:flex;align-items:center;jus
 html[data-valor-layout=crimson] .vc-wordmark{font:24px Georgia,serif;color:var(--vc-ink);letter-spacing:2px}.vc-wordmark span{font-size:13px;letter-spacing:4px}
 html[data-valor-layout=crimson] body .vc-masthead button{display:grid;place-items:center;width:38px;height:38px;padding:5px;background:transparent!important;box-shadow:none!important;border:0!important;color:var(--vc-muted)!important}
 html[data-valor-layout=crimson] body .top.valor-resource-bar[data-crimson-header]{display:block!important;min-height:0!important;height:auto!important;grid-template:none!important;padding:0!important;margin:0!important;border:1px solid var(--vc-line)!important;border-top:3px solid var(--vc-gold)!important;border-radius:2px!important;box-shadow:inset 0 0 0 3px #fff4!important;overflow:hidden!important;background:var(--vc-card)!important;position:relative!important;isolation:isolate}
-html[data-valor-layout=crimson] .top[data-crimson-header]::before{content:''!important;display:block!important;position:absolute;inset:0 0 40px 35%;border:0!important;box-shadow:none!important;background:linear-gradient(90deg,var(--vc-card),transparent),url('crimson/battlefield.webp') 80% 35%/cover;opacity:.15;pointer-events:none;z-index:-1;border-radius:0!important}
+html[data-valor-layout=crimson] .top[data-crimson-header]::before{content:''!important;display:block!important;position:absolute;inset:0 0 40px 35%;border:0!important;box-shadow:none!important;background-image:linear-gradient(90deg,var(--vc-card),transparent 65%),var(--vc-header-art,none);background-size:100% 100%,auto 170%;background-position:center,right 25%;background-repeat:no-repeat;opacity:.32;pointer-events:none;z-index:-1;border-radius:0!important}
 html[data-valor-layout=crimson] .top[data-crimson-header]::after{display:none!important}
 html[data-valor-layout=crimson] .vc-identity{display:flex;align-items:center;gap:17px;padding:18px 23px 10px}
 html[data-valor-layout=crimson] body .top[data-crimson-header] .valor-portrait-button{position:relative!important;inset:auto!important;width:66px!important;height:79px!important;min-height:0!important;margin:0!important;padding:0!important;flex:0 0 66px!important;border:1px solid var(--vc-gold)!important;border-radius:2px!important;clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%)!important;box-shadow:none!important;background:#ad9674!important;overflow:hidden!important}
@@ -279,4 +279,18 @@ html[data-valor-layout=crimson] body.valor-account-screen #main.panel .vauth-por
  background:#fcf5f7!important;color:var(--vc-red)!important;
  font:600 14px/1.4 system-ui,sans-serif!important;white-space:normal;
  box-shadow:none!important;
+}
+
+/* The class artwork takes the place of the small portrait in the modern HUD.
+   Retain the hidden portrait node for legacy header updaters and Classic. */
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .valor-portrait-button{display:none!important}
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-identity{
+ min-height:126px;position:relative;z-index:1;padding-right:32%;
+}
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .valor-level-block{position:relative!important;z-index:1}
+html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-resources{position:relative;z-index:1;background:var(--vc-card)}
+html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-resource-bar[data-crimson-header]::before{opacity:.4}
+@media(max-width:700px){
+ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-identity{min-height:116px;padding-right:26%}
+ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-power{flex-wrap:wrap}
 }
