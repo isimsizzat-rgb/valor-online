@@ -301,9 +301,10 @@ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-
 /* Crop the upper third of the full character art to a quiet shoulder portrait. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{
  display:block!important;position:absolute!important;z-index:0;top:0;right:0;
- width:48%;height:calc(100% - 44px);overflow:hidden;pointer-events:none;opacity:.25;
- -webkit-mask-image:linear-gradient(90deg,transparent,#000 48%);
- mask-image:linear-gradient(90deg,transparent,#000 48%);
+ width:48%;height:calc(100% - 44px);overflow:hidden;pointer-events:none;opacity:1;
+ /* Keep the lower half fully visible; fade only toward the upper edge. */
+ -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 50%,#000 100%);
+ mask-image:linear-gradient(to bottom,transparent 0%,#000 50%,#000 100%);
 }
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{
  display:block!important;position:absolute!important;top:-28%!important;left:0!important;
