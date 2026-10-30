@@ -61,7 +61,7 @@
  window.valorCrimsonFilter=function(filter){if(!['Tümü','Savaş','Gelişim','Topluluk','Diğer'].includes(filter))return;menuFilter=filter;render()};
  window.valorSetLayout=function(layout){if(!['crimson','classic'].includes(layout))return;root.dataset.valorLayout=layout;try{localStorage.setItem(LAYOUT_KEY,layout)}catch{}if(layout==='classic'){const current=document.querySelector('.top.valor-resource-bar');if(current?.dataset.crimsonHeader)current.replaceWith(originalHeader.cloneNode(true));document.querySelector('.vc-masthead')?.remove()}else header();render()};
  window.valorSettingsPage=function(){const template=document.createElement('template');template.innerHTML=legacy.settings.apply(this,arguments);const card=template.content.querySelector('.vhub-card');if(card){const controls=document.createElement('div');controls.className='vc-layout-picker';controls.innerHTML='<p>Arayüz düzeni</p><div role="group" aria-label="Arayüz düzeni"><button type="button" aria-pressed="'+modern()+'" onclick="valorSetLayout(\'crimson\')">Yeni düzen</button><button type="button" aria-pressed="'+!modern()+'" onclick="valorSetLayout(\'classic\')">Klasik görünüm</button></div><small>Klasik görünümünü istediğin zaman geri açabilirsin. Karakterin ve ilerlemen korunur.</small>';card.append(controls)}return template.innerHTML};
- render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;swapGlyphs(document.getElementById('main'));return result};
+ render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;trackPage();backBar();armBack();swapGlyphs(document.getElementById('main'));return result};
 
  /* Emoji left in older page renderers are swapped for the theme's own art after
     every DOM change. Chat messages and form fields are left untouched. */
@@ -90,6 +90,41 @@
  }
  let glyphQueue=new Set(),glyphFrame=0;
  new MutationObserver(list=>{for(const m of list){if(m.type==='characterData')glyphQueue.add(m.target);else m.addedNodes.forEach(n=>glyphQueue.add(n))}if(!glyphFrame)glyphFrame=requestAnimationFrame(()=>{glyphFrame=0;const q=glyphQueue;glyphQueue=new Set();q.forEach(n=>{if(n.isConnected)swapGlyphs(n)})})}).observe(document.body,{childList:true,subtree:true,characterData:true});
+
+ /* One back button for every inner page, plus the phone's back gesture.
+    Tabs are roots; inner pages remember where the player came from. */
+ const tabRoutes=new Set(['Anasayfa','Harita','Çanta','Profil','Sohbet']);
+ const routeLabel=r=>r==='Harita'?'Menü':(entries.find(e=>e[0]===r)?.[1]||r);
+ let navStack=[],lastPage=null,goingBack=false;
+ function trackPage(){if(page===lastPage)return;if(lastPage&&!goingBack){if(tabRoutes.has(page))navStack=[];else{navStack.push(lastPage);if(navStack.length>20)navStack.shift()}}lastPage=page}
+ function backTarget(){if(navStack.length)return navStack[navStack.length-1];if(page==='Anasayfa')return null;return tabRoutes.has(page)?'Anasayfa':'Harita'}
+ function openDialog(){const list=[...document.querySelectorAll('#vzd-overlay,.vr-overlay,[role=dialog][aria-modal=true]')].filter(e=>e.isConnected&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden');return list[list.length-1]||null}
+ function closeDialog(){
+  const d=openDialog();if(!d)return false;
+  if(d.id==='vzd-overlay'||d.closest('#vzd-overlay')){if(window.valorZindan?.close)valorZindan.close();return true}
+  const btn=[...d.querySelectorAll('button')].find(b=>b.matches('.vr-close,[aria-label="Kapat"],[data-close]')||/^(×|✕|Kapat|Vazgeç|İptal)$/.test(b.textContent.trim()));
+  if(btn)btn.click();
+  return true; // a battle or busy dialog swallows the back gesture instead of leaving the page
+ }
+ window.valorCrimsonBack=function(){
+  if(closeDialog())return true;
+  const target=backTarget();if(!target)return false;
+  if(navStack.length)navStack.pop();
+  goingBack=true;try{if(target==='Kale Savaşı'){valorGuildSection='castle';go('Birlik')}else go(target)}finally{goingBack=false}
+  return true;
+ };
+ function backBar(){
+  document.querySelectorAll('#main .vc-backbar').forEach(e=>e.remove());
+  const main=document.getElementById('main');if(!main||!modern()||!state.class||tabRoutes.has(page))return;
+  // Older pages carried their own "‹ Ana Sayfa" style buttons; the shared bar replaces them.
+  main.querySelectorAll('button[onclick^="go("]').forEach(b=>{if(/^‹|Dön$/.test(b.textContent.trim()))b.classList.add('vc-legacy-back')});
+  const target=backTarget()||'Harita',bar=document.createElement('nav');
+  bar.className='vc-backbar';bar.setAttribute('aria-label','Geri');
+  bar.innerHTML='<button type="button" onclick="valorCrimsonBack()"><span aria-hidden="true">‹</span>'+esc(routeLabel(target))+'</button>';
+  main.prepend(bar);
+ }
+ function armBack(){if(!modern()||!state.class)return;try{if(!history.state||!history.state.vcBack)history.pushState({vcBack:1},'')}catch{}}
+ window.addEventListener('popstate',()=>{if(!modern()||!state.class||document.body.classList.contains('valor-account-screen'))return;if(valorCrimsonBack())armBack()});
  function install(){header();render()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

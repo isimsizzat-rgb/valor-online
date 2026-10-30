@@ -350,3 +350,10 @@ html[data-valor-layout=crimson] .vp-slot .vp-empty{filter:grayscale(1) sepia(.5)
 /* Dark mode: the portrait's sunlit courtyard is dimmed so it sits in the dark card. */
 html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{filter:brightness(.78) saturate(.9)!important}
 html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame::after{content:'';position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 48% 80% at 52% 42%,transparent 35%,#302a22b8 100%)}
+/* Shared back bar on inner pages; legacy per-page back buttons are hidden. */
+html[data-valor-layout=crimson] #main .vc-legacy-back{display:none!important}
+html[data-valor-layout=crimson] #main .vc-backbar{display:flex;align-items:center;margin:-6px 0 14px;padding:0 0 10px;border-bottom:1px solid var(--vc-line)}
+html[data-valor-layout=crimson] body.valor-home #main .vc-backbar{display:none}
+html[data-valor-layout=crimson] #main .vc-backbar button{display:inline-flex!important;align-items:center;gap:7px;width:auto!important;min-height:34px;margin:0!important;padding:5px 14px 5px 10px!important;border:1px solid var(--vc-line)!important;border-radius:999px!important;background:var(--vc-card)!important;background-image:none!important;box-shadow:none!important;color:var(--vc-red)!important;font:600 13px/1 system-ui,sans-serif!important;letter-spacing:.2px;text-shadow:none!important;cursor:pointer}
+html[data-valor-layout=crimson] #main .vc-backbar button span{font-size:20px;line-height:.8;margin-top:-2px}
+html[data-valor-layout=crimson] #main .vc-backbar button:active{transform:translateY(1px)}
