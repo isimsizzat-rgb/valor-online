@@ -325,3 +325,28 @@ html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-
 @media(max-width:700px){
  html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{height:116px}
 }
+
+/* --- Theme polish: mounts, leftover dark panels, emoji glyphs, dark-mode portrait --- */
+/* Mount art has a near-black studio backdrop and relies on screen blending; give it a
+   dark velvet window so it stays vivid on parchment too. */
+html[data-valor-layout=crimson] .vm-page.vm-framed-mounts .vm-art.vm-real-art,
+html[data-valor-layout=crimson] .vm-market-body .vm-limited-art,
+html[data-valor-layout=crimson] .vm-market-body .vm-market-art{background:radial-gradient(circle at 50% 45%,#3a2c20 0,#17110c 62%,#0b0907 100%)!important}
+/* Light parchment versions of panels that still carried dark-theme colours. */
+html[data-valor-layout=crimson][data-valor-theme=light] :is(.vmed-profile-rank,.vauth-profile-link,.vdg-power>div,.wb-title,.astrology-gold,.vwf-rewards){background:#efe5d1!important;background-image:none!important;border:1px solid var(--vc-line)!important;box-shadow:none!important;color:var(--vc-ink)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] :is(.vmed-profile-rank small,.vauth-profile-link>span,.vdg-power span,.astrology-gold,.vwf-rewards small){color:var(--vc-muted)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] :is(.vdg-power b,.astrology-gold b,.wb-title b,.vwf-rewards summary){color:var(--vc-red)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vmed-profile-rank span{color:color-mix(in srgb,var(--medal-color,#a27d41) 55%,#3a2a1c)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vwf-rewards :is(article,span:not(.vwf-icon)){color:var(--vc-ink)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vwf-rewards article{border-color:var(--vc-line)!important;background:#f7f1e5!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vwf-rewards .vwf-icon{background:#2a1f17;border-radius:6px}
+/* Replaced emoji: realistic icon art, resource images and a line-art lock. */
+html[data-valor-layout=crimson] img.vc-glyph{display:inline-block;width:auto;height:1.25em;max-width:none;vertical-align:-.28em;margin:0 .12em;object-fit:contain;border:0;background:none;box-shadow:none;filter:none}
+html[data-valor-layout=crimson] :is(h1,h2) > img.vc-glyph{height:1.1em;margin-right:.25em}
+html[data-valor-layout=crimson] svg.vc-glyph{display:inline-block;width:.95em;height:.95em;vertical-align:-.12em;margin:0 .1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html[data-valor-layout=crimson] .farm-growth-lock svg.vc-glyph{width:26px;height:26px;opacity:.55}
+/* Empty equipment slots: quiet engraved silhouettes instead of coloured emoji. */
+html[data-valor-layout=crimson] .vp-slot .vp-empty{filter:grayscale(1) sepia(.5) contrast(.8);opacity:.42}
+/* Dark mode: the portrait's sunlit courtyard is dimmed so it sits in the dark card. */
+html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{filter:brightness(.78) saturate(.9)!important}
+html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame::after{content:'';position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 48% 80% at 52% 42%,transparent 35%,#302a22b8 100%)}

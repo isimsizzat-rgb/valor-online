@@ -30,7 +30,7 @@
   const resources=document.createElement('div');resources.className='vc-resources';resources.append(gold,diamonds,energy);h.append(resources);
  }
  function headerValues(){if(!modern()||!state.class)return;const hud=document.querySelector('.top.valor-resource-bar[data-crimson-header]');if(hud&&typeof valorCreationPortrait==='function'){let art=hud.querySelector('.vc-header-character-art');if(!art){art=document.createElement('img');art.className='vc-header-character-art';art.alt='';art.setAttribute('aria-hidden','true');art.decoding='async';const frame=document.createElement('div');frame.className='vc-header-art-frame';frame.setAttribute('aria-hidden','true');frame.append(art);hud.prepend(frame)}const portraitClass=({'Savaşçı':'warrior','Büyücü':'mage','Okçu':'archer'})[state.class];const source=portraitClass?'assets/ui/portraits-left/'+portraitClass+'-'+(state.gender==='female'?'female':'male')+'.webp':valorCreationPortrait(state.class,state.gender);if(art.getAttribute('src')!==source)art.src=source}const cls=document.getElementById('vc-header-class'),power=document.getElementById('vc-header-power');if(cls)cls.textContent=state.class+' · Seviye '+state.level;if(power)power.textContent=money(combatPower());const diamond=document.getElementById('diamonds');if(diamond){diamond.textContent=short(state.diamonds);diamond.title=money(state.diamonds)+' Elmas'}}
- function activeTab(){if(['Anasayfa','Çanta','Profil','Sohbet'].includes(page))return page;return 'Harita'}
+ function activeTab(){if(['Anasayfa','Çanta','Profil','Sohbet'].includes(page))return page;if(page==='Ayarlar')return '';return 'Harita'}
  nav=function(){
   if(!modern())return legacy.nav.apply(this,arguments);
   const el=document.getElementById('bottomNav');if(!el)return;
@@ -38,7 +38,7 @@
   el.innerHTML=[['Çanta','Çanta','bag'],['Harita','Menü','grid'],['Anasayfa','Anasayfa','home'],['Profil','Profil','user'],['Sohbet','Sohbet','chat']].map(([route,label,art])=>'<button type="button" class="bottom-item vc-bottom-item '+(route==='Anasayfa'?'vc-home-nav ':'')+(activeTab()===route?'active':'')+'" aria-label="'+label+'" '+(route==='Harita'?'data-valor-menu ':'')+(activeTab()===route?'aria-current="page" ':'')+'onclick="'+action(route)+'">'+(route==='Anasayfa'?'<span class="vc-home-seal">'+icon(art)+'</span>':icon(art))+'<span class="bottom-label">'+label+'</span></button>').join('');
  };
  function warTile(route,label,style,detail){return '<button type="button" class="vc-war-tile vc-war-'+style+' mmorpg-home-tile" aria-label="'+route+'" onclick="'+action(route)+'"><span class="vc-tile-emblem">'+icon(({dungeon:'door',scene:'map',arena:'arena',adventure:'swords'})[style])+'</span><span class="vc-tile-copy"><strong>'+label+'</strong><small>'+esc(detail)+'</small></span><span class="vc-tile-arrow">›</span></button>'}
- function dailySummary(){if(typeof valorQuestData!=='function')return '';const d=valorQuestData().daily,goals=valorQuestDailyGoals,count=goals.filter(g=>(Number(d.counts[g.id])||0)>=g.target).length;return '<section class="vc-daily"><button type="button" onclick="valorQuestOpen(\'daily\')">'+icon('quest')+'<span><strong>Günlük Görevler</strong><small>'+count+' / '+goals.length+' tamamlandı</small></span></button><button type="button" class="vc-daily-action" onclick="'+(d.claimed||count<goals.length?"valorQuestOpen('daily')":"valorQuestClaimDaily()")+'">'+(d.claimed?'Alındı ✓':count===goals.length?'Ödülü Al':'Görevlere Git ›')+'</button></section>'}
+ function dailySummary(){if(typeof valorQuestData!=='function')return '';const d=valorQuestData().daily,goals=valorQuestDailyGoals,count=goals.filter(g=>(Number(d.counts[g.id])||0)>=g.target).length;return '<section class="vc-daily"><button type="button" data-guide-target="Görevler" onclick="valorQuestOpen(\'daily\')">'+icon('quest')+'<span><strong>Günlük Görevler</strong><small>'+count+' / '+goals.length+' tamamlandı</small></span></button><button type="button" class="vc-daily-action" onclick="'+(d.claimed||count<goals.length?"valorQuestOpen('daily')":"valorQuestClaimDaily()")+'">'+(d.claimed?'Alındı ✓':count===goals.length?'Ödülü Al':'Görevlere Git ›')+'</button></section>'}
  home=function(){
   if(!modern())return legacy.home.apply(this,arguments);
   stageDailyReset();
@@ -61,7 +61,35 @@
  window.valorCrimsonFilter=function(filter){if(!['Tümü','Savaş','Gelişim','Topluluk','Diğer'].includes(filter))return;menuFilter=filter;render()};
  window.valorSetLayout=function(layout){if(!['crimson','classic'].includes(layout))return;root.dataset.valorLayout=layout;try{localStorage.setItem(LAYOUT_KEY,layout)}catch{}if(layout==='classic'){const current=document.querySelector('.top.valor-resource-bar');if(current?.dataset.crimsonHeader)current.replaceWith(originalHeader.cloneNode(true));document.querySelector('.vc-masthead')?.remove()}else header();render()};
  window.valorSettingsPage=function(){const template=document.createElement('template');template.innerHTML=legacy.settings.apply(this,arguments);const card=template.content.querySelector('.vhub-card');if(card){const controls=document.createElement('div');controls.className='vc-layout-picker';controls.innerHTML='<p>Arayüz düzeni</p><div role="group" aria-label="Arayüz düzeni"><button type="button" aria-pressed="'+modern()+'" onclick="valorSetLayout(\'crimson\')">Yeni düzen</button><button type="button" aria-pressed="'+!modern()+'" onclick="valorSetLayout(\'classic\')">Klasik görünüm</button></div><small>Klasik görünümünü istediğin zaman geri açabilirsin. Karakterin ve ilerlemen korunur.</small>';card.append(controls)}return template.innerHTML};
- render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;return result};
+ render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;swapGlyphs(document.getElementById('main'));return result};
+
+ /* Emoji left in older page renderers are swapped for the theme's own art after
+    every DOM change. Chat messages and form fields are left untouched. */
+ const glyphIcons={'🏰':'castle','💬':'chat','🏆':'rank','🗺️':'map','🗺':'map','🔮':'gem','⚔️':'swords','⚔':'swords'};
+ const GLYPHS=/🗺️|🗺|⚔️|⚔|🏰|💬|🏆|🔮|💠|💎|⚡️|⚡|🔒/u;
+ const GLYPHS_ALL=new RegExp(GLYPHS.source,'gu');
+ function resourceSrc(selector,fallback){return document.querySelector(selector)?.getAttribute('src')||fallback}
+ function glyphNode(ch){
+  const t=document.createElement('template');
+  if(ch==='🔒')t.innerHTML='<svg class="vc-glyph vc-glyph-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  else{let src;if(glyphIcons[ch])src='assets/ui/icons-realistic/'+glyphIcons[ch]+'.webp';else if(ch==='💎')src=resourceSrc('.valor-diamond-icon img','assets/img/491867083df2a72d.webp');else if(ch==='💠')src='assets/img/9109f56d5f3c11e1.webp';else src=resourceSrc('.valor-energy-emblem img','');if(!src)return document.createTextNode(ch);t.innerHTML='<img class="vc-glyph" src="'+esc(src)+'" alt="" aria-hidden="true" decoding="async">'}
+  return t.content.firstChild;
+ }
+ const skipGlyph='input,textarea,script,style,[contenteditable],.vp-empty,.vwf-wheel,[class*="message"],[class*="msg"],.vch-list,.vch-log';
+ function swapGlyphs(node){
+  if(!modern()||!node)return;
+  const texts=[];
+  if(node.nodeType===3)texts.push(node);
+  else if(node.nodeType===1){const w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);while(w.nextNode())texts.push(w.currentNode)}
+  for(const text of texts){
+   const parent=text.parentElement;if(!parent||!GLYPHS.test(text.nodeValue)||parent.closest(skipGlyph)||!parent.closest('#main,.vr-overlay,[role=dialog],.adventure-modal'))continue;
+   const frag=document.createDocumentFragment();let last=0;
+   for(const m of text.nodeValue.matchAll(GLYPHS_ALL)){frag.append(text.nodeValue.slice(last,m.index),glyphNode(m[0]));last=m.index+m[0].length}
+   frag.append(text.nodeValue.slice(last));parent.replaceChild(frag,text);
+  }
+ }
+ let glyphQueue=new Set(),glyphFrame=0;
+ new MutationObserver(list=>{for(const m of list){if(m.type==='characterData')glyphQueue.add(m.target);else m.addedNodes.forEach(n=>glyphQueue.add(n))}if(!glyphFrame)glyphFrame=requestAnimationFrame(()=>{glyphFrame=0;const q=glyphQueue;glyphQueue=new Set();q.forEach(n=>{if(n.isConnected)swapGlyphs(n)})})}).observe(document.body,{childList:true,subtree:true,characterData:true});
  function install(){header();render()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
