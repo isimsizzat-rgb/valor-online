@@ -298,37 +298,30 @@ html[data-valor-layout=crimson][data-valor-theme=dark] body header.top.valor-res
 /* Render character artwork as a real foreground image: legacy pseudo-element
    resets and Safari negative stacking must not hide the selected character. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header]::before{display:none!important;content:none!important}
-/* Crop the upper third of the full character art to a quiet shoulder portrait. */
+/* One shoulder portrait fills the right-hand area. The diagonal mask belongs
+   to that same image, so no square inset or duplicate blurred face can appear.
+   Both masks use alpha gradients; WebKit gets the same Safari-safe geometry. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{
  display:block!important;position:absolute!important;z-index:0;top:0;right:0;
- width:100%;height:126px;overflow:hidden;pointer-events:none;opacity:1;
- /* The lower-right triangle is artwork; dissolve toward the diagonal
-    running from the lower-left corner to the upper-right corner. */
- -webkit-mask-image:linear-gradient(to bottom right,transparent 44%,#000 60%,#000 100%);
- mask-image:linear-gradient(to bottom right,transparent 44%,#000 60%,#000 100%);
+ width:64%;height:126px;overflow:hidden;pointer-events:none;opacity:1;
+ -webkit-mask-image:linear-gradient(to bottom right,transparent 36%,#000 52%);
+ mask-image:linear-gradient(to bottom right,transparent 36%,#000 52%);
+ -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+ -webkit-mask-size:100% 100%;mask-size:100% 100%;
 }
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .vc-header-art-frame > img.vc-header-character-art{
- display:block!important;position:absolute!important;top:0!important;left:auto!important;right:0!important;z-index:1;
- width:auto!important;height:100%!important;max-width:none!important;aspect-ratio:1;margin:0!important;padding:0!important;
- border:0!important;border-radius:0!important;object-fit:contain!important;object-position:right center!important;
+ display:block!important;position:absolute!important;inset:0!important;z-index:0;
+ width:100%!important;height:100%!important;max-width:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;object-fit:cover!important;object-position:center 22%!important;
  opacity:1!important;filter:none!important;transform:none!important;
- -webkit-mask-image:linear-gradient(to right,transparent,#000 30%)!important;
- mask-image:linear-gradient(to right,transparent,#000 30%)!important;
+ -webkit-mask-image:linear-gradient(to right,transparent,#000 20%),linear-gradient(to bottom,#000 86%,transparent 100%)!important;
+ -webkit-mask-composite:source-in;
+ mask-image:linear-gradient(to right,transparent,#000 20%),linear-gradient(to bottom,#000 86%,transparent 100%)!important;
+ mask-composite:intersect;
 }
-
-/* Size the shoulder portrait to the identity row, above the XP information.
-   Keep the face away from the diagonal blend on the left of the artwork. */
 html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] .valor-level-block{
  background:var(--vc-card)!important;padding-top:8px!important;
 }
 @media(max-width:700px){
  html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame{height:116px}
-}
-
-/* Fill the diagonal with softly blended photo texture while the independently
-   sized portrait stays sharp on the right. One mask spans the entire row. */
-html[data-valor-layout=crimson] body header.top.valor-resource-bar[data-crimson-header] > .vc-header-art-frame::before{
- content:'';display:block;position:absolute;inset:-4px;
- background-image:var(--vc-portrait-source);background-size:cover;
- background-position:center bottom;filter:blur(4px);opacity:.65;
 }
