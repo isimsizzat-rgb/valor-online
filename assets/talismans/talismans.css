@@ -54,20 +54,20 @@ html[data-valor-theme=dark] .vt-card{background:#1d1712!important;color:#f0dcb4!
 .vt-slot:not(.vt-slot-empty):not(.vt-slot-locked) small{font-size:9px;white-space:nowrap}
 
 /* Grade is communicated by the coloured frame alone. */
-.vt-card>img,.vt-dialog-art,.vt-pick[style]>img,.vt-confirm-pair figure{border-width:3px;box-shadow:0 0 7px color-mix(in srgb,var(--vt-color) 45%,transparent)}
-.vt-slot:not(.vt-slot-empty):not(.vt-slot-locked){border:3px solid var(--vt-color)!important}
-.bag-slot.vt-bag-talisman{border:3px solid var(--vt-color)!important}
+.vt-card>img,.vt-dialog-art,.vt-pick[style]>img,.vt-confirm-pair figure{border-width:1px;box-shadow:0 0 5px color-mix(in srgb,var(--vt-color) 20%,transparent)}
+.vt-slot:not(.vt-slot-empty):not(.vt-slot-locked){border:1px solid color-mix(in srgb,var(--vt-color) 65%,#645946)!important}
+.bag-slot.vt-bag-talisman{border:1px solid color-mix(in srgb,var(--vt-color) 65%,#645946)!important}
 .vt-card{border-color:var(--vt-color)!important}
 
 /* Override the legacy inventory image backdrop and crimson layout gold border.
    Keep the centre dark while the grade colour spreads inward from all edges. */
 html body #main .valor-bag .bag-slots .bag-slot.vt-bag-talisman,
 html[data-valor-layout=crimson] body #main .valor-bag .bag-slots .bag-slot.vt-bag-talisman{
- border:3px solid var(--vt-color)!important;
+ border:1px solid color-mix(in srgb,var(--vt-color) 65%,#645946)!important;
  border-image:none!important;
  background:#101014!important;
  background-image:none!important;
- box-shadow:inset 0 0 24px 6px color-mix(in srgb,var(--vt-color) 65%,transparent),inset 0 0 5px 1px var(--vt-color)!important;
+ box-shadow:inset 0 0 22px 0 color-mix(in srgb,var(--vt-color) 34%,transparent)!important;
 }
 html body #main .valor-bag .bag-slots .bag-slot.vt-bag-talisman img,
 html[data-valor-layout=crimson] body #main .valor-bag .bag-slots .bag-slot.vt-bag-talisman img{
@@ -81,5 +81,5 @@ html[data-valor-layout=crimson] body #main .valor-bag .bag-slots .bag-slot.vt-ba
 .vt-card>img,.vt-dialog-art,.vt-pick[style]>img,.vt-confirm-pair figure,
 .vt-slot:not(.vt-slot-empty):not(.vt-slot-locked){
  background:#101014!important;
- box-shadow:inset 0 0 22px 3px color-mix(in srgb,var(--vt-color) 60%,transparent)!important;
+ box-shadow:inset 0 0 20px 0 color-mix(in srgb,var(--vt-color) 30%,transparent)!important;
 }
