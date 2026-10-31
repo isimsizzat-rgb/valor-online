@@ -31,14 +31,15 @@
    +(me&&me.hp>0?'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,me,myTurn,t)).join('')+'</div><small class="vdu-hint">'+(myTurn?'Pasif: '+esc(D.passiveOf(me).text)+' · sadece sana':'Sıran gelince becerilerin açılır')+'</small>':'<small class="vdu-hint">'+(me?'Düştün · takımın savaşmaya devam ediyor':'')+'</small>')+'</section>'}
  function paint(){const el=document.getElementById('valor-tduel');if(!el||!td.st)return;const html=markup(),stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
   if(stable===td.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  td.stable=stable;el.innerHTML=html;floatNew()}
- function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;list.slice(-6).forEach((e,i)=>setTimeout(()=>{
+  td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}floatNew()}
+ function motionUnit(u){const gender=u.uid===myUid()&&u.side==='A'?state.gender:u.gender;return {...u,gender,art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,gender):null}}
+ function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"] .vdu-portrait');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
   if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*400))}
 
- function open(){if(document.getElementById('valor-tduel'))return;const el=document.createElement('div');el.id='valor-tduel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';td.stable=null;paint();clearInterval(td.timer);td.timer=setInterval(tick,250)}
- function close(){clearInterval(td.timer);td.timer=null;document.getElementById('valor-tduel')?.remove();document.documentElement.style.overflow='';td.closedAt=Date.now()}
+ function open(){td.finishing=false;if(document.getElementById('valor-tduel'))return;const el=document.createElement('div');el.id='valor-tduel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';td.stable=null;paint();clearInterval(td.timer);td.timer=setInterval(tick,250)}
+ function close(){window.ValorCombatMotion?.close(document.getElementById('valor-tduel'));clearInterval(td.timer);td.timer=null;document.getElementById('valor-tduel')?.remove();document.documentElement.style.overflow='';td.closedAt=Date.now()}
  function adopt(view,fresh=true){td.st=view;if(view.meta)td.meta=view.meta;if(fresh&&Array.isArray(view.events))td.all=td.all.concat(view.events)}
  async function server(body){const r=await valorFightCall(body);if(r&&Number.isFinite(r.now))td.skew=r.now-Date.now();return r}
 
@@ -46,9 +47,9 @@
  function prepFrom(st){const meta=td.meta||{},r=st.result,uid=myUid();const units=r.units.map(u=>({...u,me:u.uid===uid&&u.side==='A',portrait:portrait(u)}));
   const size=units.filter(u=>u.side==='A').length,rivalSize=units.length-size;
   return {duel:true,duelId:meta.id||'local-'+st.round+'-'+Date.now(),size,rivalSize,label:size+'v'+rivalSize,start:units.map(u=>({uid:u.uid,name:u.name,cls:u.cls,side:u.side,me:u.me,maxHp:u.maxHp,portrait:u.portrait,level:u.level})),battle:{...r,units}}}
- function finish(){const st=td.st,kind=td.kind,prep=prepFrom(st);setTimeout(()=>{close();td.st=null;
+ function finish(){if(td.finishing)return;td.finishing=true;const st=td.st,kind=td.kind,prep=prepFrom(st);const root=document.getElementById('valor-tduel');(window.ValorCombatMotion?.whenIdle(root)||Promise.resolve()).then(()=>setTimeout(()=>{if(!root?.isConnected)return;close();td.st=null;
   if(kind==='local'){valorTeamResolve(prep);return}
-  if(td.applied.has(prep.duelId))return;td.applied.add(prep.duelId);valorTeamData().duelApplied=prep.duelId;valorTeamApplyResult(prep)},1400)}
+  if(td.applied.has(prep.duelId))return;td.applied.add(prep.duelId);valorTeamData().duelApplied=prep.duelId;valorTeamApplyResult(prep)},500))}
 
  async function use(skill){const st=td.st,me=mine();if(!st||!me||td.busy||st.status!=='battle'||st.actor!==me.idx)return;
   if(td.kind==='online'){td.busy=true;paint();let r;try{r=await server({mode:'tduel_act',skill})}finally{td.busy=false}
@@ -92,9 +93,10 @@
    td.kind='online';td.all=[];td.shown=0;td.meta=null;adopt(r.tduel);open();if(td.st.status==='done')finish();return}
   if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
   const mineStats=valorArenaStats(),hud=document.getElementById('valor-hud-portrait')?.src;
-  const A=[{uid:'me',name:state.name||'Sen',cls:state.class,level:state.level,stats:mineStats,human:true,portrait:hud},...room.members.map((m,i)=>({uid:'m'+i,name:m.name,cls:m.cls,level:m.level,stats:valorTeamBotStats(m.ratio,m.cls),portrait:valorTeamPortrait(m)}))];
+  const A=[{uid:'me',name:state.name||'Sen',cls:state.class,level:state.level,gender:state.gender,stats:mineStats,human:true,portrait:hud},...room.members.map((m,i)=>({uid:'m'+i,name:m.name,cls:m.cls,level:m.level,gender:m.gender,stats:valorTeamBotStats(m.ratio,m.cls),portrait:valorTeamPortrait(m)}))];
   const rivalSize=Math.random()<VALOR_TEAM_RIVAL3_CHANCE?3:2,rivals=valorTeamPick(rivalSize,room.members.map(m=>m.id));
-  const B=rivals.map((p,i)=>({uid:'r'+i,name:p.name,cls:p.cls,level:p.level,stats:p.combatStats?{...p.combatStats}:valorTeamBotStats(.3+Math.random()*2.7,p.cls),portrait:valorTeamPortrait(p)}));
+  const B=rivals.map((p,i)=>({uid:'r'+i,name:p.name,cls:p.cls,level:p.level,gender:p.gender,stats:p.combatStats?{...p.combatStats}:valorTeamBotStats(.3+Math.random()*2.7,p.cls),portrait:valorTeamPortrait(p)}));
   td.kind='local';td.all=[];td.shown=0;td.meta=null;td.local=D.teamCreate(A,B,Date.now());adopt(D.teamView(td.local));open();if(td.st.status==='done')finish()};
  window.valorTeamDuel={use,state:()=>td,close};
 })();
+

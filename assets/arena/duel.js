@@ -15,7 +15,7 @@
   return src+'?v=art2';
  };
  const classSkillNames={
-  'Savaşçı':{normal:'Kılıç Darbesi',strong:'Alevli Darbe',max:'Alev Kılıcı'},
+  'Savaşçı':{normal:'Kılıç Darbesi',strong:'Alev Dalgası',max:'Kızıl Kıyamet'},
   'Büyücü':{normal:'Büyü Küresi',strong:'Güç Küresi',max:'Meteor'},
   'Okçu':{normal:'Ok Atışı',strong:'Delici Ok',max:'Ok Yağmuru'}
  };
@@ -41,23 +41,25 @@
  function paint(){const el=document.getElementById('valor-duel');if(!el||!duel.st)return;const html=markup();
   const stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
   if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  duel.stable=stable;el.innerHTML=html;floatNew()}
+  duel.stable=stable;el.innerHTML=html;mountMotion(el);floatNew()}
+ function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
+ function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
- function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;list.forEach((e,i)=>setTimeout(()=>{
+ function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(window.ValorCombatMotion){const p=motionPlayers();for(const e of list){const a=e.side==='me'?0:1;ValorCombatMotion.play(el,e,p[a],p[1-a]);}}list.forEach((e,i)=>setTimeout(()=>{
   const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),host=document.querySelector('#valor-duel .vdu-'+target+' .vdu-portrait');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡 '+money(e.shield):e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*550))}
 
- function open(){document.getElementById('valor-duel')?.remove();const el=document.createElement('div');el.id='valor-duel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';duel.stable=null;paint();clearInterval(duel.timer);duel.timer=setInterval(tick,250)}
- function close(){clearInterval(duel.timer);duel.timer=null;document.getElementById('valor-duel')?.remove();document.documentElement.style.overflow=''}
+ function open(){duel.finishing=false;document.getElementById('valor-duel')?.remove();const el=document.createElement('div');el.id='valor-duel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';duel.stable=null;paint();clearInterval(duel.timer);duel.timer=setInterval(tick,250)}
+ function close(){window.ValorCombatMotion?.close(document.getElementById('valor-duel'));clearInterval(duel.timer);duel.timer=null;document.getElementById('valor-duel')?.remove();document.documentElement.style.overflow=''}
  function adopt(view,fresh=true){duel.st=view;if(fresh&&Array.isArray(view.events))duel.all=duel.all.concat(view.events)}
  async function server(body){const r=await valorFightCall(body);if(r&&Number.isFinite(r.now))duel.skew=r.now-Date.now();return r}
 
  function battleFromDuel(){const r=duel.st.result,rounds=new Map();for(const e of duel.all){if(!rounds.has(e.round))rounds.set(e.round,{round:e.round,mine:0,theirs:0,myHit:null,enemyHit:null,myHp:e.myHp,enemyHp:e.enemyHp});const x=rounds.get(e.round);if(e.side==='me'&&e.skill!=='passive'){x.mine+=e.damage||0;if(e.hit)x.myHit=e.hit}else if(e.side==='foe'&&e.skill!=='passive'){x.theirs+=e.damage||0;if(e.hit)x.enemyHit=e.hit}x.myHp=e.myHp;x.enemyHp=e.enemyHp}
   return {...r,log:[...rounds.values()]}}
- function done(){const battle=battleFromDuel(),kind=duel.kind,rival=duel.rival;setTimeout(()=>{close();duel.st=null;
+ function done(){if(duel.finishing)return;duel.finishing=true;const battle=battleFromDuel(),kind=duel.kind,rival=duel.rival;const root=document.getElementById('valor-duel');(window.ValorCombatMotion?.whenIdle(root)||Promise.resolve()).then(()=>setTimeout(()=>{if(!root?.isConnected)return;close();duel.st=null;
   if(kind==='online')valorArenaOnlineFinish(rival,battle,true);
   else if(kind==='training'){valorPrecomputedBattle=battle;valorArenaImmediateTraining();valorPrecomputedBattle=null}
-  else{valorPrecomputedBattle=battle;valorArenaWithFury(()=>valorArenaImmediateFight(rival.id));valorPrecomputedBattle=null}},1400)}
+  else{valorPrecomputedBattle=battle;valorArenaWithFury(()=>valorArenaImmediateFight(rival.id));valorPrecomputedBattle=null}},500))}
 
  async function use(skill){const st=duel.st;if(!st||duel.busy||st.status!=='battle'||st.turn!=='me')return;
   if(duel.kind==='online'){duel.busy=true;paint();let r;try{r=await server({mode:'duel_act',skill})}finally{duel.busy=false}
@@ -67,7 +69,7 @@
  function tick(){if(document.hidden||!duel.st)return;const st=duel.st;if(st.status==='battle'&&st.turn==='me'&&!duel.busy&&now()-(st.turnAt||0)>=D.TURN_MS){use('auto');return}paint()}
 
  function localStart(kind,meStats,foe,rival){duel.kind=kind;duel.rival=rival;duel.all=[];duel.shown=0;
-  duel.local=D.create({name:state.name||'Sen',cls:state.class,level:state.level,stats:meStats},foe,Date.now());adopt(D.view(duel.local));open();if(duel.st.status==='done')done()}
+  duel.local=D.create({name:state.name||'Sen',cls:state.class,level:state.level,gender:state.gender,stats:meStats},foe,Date.now());adopt(D.view(duel.local));open();if(duel.st.status==='done')done()}
 
  const prevFight=valorArenaFight,prevTraining=valorArenaTraining;
  valorArenaFight=async function(id){
@@ -77,7 +79,7 @@
    duel.busy=true;let r;try{if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{});r=await server({mode:'duel_start',target:rival.uid})}finally{duel.busy=false}
    if(r?.missing||(!r?.duel&&/Sunucu hatası|Sunucuya bağlanılamadı/.test(String(r?.error||''))))return prevFight.apply(this,arguments);   // server missing or failing: classic fight
    if(!r?.duel){valorArenaOnline.at=0;return toast(valorFightError(r?.error))}
-   if(r.resumed){const again=(valorArenaOnline.rivals||[]).find(p=>p.name===r.foe?.name);duel.rival=again||{name:r.foe?.name,cls:r.foe?.class,level:r.foe?.level,portrait:valorArenaPortrait(r.foe?.class,r.foe?.gender)};toast('Yarım kalan savaşın açıldı')}else duel.rival=rival;
+   if(r.resumed){const again=(valorArenaOnline.rivals||[]).find(p=>p.name===r.foe?.name);duel.rival=again||{name:r.foe?.name,cls:r.foe?.class,level:r.foe?.level,gender:r.foe?.gender,portrait:valorArenaPortrait(r.foe?.class,r.foe?.gender)};toast('Yarım kalan savaşın açıldı')}else duel.rival=rival;
    duel.kind='online';duel.all=[];duel.shown=0;adopt(r.duel);open();if(duel.st.status==='done')done();return}
   const rival=valorArenaCandidates().find(p=>p.id===id);if(!rival)return;
   localStart('local',valorArenaStats(),{name:rival.name,cls:rival.cls,level:rival.level,stats:{...rival.combatStats}},rival)};
@@ -85,7 +87,8 @@
   localStart('training',s,{name:'Denk Rakip',cls:state.class,level:state.level,stats:{...s}},null)};
  /* A refresh in the middle of an online duel: offer to continue it on the arena page. */
  let checked=false;const prevPage=valorArenaPage;valorArenaPage=function(){const html=prevPage.apply(this,arguments);
-  if(!checked&&valorArenaIsOnline()){checked=true;server({mode:'duel_state'}).then(r=>{if(r?.duel&&r.duel.status==='battle'&&!duel.st){duel.kind='online';duel.all=[];duel.shown=0;duel.rival={name:r.foe?.name,cls:r.foe?.class,level:r.foe?.level,portrait:valorArenaPortrait(r.foe?.class,r.foe?.gender)};adopt(r.duel);open()}}).catch(()=>{})}
+  if(!checked&&valorArenaIsOnline()){checked=true;server({mode:'duel_state'}).then(r=>{if(r?.duel&&r.duel.status==='battle'&&!duel.st){duel.kind='online';duel.all=[];duel.shown=0;duel.rival={name:r.foe?.name,cls:r.foe?.class,level:r.foe?.level,gender:r.foe?.gender,portrait:valorArenaPortrait(r.foe?.class,r.foe?.gender)};adopt(r.duel);open()}}).catch(()=>{})}
   return html};
  window.valorDuel={use,state:()=>duel,close,skillIcon,skillName,skillText,fallbackIcon};
 })();
+

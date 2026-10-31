@@ -19,7 +19,7 @@ async function valorArenaOnlineLoad(force){
    valorArenaRpc('arena_my_rank').catch(()=>null),
    valorCloudFetch('/rest/v1/arena_log?select=attacker_name,win,draw,rounds,created_at&defender=eq.'+encodeURIComponent(uid)+'&order=created_at.desc&limit=10').catch(()=>[])
   ]);
-  o.rivals=(Array.isArray(rivals)?rivals:[]).filter(r=>r&&r.combat&&classes.includes(r.class)).map((r,i)=>({id:1000+i,uid:r.id,name:r.name,cls:r.class,level:r.level,power:Number(r.power)||0,wins:Number(r.arena_wins)||0,combatStats:r.combat,portrait:valorArenaPortrait(r.class,r.profile?.gender)})).sort((a,b)=>b.power-a.power);
+  o.rivals=(Array.isArray(rivals)?rivals:[]).filter(r=>r&&r.combat&&classes.includes(r.class)).map((r,i)=>({id:1000+i,uid:r.id,name:r.name,cls:r.class,gender:r.profile?.gender,level:r.level,power:Number(r.power)||0,wins:Number(r.arena_wins)||0,combatStats:r.combat,portrait:valorArenaPortrait(r.class,r.profile?.gender)})).sort((a,b)=>b.power-a.power);
   o.top=Array.isArray(top)?top:[];o.myRank=typeof my==='number'?my:null;o.defenses=Array.isArray(defs)?defs:[];o.at=Date.now();
   valorArenaNotifyDefenses();
  }catch(e){o.at=Date.now();o.error=(e.status===404||e.code==='PGRST202')?'Gerçek oyuncu arenası sunucuda henüz kurulmadı.':e.message}
@@ -100,3 +100,4 @@ valorArenaFight=async function(id){
   onDone:()=>valorArenaOnlineFinish(rival,battle)});
 };
 if(state.class&&page==='Savaş')render();
+
