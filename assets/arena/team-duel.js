@@ -33,7 +33,7 @@
   if(stable===td.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
   td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}floatNew()}
  function motionUnit(u){const gender=u.uid===myUid()&&u.side==='A'?state.gender:u.gender;return {...u,gender,art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,gender):null}}
- function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
+ function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=e.skill==='passive'?(td.st.units.find(u=>u.side!==a?.side&&u.hp>0)||td.st.units.find(u=>u.side!==a?.side)):td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"] .vdu-portrait');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
   if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*400))}
@@ -99,4 +99,5 @@
   td.kind='local';td.all=[];td.shown=0;td.meta=null;td.local=D.teamCreate(A,B,Date.now());adopt(D.teamView(td.local));open();if(td.st.status==='done')finish()};
  window.valorTeamDuel={use,state:()=>td,close};
 })();
+
 
