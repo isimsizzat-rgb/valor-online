@@ -90,3 +90,42 @@ function valorCraftPanel(){
  });
  return t.innerHTML;
 }})();
+
+/* Quick shatter: every spare permanent mount card in the bag at once. A card is spare when that mount
+   is already in the collection; if it is not, one card is kept so it can still be used. The Üç Başlı
+   Ejderha and timed cards are never touched. */
+function valorSpareMountCards(){
+ const seen=new Set(),out=[];
+ (state.inventory||[]).forEach((it,n)=>{
+  if(!it||it.slot!=='Binek'||it.tempDays||it.mountId==='threeDragon')return;
+  const m=valorMounts.find(x=>x.id===it.mountId);if(!m)return;
+  if(!valorMountOwned(m.id)&&!seen.has(m.id)){seen.add(m.id);return}
+  out.push({n,id:it.id,m,shards:valorMountShards(m)});
+ });
+ return out;
+}
+function valorSpareMountsBar(){
+ const spare=valorSpareMountCards();if(!spare.length)return '';
+ const total=spare.reduce((s,c)=>s+c.shards,0);
+ return '<div class="vmc-spare"><span><b>'+spare.length+' fazla binek kartı</b><small>Parçalarsan +'+money(total)+' Binek Ruh Parçası</small></span><button type="button" onclick="valorShatterSpareAsk()">Hepsini Parçala</button></div>';
+}
+function valorShatterSpareClose(){document.getElementById('vmc-spare-confirm')?.remove()}
+function valorShatterSpareAsk(){
+ const spare=valorSpareMountCards();if(!spare.length)return toast('Parçalanacak fazla binek kartı yok');
+ const groups=new Map();for(const c of spare){const g=groups.get(c.m.id)||{m:c.m,count:0,shards:0};g.count++;g.shards+=c.shards;groups.set(c.m.id,g)}
+ const total=spare.reduce((s,c)=>s+c.shards,0);valorShatterSpareClose();
+ const o=document.createElement('div');o.id='vmc-spare-confirm';o.className='vr-overlay';
+ o.innerHTML='<div class="vr-dialog vmc-spare-dialog" role="dialog" aria-modal="true" aria-label="Fazla binekleri parçala"><button type="button" class="vr-close" aria-label="Kapat" onclick="valorShatterSpareClose()">×</button><span class="vr-eyebrow">ÇANTA · BİNEK KARTLARI</span><h2>Fazla Binekleri Parçala</h2><p class="vr-lead">Koleksiyonunda zaten olan binek kartları parçalanır. Koleksiyonunda olmayan bir bineğin bir kartı kullanman için çantada bırakılır.</p><ul class="vmc-spare-list">'+[...groups.values()].map(g=>'<li><img src="'+vmMountImage(g.m)+'" alt=""><span>'+escapeAttr(g.m.name)+' <small>×'+g.count+'</small></span><b>+'+money(g.shards)+'</b></li>').join('')+'</ul><p class="vmc-spare-total">Toplam: <b>+'+money(total)+' Binek Ruh Parçası</b></p><div class="vmc-spare-actions"><button type="button" class="vmc-spare-cancel" onclick="valorShatterSpareClose()">Vazgeç</button><button type="button" class="vr-claim" onclick="valorShatterSpare()">'+spare.length+' Kartı Parçala</button></div></div>';
+ o.addEventListener('click',e=>{if(e.target===o)valorShatterSpareClose()});document.body.append(o);
+}
+function valorShatterSpare(){
+ const spare=valorSpareMountCards();valorShatterSpareClose();if(!spare.length)return;
+ const ids=new Set(spare.map(c=>String(c.id))),total=spare.reduce((s,c)=>s+c.shards,0);
+ vwInit();state.mountSpiritFragments=valorShardCount()+total;
+ state.inventory=state.inventory.filter(it=>!ids.has(String(it.id)));selected=null;closeBagPopup();save();render();
+ toast(spare.length+' binek kartı parçalandı · +'+money(total)+' Binek Ruh Parçası');
+}
+(function(){
+ const prevBag=bag;bag=function(){const html=prevBag.apply(this,arguments),bar=valorSpareMountsBar();if(!bar)return html;return html.replace('<div class="bag-layout">',bar+'<div class="bag-layout">')};
+ const prevPanel=valorCraftPanel;valorCraftPanel=function(){const html=prevPanel.apply(this,arguments),bar=valorSpareMountsBar();return bar?html.replace('<div class="vmc-grid">',bar+'<div class="vmc-grid">'):html};
+})();
