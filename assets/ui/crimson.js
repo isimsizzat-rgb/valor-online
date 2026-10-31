@@ -61,7 +61,7 @@
  window.valorCrimsonFilter=function(filter){if(!['Tümü','Savaş','Gelişim','Topluluk','Diğer'].includes(filter))return;menuFilter=filter;render()};
  window.valorSetLayout=function(layout){if(!['crimson','classic'].includes(layout))return;root.dataset.valorLayout=layout;try{localStorage.setItem(LAYOUT_KEY,layout)}catch{}if(layout==='classic'){const current=document.querySelector('.top.valor-resource-bar');if(current?.dataset.crimsonHeader)current.replaceWith(originalHeader.cloneNode(true));document.querySelector('.vc-masthead')?.remove()}else header();render()};
  window.valorSettingsPage=function(){const template=document.createElement('template');template.innerHTML=legacy.settings.apply(this,arguments);const card=template.content.querySelector('.vhub-card');if(card){const controls=document.createElement('div');controls.className='vc-layout-picker';controls.innerHTML='<p>Arayüz düzeni</p><div role="group" aria-label="Arayüz düzeni"><button type="button" aria-pressed="'+modern()+'" onclick="valorSetLayout(\'crimson\')">Yeni düzen</button><button type="button" aria-pressed="'+!modern()+'" onclick="valorSetLayout(\'classic\')">Klasik görünüm</button></div><small>Klasik görünümünü istediğin zaman geri açabilirsin. Karakterin ve ilerlemen korunur.</small>';card.append(controls)}return template.innerHTML};
- render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;trackPage();backBar();armBack();swapGlyphs(document.getElementById('main'));return result};
+ render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;trackPage();backBar();armBack();compactForgeNav();swapGlyphs(document.getElementById('main'));return result};
 
  /* Emoji left in older page renderers are swapped for the theme's own art after
     every DOM change. Chat messages and form fields are left untouched. */
@@ -125,6 +125,17 @@
  }
  function armBack(){if(!modern()||!state.class)return;try{if(!history.state||!history.state.vcBack)history.pushState({vcBack:1},'')}catch{}}
  window.addEventListener('popstate',()=>{if(!modern()||!state.class||document.body.classList.contains('valor-account-screen'))return;if(valorCrimsonBack())armBack()});
+
+ /* Atölye: the nine tools become two short rows — the group (Ekipman · Mozaik · Birleştirme) and that
+    group's three tools as pills. The original buttons are reused, so every tab keeps its own action. */
+ function compactForgeNav(){
+  if(!modern()||page!=='Atölye')return;const nav=document.querySelector('#main .forge-nav');if(!nav||nav.dataset.vcCompact)return;
+  const groups=[...nav.querySelectorAll('.forge-nav-group')];if(!groups.length)return;
+  let active=groups.findIndex(g=>g.querySelector('button.active,button[aria-current=page]'));if(active<0)active=0;
+  const bar=document.createElement('div');bar.className='vc-forge-groups';bar.setAttribute('role','tablist');
+  groups.forEach((g,i)=>{g.classList.toggle('vc-forge-open',i===active);const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(i===active));b.textContent=g.querySelector('h3')?.textContent||'';b.onclick=()=>{if(i===active)return;g.querySelector('div > button')?.click()};bar.append(b)});
+  nav.prepend(bar);nav.dataset.vcCompact='1';
+ }
  function install(){header();render()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

@@ -391,3 +391,21 @@ html[data-valor-layout=crimson] body.valor-chat-page .vch-form input,html[data-v
 html[data-valor-layout=crimson] body.valor-chat-page #vch-count{display:none!important}
 html[data-valor-layout=crimson] body.valor-chat-page #vch-count.vch-near{display:block!important}
 html[data-valor-layout=crimson] body.valor-chat-page .vch-msg{padding:5px 9px 6px!important}
+/* Atölye: no character header (only a slim resource strip) and a compact two-row tool menu. */
+html[data-valor-layout=crimson] body[data-valor-page="Atölye"] .vc-masthead{display:none!important}
+html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header] :is(.vc-header-art-frame,.vc-identity,.valor-level-block){display:none!important}
+html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header]{margin-top:10px!important;border-top-width:1px!important}
+html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header] .vc-resources{border-top:0!important;min-height:40px}
+html[data-valor-layout=crimson] body[data-valor-page="Atölye"] .layout{margin-top:10px!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact]{display:block!important;padding:0!important;margin:0 0 12px!important;background:none!important;border:0!important;box-shadow:none!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group{display:none!important;margin:0!important;padding:0!important;background:none!important;border:0!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group.vc-forge-open{display:block!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group h3{display:none!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group>div{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;margin:0!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group>div>button{min-height:34px!important;height:34px!important;margin:0!important;padding:0 6px!important;border-radius:999px!important;background:var(--vc-card)!important;background-image:none!important;border:1px solid var(--vc-line)!important;box-shadow:none!important;color:var(--vc-ink)!important;font:600 12.5px/1 system-ui,sans-serif!important;white-space:nowrap}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group>div>button span{color:inherit!important;text-shadow:none!important;overflow:hidden;text-overflow:ellipsis;display:block}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group>div>button small{display:none!important}
+html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group>div>button.active{background:#87352b!important;border-color:#87352b!important;color:#fff1d8!important}
+html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 0 8px;border-bottom:1px solid var(--vc-line)}
+html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups button{min-height:38px!important;height:38px!important;margin:0 0 -1px!important;padding:0 4px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:none!important;background-image:none!important;box-shadow:none!important;color:var(--vc-muted)!important;font:600 11.5px/1 system-ui,sans-serif!important;letter-spacing:1.2px;text-transform:uppercase;text-shadow:none!important}
+html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups button[aria-selected=true]{color:var(--vc-red)!important;border-bottom-color:var(--vc-red)!important}
