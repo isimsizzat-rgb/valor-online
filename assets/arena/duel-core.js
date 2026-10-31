@@ -4,7 +4,7 @@
      1 Saldırı      normal hit           1 s cooldown
      2 Güçlü Vuruş  130% hit             5 s cooldown
      3 Son Darbe    175% hit (max)      20 s cooldown
-     4 Pasif        class effect, uses the turn, 10 s cooldown (Savaşçı shield: 45 s)
+     4 Pasif        class effect, uses the turn, 45 s cooldown
                     (Savaşçı shield and Okçu damage boost last 3 turns; Büyücü heals at once)
    A player who does not act within 5 seconds gets an automatic choice. */
 (function (root) {
@@ -28,18 +28,18 @@
     normal: { name: 'Saldırı', mult: 1, cd: 1000, icon: 'assets/arena/skills/normal.webp' },
     strong: { name: 'Güçlü Vuruş', mult: 1.3, cd: 5000, icon: 'assets/arena/skills/strong.webp' },
     max: { name: 'Son Darbe', mult: 1.75, cd: 20000, icon: 'assets/arena/skills/max.webp' },
-    passive: { name: 'Pasif', mult: 0, cd: 10000 }
+    passive: { name: 'Pasif', mult: 0, cd: 45000 }
   };
   /* Class passives (calibrated with tools/arena/duel-balance.cjs). They use the turn. */
   const PASSIVES = {
-    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .25, turns: 3, cd: 45000, text: '3 tur, canının %25\'i kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
+    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .25, turns: 3, text: '3 tur, canının %25\'i kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
     'Büyücü': { id: 'heal', name: 'Yenilenme', value: .25, text: 'Canının %25\'i kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
     'Okçu': { id: 'focus', name: 'Odaklan', value: .25, turns: 3, text: '3 tur boyunca %25 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
   };
   const TURN_MS = 5000, GRACE_MS = 1200, MAX_ROUNDS = 200, ORDER = ['normal', 'strong', 'max', 'passive'];
   const passiveOf = (u) => PASSIVES[u.cls] || PASSIVES['Savaşçı'];
   const ready = (u, k, t) => t >= (u.cd[k] || 0);
-  /* Cooldown of a skill; a class passive may set its own (warrior shield: 45 s). */
+  /* Cooldown of a skill; a class passive may set its own (none do now). */
   const cdOf = (u, k) => k === 'passive' ? (passiveOf(u).cd || SKILLS.passive.cd) : SKILLS[k].cd;
 
   function fighter(p) { const u = arenaUnit({ ...p.stats }, p.cls); return { ...u, name: p.name, cls: p.cls, level: p.level || 1, gender: p.gender || 'male', cd: { normal: 0, strong: 0, max: 0, passive: 0 }, shield: 0, shieldTurns: 0, focus: 0, focusTurns: 0, burn: null }; }
