@@ -7,7 +7,7 @@ const valorWings=[
  {id:'hiclik',name:'Hiçlik Kanatları',price:999,color:'#9b61e0',desc:'Karanlık tüyler, gümüş gotik katedral kuleleri ve mor büyü ışığı.'}
 ];
 const valorWingStatLabels={Saldırı:'Saldırı',Sihir:'Sihirli Saldırı',Savunma:'Defans','Sihir Savunma':'Sihirli Defans',Kritik:'Kritik',Bloke:'Bloke',Can:'Can'};
-function valorWingArt(w){return 'assets/fashion/'+(w.wingId||w.id)+'.webp'}
+function valorWingArt(w){return 'assets/fashion/'+(w.wingId||w.id)+'.webp?v=20261031-gothic-wings'}
 function valorWingLevel(it){return Math.max(1,Math.min(10,Math.floor(Number(it?.wingLevel??it?.level)||1)))}
 function valorWingItems(){const items=new Map();for(const it of [...(state.inventory||[]),state.equipped?.Kanat])if(it&&valorWings.some(w=>w.id===it.wingId))items.set(String(it.id),it);return [...items.values()]}
 function valorWingOwned(id){return valorWingItems().some(it=>it.wingId===id)}

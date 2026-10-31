@@ -11,6 +11,6 @@ Oyunun dört mevcut kanadı **aynı kimlikler ve dosya adları korunarak** gotik
 
 Kaynak görseller (1254×1254, transparan PNG) ve oyuna hazır alfa kanallı WebP dosyaları, kullanıcının ChatGPT Library kütüphanesindeki `/Valor Online/Gotik Kanatlar/` klasörüne kaydedildi. Hazırlanan `Valor_Online_Gotik_Kanatlar.zip` paketinin `assets/fashion/` klasörü bu depo klasörüyle aynı yapıda hazırlanmıştır.
 
-**Aktarım notu:** GitHub'daki dört mevcut `.webp` dosyası paketteki karşılıklarıyla değiştirilmelidir. Bu belge, dosya aktarımının gerçekleştiğini iddia etmez. `fashion.js` renk ve açıklama metinleri yeni tasarımlara uyarlanmıştır, fakat görseller aktarılmadan site hâlâ eski WebP görüntülerini kullanır.
+**Entegrasyon tamamlandı (31.10.2026):** GitHub'daki dört mevcut `.webp` dosyası paketteki transparan karşılıklarıyla değiştirildi. `fashion.js` renkleri, açıklamaları ve güncel görsel adresleri yeni tasarımlara uyarlandı.
 
 Oyuncuların mevcut kanatları, seviyeler, statlar, fiyatlar ve birleştirme mantığı **değiştirilmez**.
