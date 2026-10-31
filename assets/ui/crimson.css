@@ -357,3 +357,23 @@ html[data-valor-layout=crimson] body.valor-home #main .vc-backbar{display:none}
 html[data-valor-layout=crimson] #main .vc-backbar button{display:inline-flex!important;align-items:center;gap:7px;width:auto!important;min-height:34px;margin:0!important;padding:5px 14px 5px 10px!important;border:1px solid var(--vc-line)!important;border-radius:999px!important;background:var(--vc-card)!important;background-image:none!important;box-shadow:none!important;color:var(--vc-red)!important;font:600 13px/1 system-ui,sans-serif!important;letter-spacing:.2px;text-shadow:none!important;cursor:pointer}
 html[data-valor-layout=crimson] #main .vc-backbar button span{font-size:20px;line-height:.8;margin-top:-2px}
 html[data-valor-layout=crimson] #main .vc-backbar button:active{transform:translateY(1px)}
+
+/* Chat in the new layout: no masthead, plain clickable names in readable class colours,
+   quiet block button, parchment message cards. */
+html[data-valor-layout=crimson] body.valor-chat-page .vc-masthead{display:none!important}
+html[data-valor-layout=crimson] body.valor-chat-page .layout{margin-top:12px!important}
+html[data-valor-layout=crimson] body #main .vch-meta button.vch-name{background-image:none!important;display:inline!important;min-height:0!important;width:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;font:inherit!important;cursor:pointer}
+html[data-valor-layout=crimson] body #main .vch-meta .vch-name b{font:700 13px/1.2 Georgia,serif!important}
+html[data-valor-layout=crimson] .vch-more{opacity:.45;font-size:13px!important}
+html[data-valor-layout=crimson] .vch-more:hover,html[data-valor-layout=crimson] .vch-more:focus-visible{opacity:1}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-list{background:#efe7d6!important;border-color:var(--vc-line)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-msg{background:#fbf7ee!important;border-color:var(--vc-line)!important;box-shadow:0 1px 2px #6b4f2a14}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-msg.mine{background:#f3e3cf!important;border-color:#d4b38e!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-msg p{color:var(--vc-ink)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-meta small{color:var(--vc-muted)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[style*="#e3a08f"]{color:#9a3326!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[style*="#c4a8f0"]{color:#6a43a6!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[style*="#9fd48a"]{color:#3b7228!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[style*="#ecd7b4"]{color:var(--vc-ink)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] .vch-channel{color:var(--vc-red)!important}
+html[data-valor-layout=crimson] body #main .vch-meta button.vch-more{width:auto!important;min-width:0!important;height:auto!important;min-height:0!important;padding:0 2px!important;border:0!important;border-radius:0!important;background:none!important;background-image:none!important;box-shadow:none!important;color:var(--vc-muted)!important}

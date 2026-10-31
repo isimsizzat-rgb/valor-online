@@ -16,7 +16,7 @@ function valorChatRow(m){
 function valorChatListHtml(ch){const list=valorChat.msgs[ch];if(!list)return '<p class="vch-empty">Mesajlar yükleniyor…</p>';const rows=list.map(valorChatRow).join('');return rows||'<p class="vch-empty">Henüz mesaj yok. İlk mesajı sen yaz!</p>'}
 function valorChatPaint(){
  const el=document.getElementById('vch-list');if(!el)return;
- const near=el.scrollHeight-el.scrollTop-el.clientHeight<80;el.innerHTML=valorChatListHtml(valorChatCurrent());if(near||!el.dataset.painted)el.scrollTop=el.scrollHeight;el.dataset.painted='1';
+ const near=el.scrollHeight-el.scrollTop-el.clientHeight<80;el.innerHTML=valorChatListHtml(valorChatCurrent());if(near||!el.dataset.painted)el.scrollTop=el.scrollHeight;el.dataset.painted='1';valorChatMarkSeen();
 }
 async function valorChatFetch(){
  const ch=valorChatCurrent();if(valorChat.loading)return;valorChat.loading=true;
@@ -67,7 +67,7 @@ chatPage=function(){
 };
 /* One tab row: Sohbet (world) · Haberler · Birlik (guild chat). "Birlik" is added next to the existing
    Sohbet / Haberler tabs; Sohbet always opens the world channel. */
-function valorChatOpenGuild(){const g=valorChatGuildChannel();if(!g)return toast('Birlik sohbeti için önce bir birliğe katılmalısın.');valorChat.channel=g;if(typeof window.valorSocialSelectTab==='function')window.valorSocialSelectTab('chat');else render();valorChatFetch()}
+function valorChatOpenGuild(){const g=valorChatGuildChannel();if(!g)return toast('Birlik sohbeti için önce bir birliğe katılmalısın.');valorChat.channel=g;if(typeof window.valorSocialSelectTab==='function')window.valorSocialSelectTab('chat');else render();document.getElementById('valor-guild-chat-tab')?.focus({preventScroll:true});valorChatFetch()}
 function valorChatDecorateTabs(){
  if(page!=='Sohbet')return;const bar=document.querySelector('.valor-social-tabs');if(!bar)return;
  const sel=window.valorSocialSelectTab;if(typeof sel==='function'&&!sel.valorChatWrapped){const wrapped=function(tab){if(tab==='chat'&&!wrapped.keepGuild)valorChat.channel='world';wrapped.keepGuild=false;return sel.apply(this,arguments)};wrapped.valorChatWrapped=true;window.valorSocialSelectTab=wrapped}
@@ -107,3 +107,36 @@ function valorChatFit(){
 })();
 setInterval(()=>{if(page==='Sohbet'&&!document.hidden&&valorChatOnline()&&state.class)valorChatFetch()},VALOR_CHAT_POLL);
 if(state.class&&page==='Sohbet')render();
+
+/* Unread badge: while the player is elsewhere in the game, new world/guild messages are counted on the
+   Sohbet tab of the bottom menu. Seen positions are kept per device; own and blocked messages never count. */
+const VALOR_CHAT_BADGE_POLL=20000,VALOR_CHAT_SEEN_KEY='valor-chat-seen-v1';
+let valorChatUnread=0;
+function valorChatSeen(){try{return JSON.parse(localStorage.getItem(VALOR_CHAT_SEEN_KEY))||{}}catch{return {}}}
+function valorChatSetSeen(ch,id){const s=valorChatSeen();if((s[ch]||0)>=id)return;s[ch]=id;try{localStorage.setItem(VALOR_CHAT_SEEN_KEY,JSON.stringify(s))}catch{}}
+function valorChatMarkSeen(){if(page!=='Sohbet')return;const ch=valorChatCurrent(),list=valorChat.msgs[ch];if(list?.length)valorChatSetSeen(ch,Math.max(...list.map(m=>m.id)));if(ch==='world'||ch===valorChatGuildChannel()){valorChatUnread=0;valorChatBadge()}}
+function valorChatBadge(){
+ const btn=document.querySelector('#bottomNav [aria-label="Sohbet"]')||[...document.querySelectorAll('#bottomNav button')].find(b=>b.textContent.trim().startsWith('Sohbet'));
+ if(!btn)return;let b=btn.querySelector('.vch-badge');
+ if(!valorChatUnread||page==='Sohbet'){b?.remove();return}
+ if(!b){b=document.createElement('span');b.className='vch-badge';btn.append(b)}
+ b.textContent=valorChatUnread>9?'9+':String(valorChatUnread);b.setAttribute('aria-label',valorChatUnread+' okunmamış mesaj');
+}
+async function valorChatCheckUnread(){
+ if(!valorChatOnline()||!state.class||page==='Sohbet'||document.hidden)return;
+ const me=valorAccountActive?.id,blocked=valorChatBlocked(),seen=valorChatSeen(),chans=['world',valorChatGuildChannel()].filter(Boolean);let total=0;
+ try{
+  for(const ch of chans){
+   const from=seen[ch]||0,q='/rest/v1/chat_messages?select=id,user_id,name&channel=eq.'+encodeURIComponent(ch);
+   // First visit on this device: start counting from the newest message instead of the whole history.
+   if(!from){const top=await valorCloudFetch(q+'&order=id.desc&limit=1');if(Array.isArray(top)&&top[0])valorChatSetSeen(ch,top[0].id);continue}
+   const rows=await valorCloudFetch(q+'&id=gt.'+from+'&order=id.asc&limit=50');
+   if(Array.isArray(rows))total+=rows.filter(r=>r.user_id!==me&&!blocked.includes(r.name)).length;
+  }
+ }catch{return}
+ valorChatUnread=total;valorChatBadge();
+}
+(function(){const prev=render;render=function(){const r=prev.apply(this,arguments);try{valorChatBadge()}catch{}return r}})();
+setInterval(valorChatCheckUnread,VALOR_CHAT_BADGE_POLL);
+setTimeout(valorChatCheckUnread,4000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)valorChatCheckUnread()});
