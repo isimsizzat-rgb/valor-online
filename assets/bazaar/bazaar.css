@@ -1,0 +1,18 @@
+/* Genel Pazar */
+.vbz-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.vbz-filters select{min-width:0;min-height:36px;font:12px system-ui;padding:0 6px}
+.vbz-count{margin:0;font:11px system-ui;opacity:.7}
+.vbz-list{display:flex;flex-direction:column;gap:8px}
+.vbz-card{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--vt-color) 55%,#c9b28c);border-left:4px solid var(--vt-color);border-radius:10px;background:#fbf7ee;color:#342c23}
+html[data-valor-theme=dark] .vbz-card{background:#1d1712;color:#f0dcb4}
+.vbz-card>img{flex:none;width:56px;height:56px;object-fit:contain}
+.vbz-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.vbz-copy>b{font:700 14px Georgia,serif}.vbz-copy>small{display:block;font:11px/1.4 system-ui;opacity:.85}.vbz-copy>small .vt-dot{display:inline-block;margin-right:5px;vertical-align:0}
+.vbz-buy button{min-height:38px!important;width:auto!important;margin:0!important;padding:0 10px!important;font:700 12px system-ui!important;white-space:nowrap}
+.vbz-proceeds{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid #c9a35f;border-radius:12px;background:#fff8e6;color:#3d2e1c}
+html[data-valor-theme=dark] .vbz-proceeds{background:#241b14;color:#f0dcb4;border-color:#8d6d3c}
+.vbz-proceeds span{display:flex;flex-direction:column;gap:2px}.vbz-proceeds small{font:11px system-ui;opacity:.75}.vbz-proceeds b{font:700 20px system-ui}.vbz-proceeds i{font:10.5px system-ui;opacity:.7;font-style:normal}
+.vbz-proceeds button{min-height:40px!important;width:auto!important;margin:0!important;padding:0 18px!important}
+.vbz-prices{font:12px system-ui}.vbz-prices summary{cursor:pointer;opacity:.8}.vbz-prices div{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.vbz-prices span{display:flex;flex-direction:column;align-items:center;padding:4px;border:1px solid #c9b28c77;border-radius:6px;font-size:10.5px}.vbz-prices b{font-size:12px}
+.vbz-sold{display:flex;flex-direction:column;gap:4px}.vbz-sold span{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid #c9b28c66;border-radius:8px;font:12px system-ui}.vbz-sold small{opacity:.8;white-space:nowrap}
+.vbz-dot{display:inline-block;width:7px;height:7px;margin-left:4px;border-radius:50%;background:#c4473a;vertical-align:2px}

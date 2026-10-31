@@ -45,7 +45,11 @@
  // Talismans made before the Can change get their Can roll raised once.
  function upgradeHp(it){if(it.talismanHpV2)return;if(it.talismanRolls&&Number.isFinite(it.talismanRolls.hp))it.talismanRolls.hp=Math.round(it.talismanRolls.hp*HP_FACTOR);it.talismanHpV2=true}
  function all(){const list=(state.inventory||[]).filter(isTalisman);list.forEach(upgradeHp);return list}
- function slots(){if(!Array.isArray(state.talismanSlots))state.talismanSlots=[null,null,null,null];const ids=new Set(all().map(it=>String(it.id)));state.talismanSlots=state.talismanSlots.slice(0,4).map((id,i)=>id!=null&&ids.has(String(id))&&state.level>=SLOT_LEVELS[i]?String(id):null);while(state.talismanSlots.length<4)state.talismanSlots.push(null);return state.talismanSlots}
+ function slots(){if(!Array.isArray(state.talismanSlots))state.talismanSlots=[null,null,null,null];const ids=new Set(all().map(it=>String(it.id)));state.talismanSlots=state.talismanSlots.slice(0,4).map((id,i)=>id!=null&&ids.has(String(id))&&state.level>=SLOT_LEVELS[i]?String(id):null);while(state.talismanSlots.length<4)state.talismanSlots.push(null);for(const id of state.talismanSlots){const it=id&&all().find(x=>String(x.id)===id);if(it&&!it.talismanBound)it.talismanBound=true}return state.talismanSlots}
+ /* Bağdaştırma: a talisman binds the first time it is equipped and can then never be sold in the Pazar.
+    New drops and fusion results start unbound. */
+ const bound=it=>!!it?.talismanBound;
+ const bindLabel=it=>bound(it)?'Bağdaştırıldı':'Bağdaştırılmadı';
  const find=id=>all().find(it=>String(it.id)===String(id));
  const equippedIn=it=>slots().indexOf(String(it.id));
  // Transparent pendant artwork: each type has a gemstone matching its colour grade.
@@ -84,7 +88,7 @@
  const esc=v=>escapeAttr(String(v??''));
  function statLines(it){return Object.entries(statsOf(it)).map(([k,v])=>'<span><small>'+STAT[k][1]+'</small><b>+'+money(v)+'</b></span>').join('')}
  function rollLines(it){const t=typeOf(it);return Object.entries(it.talismanRolls).map(([k,v])=>{const [a,b]=statRange(colorOf(it),t.stats.length,k);return '<span><small>'+STAT[k][1]+' (Sv.10)</small><b>'+money(v)+'</b><i>'+money(a)+'–'+money(b)+'</i></span>'}).join('')}
- function card(it,extra=''){const c=colorOf(it),slot=equippedIn(it);return '<button type="button" class="vt-card" style="--vt-color:'+c.hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><span class="vt-card-copy"><b>'+esc(it.name)+'</b><small><i class="vt-dot"></i>Sv. '+lvl(it)+(slot>=0?' · Takılı':'')+'</small><span class="vt-card-stats">'+statLines(it)+'</span></span>'+extra+'</button>'}
+ function card(it,extra=''){const c=colorOf(it),slot=equippedIn(it);return '<button type="button" class="vt-card" style="--vt-color:'+c.hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><span class="vt-card-copy"><b>'+esc(it.name)+'</b><small><i class="vt-dot"></i>Sv. '+lvl(it)+(slot>=0?' · Takılı':'')+' · <span class="vt-bind '+(bound(it)?'vt-bound':'vt-free')+'">'+bindLabel(it)+'</span></small><span class="vt-card-stats">'+statLines(it)+'</span></span>'+extra+'</button>'}
  function slotsHtml(){return '<div class="vt-slots">'+slots().map((id,i)=>{const open=state.level>=SLOT_LEVELS[i],it=id&&find(id);if(!open)return '<div class="vt-slot vt-slot-locked"><span>🔒</span><small>Sv. '+SLOT_LEVELS[i]+'</small></div>';if(!it)return '<div class="vt-slot vt-slot-empty"><span>+</span><small>Boş yuva</small></div>';return '<button type="button" class="vt-slot" style="--vt-color:'+colorOf(it).hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><small>Sv. '+lvl(it)+'</small></button>'}).join('')+'</div>'}
  function totalsHtml(){const b=bonus(),keys=Object.keys(b);if(!keys.length)return '<p class="vt-muted">Henüz takılı tılsım yok.</p>';const label={Saldırı:'Saldırı',Savunma:'Defans',Sihir:'Sihirli Saldırı','Sihir Savunma':'Sihirli Defans',Can:'Can'};return '<div class="vt-totals">'+keys.map(k=>'<span><small>'+label[k]+'</small><b>+'+money(b[k])+'</b></span>').join('')+'</div>'}
  function sorted(){return all().sort((a,b)=>(equippedIn(b)>=0)-(equippedIn(a)>=0)||lvl(b)-lvl(a)||b.talismanColor-a.talismanColor)}
@@ -111,13 +115,13 @@
  function dialog(html){closeBagPopup();const o=document.createElement('div');o.id='valor-bag-popup';o.className='valor-item-overlay';o.innerHTML='<section class="valor-item-dialog vt-dialog" role="dialog" aria-modal="true" aria-label="Tılsım"><button type="button" class="valor-item-close" onclick="closeBagPopup()" aria-label="Kapat">×</button>'+html+'</section>';o.addEventListener('click',e=>{if(e.target===o)closeBagPopup()});document.body.appendChild(o)}
  window.valorTalismanShow=function(id,title){
   const it=find(id);if(!it)return;const c=colorOf(it),slot=equippedIn(it),open=SLOT_LEVELS.filter(l=>state.level>=l).length;
-  const actions=slot>=0?'<button type="button" onclick="valorTalismanUnequip(\''+esc(it.id)+'\')">Çıkar</button>':(open?'<button type="button" onclick="valorTalismanEquip(\''+esc(it.id)+'\')">Kuşan</button>':'<button type="button" disabled>İlk yuva Sv. 25’te açılır</button>')+'<button type="button" onclick="closeBagPopup();valorTalismanPick(-1,\''+esc(it.id)+'\');go(\''+PAGE+'\')">Birleştirmeye Seç</button>';
-  dialog((title?'<div class="vt-drop-title">'+title+'</div>':'')+'<img class="vt-dialog-art" src="'+art(it)+'" alt="" style="--vt-color:'+c.hex+'"><small class="vt-kicker" style="color:'+c.hex+'">SV. '+lvl(it)+' / 10</small><h3>'+esc(it.name)+'</h3><div class="vt-dialog-stats">'+statLines(it)+'</div><details class="vt-rolls"><summary>Sv.10 değerleri</summary><div>'+rollLines(it)+'</div></details><div class="vt-dialog-actions">'+actions+'</div>'+(page!==PAGE?'<button type="button" class="vt-open-page" onclick="closeBagPopup();go(\''+PAGE+'\')">Tılsım ekranına git</button>':''));
+  const actions=slot>=0?'<button type="button" onclick="valorTalismanUnequip(\''+esc(it.id)+'\')">Çıkar</button>':(open?'<button type="button" onclick="valorTalismanEquip(\''+esc(it.id)+'\')">Kuşan</button>':'<button type="button" disabled>İlk yuva Sv. 25’te açılır</button>')+'<button type="button" onclick="closeBagPopup();valorTalismanPick(-1,\''+esc(it.id)+'\');go(\''+PAGE+'\')">Birleştirmeye Seç</button>'+(!bound(it)&&slot<0&&typeof valorBazaarSellAsk==='function'?'<button type="button" class="vt-sell" onclick="valorBazaarSellAsk(\''+esc(it.id)+'\')">Pazarda Sat · '+money(valorBazaarPrice(lvl(it)))+' 💎</button>':'');
+  dialog((title?'<div class="vt-drop-title">'+title+'</div>':'')+'<img class="vt-dialog-art" src="'+art(it)+'" alt="" style="--vt-color:'+c.hex+'"><small class="vt-kicker" style="color:'+c.hex+'">SV. '+lvl(it)+' / 10</small><h3>'+esc(it.name)+'</h3><p class="vt-bind-line '+(bound(it)?'vt-bound':'vt-free')+'">'+bindLabel(it)+(bound(it)?' · pazarda satılamaz':' · kuşanınca bağdaşır ve artık satılamaz')+'</p><div class="vt-dialog-stats">'+statLines(it)+'</div><details class="vt-rolls"><summary>Sv.10 değerleri</summary><div>'+rollLines(it)+'</div></details><div class="vt-dialog-actions">'+actions+'</div>'+(page!==PAGE?'<button type="button" class="vt-open-page" onclick="closeBagPopup();go(\''+PAGE+'\')">Tılsım ekranına git</button>':''));
  };
  window.valorTalismanEquip=function(id){
   const it=find(id);if(!it)return;const s=slots();if(s.includes(String(it.id)))return;
   const i=s.findIndex((sid,k)=>!sid&&state.level>=SLOT_LEVELS[k]);if(i<0)return toast(SLOT_LEVELS.filter(l=>state.level>=l).length?'Bütün açık yuvalar dolu · önce birini çıkar':'İlk tılsım yuvası Sv. 25’te açılır');
-  s[i]=String(it.id);pick=pick.map(p=>p===String(it.id)?'':p);save();closeBagPopup();render();toast(it.name+' takıldı');
+  s[i]=String(it.id);it.talismanBound=true;pick=pick.map(p=>p===String(it.id)?'':p);save();closeBagPopup();render();toast(it.name+' takıldı');
  };
  window.valorTalismanUnequip=function(id){const s=slots(),i=s.indexOf(String(id));if(i<0)return;s[i]=null;save();closeBagPopup();render();toast('Tılsım çıkarıldı')};
  window.valorTalismanAskMerge=function(){
@@ -141,5 +145,5 @@
  // ---------- Page ----------
  const prevRender=render;
  render=function(){const r=prevRender.apply(this,arguments);if(page===PAGE&&state.class&&(typeof valorAccountCanPlay!=='function'||valorAccountCanPlay())){const m=document.getElementById('main');if(m){slots();m.innerHTML=pageHtml()}}return r};
- window.valorTalismanMake=make;window.valorTalismanTypes=TYPES;window.valorTalismanColors=COLORS;window.valorTalismanRange=range;
+ window.valorTalismanCard=card;window.valorTalismanIsBound=bound;window.valorTalismanFind=find;window.valorTalismanAll=all;window.valorTalismanEquippedIn=equippedIn;window.valorTalismanMake=make;window.valorTalismanTypes=TYPES;window.valorTalismanColors=COLORS;window.valorTalismanRange=range;
 })();
