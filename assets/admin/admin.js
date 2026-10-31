@@ -44,7 +44,7 @@ function valorAdminDelMsg(id){valorAdminRpc('admin_delete_message',{mid:id}).the
 valorAdmin.giftKind='item';
 function valorAdminOptions(list,sel){return list.map(([v,t])=>'<option value="'+escapeAttr(String(v))+'"'+(String(v)===String(sel)?' selected':'')+'>'+escapeAttr(t)+'</option>').join('')}
 function valorAdminStackList(){
- const ids=[...new Set([...(typeof marketProducts!=='undefined'?marketProducts.map(x=>x.id):[]),'petFood','luckBag','mosaicStone','mountStone','energyBottle','expeditionPaper','anniversaryBox'])];
+ const ids=[...new Set([...(typeof marketProducts!=='undefined'?marketProducts.map(x=>x.id):[]),'petFood','luckBag','mosaicStone','mountStone','energyBottle','expeditionPaper','anniversaryBox','luckFeather','evoPiece','wheelFashionBag'])];
  return ids.map(id=>[id,(typeof marketProduct==='function'&&marketProduct(id)?.name)||id]).filter(([id,n])=>n);
 }
 function valorAdminGiftForm(p){
@@ -54,20 +54,24 @@ function valorAdminGiftForm(p){
  else if(k==='stack')f='<div class="vad-line"><select id="vad-gid">'+valorAdminOptions(valorAdminStackList(),'petFood')+'</select>'+num('vad-gn',10,1,999999,'Adet')+'</div>';
  else if(k==='stone')f='<div class="vad-line"><select id="vad-glv">'+valorAdminOptions(Array.from({length:8},(_,i)=>[i+1,'Şans Taşı Sv.'+(i+1)]),4)+'</select>'+num('vad-gn',5,1,9999,'Adet')+'</div>';
  else if(k==='gem')f='<div class="vad-line"><select id="vad-gty">'+valorAdminOptions((typeof veGemTypes!=='undefined'?veGemTypes:[]).map(t=>[t,t]),'')+'</select><select id="vad-glv">'+valorAdminOptions(Array.from({length:10},(_,i)=>[i+1,'Sv.'+(i+1)]),3)+'</select>'+num('vad-gn',1,1,999,'Adet')+'</div>';
+ else if(k==='talisman'){const T=window.valorTalismanTypes||[],C=window.valorTalismanColors||[];f='<div class="vad-line"><select id="vad-tt">'+valorAdminOptions([['','Rastgele tür'],...T.map(t=>[t.id,t.name.replace(' Tılsımı','')])],'')+'</select><select id="vad-tc">'+valorAdminOptions([['','Rastgele renk'],...C.map(c=>[c.id,c.name])],'')+'</select></div><div class="vad-line"><label class="vad-mini-label">Seviye'+num('vad-tl',1,1,10,'Sv')+'</label><label class="vad-mini-label">Adet'+num('vad-gn',1,1,20,'Adet')+'</label></div>'}
+ else if(k==='wing'){const W=typeof valorWings!=='undefined'?valorWings:[];f='<div class="vad-line"><select id="vad-wid">'+valorAdminOptions(W.map(w=>[w.id,w.name]),W[0]?.id)+'</select><label class="vad-mini-label">Seviye'+num('vad-wl',1,1,10,'Sv')+'</label><label class="vad-mini-label">Adet'+num('vad-gn',1,1,20,'Adet')+'</label></div>'}
  else f='<div class="vad-line">'+num('vad-gn',500,1,9999999,'Dukat')+'</div>';
- return '<div><label>Eşya ver</label><div class="vad-line"><select id="vad-gk" onchange="valorAdmin.giftKind=this.value;render()">'+valorAdminOptions([['item','Ekipman'],['stack','Market / çanta eşyası'],['stone','Şans taşı'],['gem','Mozaik taşı'],['dukat','Dukat']],k)+'</select></div>'+f+'<div class="vad-line"><button type="button" class="vad-give" onclick="valorAdminGive(\''+p.user_id+'\')">'+(p.user_id===valorAccountActive?.id?'Kendime Ver':'Ver')+'</button></div></div>';
+ return '<div><label>Eşya ver</label><div class="vad-line"><select id="vad-gk" onchange="valorAdmin.giftKind=this.value;render()">'+valorAdminOptions([['item','Ekipman'],['talisman','Tılsım'],['wing','Kanat'],['stack','Market / çanta eşyası (Şans Tüyü, Evrim Parçası…)'],['stone','Şans taşı'],['gem','Mozaik taşı'],['dukat','Dukat']],k)+'</select></div>'+f+'<div class="vad-line"><button type="button" class="vad-give" onclick="valorAdminGive(\''+p.user_id+'\')">'+(p.user_id===valorAccountActive?.id?'Kendime Ver':'Ver')+'</button></div></div>';
 }
 function valorAdminGiftOps(){
  const v=id=>document.getElementById(id)?.value,n=(id,min,max)=>Math.max(min,Math.min(max,Math.floor(Number(v(id))||min))),k=valorAdmin.giftKind,ops=[];
  if(k==='item'){const cls=v('vad-gc'),sl=v('vad-gs'),lvl=n('vad-gl',1,100),plus=n('vad-gp',0,21),tier=n('vad-gt',0,3),count=n('vad-gn',1,10);
   for(let c=0;c<count;c++)for(const slot of sl==='set'?slots:[sl])ops.push({kind:'item',item:JSON.parse(JSON.stringify({...item(slot,cls,lvl),plus,epic:tier>0,evolutionTier:tier}))})}
  else if(k==='stack'){const id=v('vad-gid'),pr=typeof marketProduct==='function'?marketProduct(id):null;ops.push({kind:'stack',id,name:pr?.name||id,description:pr?.description||'',count:n('vad-gn',1,999999)})}
+ else if(k==='talisman'&&typeof valorTalismanMake==='function'){const type=v('vad-tt')||null,col=v('vad-tc'),lvl=n('vad-tl',1,10),count=n('vad-gn',1,20);for(let c=0;c<count;c++){const it=valorTalismanMake(lvl,type,col===''?null:Number(col));ops.push({kind:'item',talisman:true,item:JSON.parse(JSON.stringify(it))})}}
+ else if(k==='wing'){const w=(typeof valorWings!=='undefined'?valorWings:[]).find(x=>x.id===v('vad-wid'));if(w){const lvl=n('vad-wl',1,10),count=n('vad-gn',1,20);for(let c=0;c<count;c++)ops.push({kind:'item',wing:true,item:{id:valorUniqueItemId(),wingId:w.id,slot:'Kanat',name:w.name,cls:'Tüm Sınıflar',level:lvl,wingLevel:lvl,plus:0,epic:false}})}}
  else if(k==='stone')ops.push({kind:'stone',level:n('vad-glv',1,8),count:n('vad-gn',1,9999)});
  else if(k==='gem')ops.push({kind:'gem',type:v('vad-gty'),level:n('vad-glv',1,10),count:n('vad-gn',1,999)});
  else ops.push({kind:'dukat',count:n('vad-gn',1,9999999)});
  return ops;
 }
-function valorAdminGiftLabel(ops){const o=ops[0];if(!o)return '';return o.kind==='item'?ops.length+' ekipman':o.kind==='stack'?o.count+' × '+o.name:o.kind==='stone'?o.count+' × Şans Taşı Sv.'+o.level:o.kind==='gem'?o.count+' × '+o.type+' Sv.'+o.level:o.count+' Dukat'}
+function valorAdminGiftLabel(ops){const o=ops[0];if(!o)return '';if(o.talisman){const c=(window.valorTalismanColors||[])[o.item.talismanColor];return ops.length+' × '+(new Set(ops.map(x=>x.item.talismanType)).size>1?'Tılsım':o.item.name)+(new Set(ops.map(x=>x.item.talismanColor)).size>1?'':' ('+(c?.name||'')+')')+' Sv.'+o.item.talismanLevel}if(o.wing)return ops.length+' × '+o.item.name+' Sv.'+o.item.wingLevel;return o.kind==='item'?ops.length+' ekipman':o.kind==='stack'?o.count+' × '+o.name:o.kind==='stone'?o.count+' × Şans Taşı Sv.'+o.level:o.kind==='gem'?o.count+' × '+o.type+' Sv.'+o.level:o.count+' Dukat'}
 async function valorAdminGive(uid){
  const ops=valorAdminGiftOps();if(!ops.length)return;const label=valorAdminGiftLabel(ops);
  if(uid===valorAccountActive?.id){
