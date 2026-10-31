@@ -68,7 +68,7 @@ async function valorChatSend(){
  finally{valorChat.sending=false}
 }
 function valorChatRestore(text){const input=document.getElementById('vch-input');if(input&&!input.value){input.value=text;valorChat.draft=text;valorChatCount()}}
-function valorChatCount(){const i=document.getElementById('vch-input'),c=document.getElementById('vch-count');if(i)valorChat.draft=i.value;if(i&&c)c.textContent=i.value.length+' / '+VALOR_CHAT_MAX}
+function valorChatCount(){const i=document.getElementById('vch-input'),c=document.getElementById('vch-count');if(i)valorChat.draft=i.value;if(i&&c){c.textContent=i.value.length+' / '+VALOR_CHAT_MAX;c.classList.toggle('vch-near',i.value.length>=VALOR_CHAT_MAX-40)}}
 function valorChatSwitch(ch){if(ch!=='world'&&ch!==valorChatGuildChannel())return;valorChat.channel=ch;render();valorChatFetch()}
 function valorChatBlock(name){if(!confirm(name+' engellensin mi? Mesajlarını artık görmeyeceksin.'))return;state.chatBlocked=[...new Set([...valorChatBlocked(),name])];save();valorChatPaint();toast(name+' engellendi')}
 function valorChatUnblock(name){state.chatBlocked=valorChatBlocked().filter(n=>n!==name);save();render()}

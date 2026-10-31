@@ -377,3 +377,17 @@ html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[s
 html[data-valor-layout=crimson][data-valor-theme=light] body #main .vch-meta b[style*="#ecd7b4"]{color:var(--vc-ink)!important}
 html[data-valor-layout=crimson][data-valor-theme=light] .vch-channel{color:var(--vc-red)!important}
 html[data-valor-layout=crimson] body #main .vch-meta button.vch-more{width:auto!important;min-width:0!important;height:auto!important;min-height:0!important;padding:0 2px!important;border:0!important;border-radius:0!important;background:none!important;background-image:none!important;box-shadow:none!important;color:var(--vc-muted)!important}
+/* Chat screen: slim tab row and tighter frame so the conversation gets most of the screen. */
+html[data-valor-layout=crimson] body.valor-chat-page .layout{margin-top:6px!important}
+html[data-valor-layout=crimson] body.valor-chat-page:not(.character-selection):not(.valor-account-screen) #main.panel{padding:8px 10px 6px!important}
+html[data-valor-layout=crimson] body.valor-chat-page #main .valor-social-tabs{gap:6px!important;margin:0 0 6px!important;padding:0!important;border:0!important}
+html[data-valor-layout=crimson] body.valor-chat-page #main .valor-social-tabs button{min-height:32px!important;height:32px!important;padding:0 8px!important;font:600 13px/1 system-ui,sans-serif!important;letter-spacing:.2px;border-radius:999px!important;box-shadow:none!important;background-image:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body.valor-chat-page #main .valor-social-tabs button:not([aria-selected=true]){background:#efe5d1!important;border:1px solid var(--vc-line)!important;color:var(--vc-ink)!important}
+html[data-valor-layout=crimson] body.valor-chat-page #main .valor-social-tabs button[aria-selected=true]{border-radius:999px!important}
+html[data-valor-layout=crimson] body.valor-chat-page .vch-page{gap:6px!important}
+html[data-valor-layout=crimson] body.valor-chat-page .vch-list{padding:6px!important;gap:6px!important}
+html[data-valor-layout=crimson] body.valor-chat-page .vch-form input,html[data-valor-layout=crimson] body.valor-chat-page .vch-form button{min-height:42px!important;height:42px!important}
+/* The 200-character limit is enforced by the box itself; the counter only shows close to the limit. */
+html[data-valor-layout=crimson] body.valor-chat-page #vch-count{display:none!important}
+html[data-valor-layout=crimson] body.valor-chat-page #vch-count.vch-near{display:block!important}
+html[data-valor-layout=crimson] body.valor-chat-page .vch-msg{padding:5px 9px 6px!important}
