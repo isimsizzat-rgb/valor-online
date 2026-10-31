@@ -3,8 +3,8 @@
    Hits use the same engine as the classic arena (fury, guardians, astrology, medallions).
      1 Saldırı      normal hit           1 s cooldown
      2 Güçlü Vuruş  130% hit             5 s cooldown
-     3 Son Darbe    175% hit (max)      15 s cooldown
-     4 Pasif        class effect, uses the turn, 10 s cooldown
+     3 Son Darbe    175% hit (max)      20 s cooldown
+     4 Pasif        class effect, uses the turn, 10 s cooldown (Savaşçı shield: 45 s)
                     (Savaşçı shield and Okçu damage boost last 3 turns; Büyücü heals at once)
    A player who does not act within 5 seconds gets an automatic choice. */
 (function (root) {
@@ -27,18 +27,20 @@
   const SKILLS = {
     normal: { name: 'Saldırı', mult: 1, cd: 1000, icon: 'assets/arena/skills/normal.webp' },
     strong: { name: 'Güçlü Vuruş', mult: 1.3, cd: 5000, icon: 'assets/arena/skills/strong.webp' },
-    max: { name: 'Son Darbe', mult: 1.75, cd: 15000, icon: 'assets/arena/skills/max.webp' },
+    max: { name: 'Son Darbe', mult: 1.75, cd: 20000, icon: 'assets/arena/skills/max.webp' },
     passive: { name: 'Pasif', mult: 0, cd: 10000 }
   };
   /* Class passives (calibrated with tools/arena/duel-balance.cjs). They use the turn. */
   const PASSIVES = {
-    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .25, turns: 3, text: '3 tur, canının %25\'i kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
+    'Savaşçı': { id: 'shield', name: 'Demir Duruş', value: .25, turns: 3, cd: 45000, text: '3 tur, canının %25\'i kadar kalkan', icon: 'assets/arena/skills/passive-savasci.webp' },
     'Büyücü': { id: 'heal', name: 'Yenilenme', value: .25, text: 'Canının %25\'i kadar iyileşir', icon: 'assets/arena/skills/passive-buyucu.webp' },
     'Okçu': { id: 'focus', name: 'Odaklan', value: .25, turns: 3, text: '3 tur boyunca %25 fazla hasar', icon: 'assets/arena/skills/passive-okcu.webp' }
   };
   const TURN_MS = 5000, GRACE_MS = 1200, MAX_ROUNDS = 200, ORDER = ['normal', 'strong', 'max', 'passive'];
   const passiveOf = (u) => PASSIVES[u.cls] || PASSIVES['Savaşçı'];
   const ready = (u, k, t) => t >= (u.cd[k] || 0);
+  /* Cooldown of a skill; a class passive may set its own (warrior shield: 45 s). */
+  const cdOf = (u, k) => k === 'passive' ? (passiveOf(u).cd || SKILLS.passive.cd) : SKILLS[k].cd;
 
   function fighter(p) { const u = arenaUnit({ ...p.stats }, p.cls); return { ...u, name: p.name, cls: p.cls, level: p.level || 1, gender: p.gender || 'male', cd: { normal: 0, strong: 0, max: 0, passive: 0 }, shield: 0, shieldTurns: 0, focus: 0, focusTurns: 0, burn: null }; }
 
@@ -69,7 +71,7 @@
 
   function perform(st, side, skill, t, rng, auto) {
     const a = st[side], b = st[side === 'me' ? 'foe' : 'me'], ev = { side, skill, auto: !!auto, round: st.round };
-    a.cd[skill] = t + SKILLS[skill].cd; if (skill !== 'normal') a.cd.normal = Math.max(a.cd.normal, t + SKILLS.normal.cd);
+    a.cd[skill] = t + cdOf(a, skill); if (skill !== 'normal') a.cd.normal = Math.max(a.cd.normal, t + SKILLS.normal.cd);
     if (skill === 'passive') {
       const p = passiveOf(a); ev.passive = p.id;
       if (p.id === 'shield') { a.shield = Math.max(a.shield, Math.round(a.maxHp * p.value)); a.shieldTurns = p.turns; ev.shield = a.shield; }
@@ -137,7 +139,7 @@
   function tLog(st, act) { let r = st.tlog[st.tlog.length - 1]; if (!r || r.round !== st.round) { if (st.tlog.length >= 150) return; r = { round: st.round, acts: [] }; st.tlog.push(r); } r.acts.push(act); }
   function tPerform(st, u, skill, t, rng, auto) {
     const ev = { ai: u.idx, side: u.side, skill, auto: !!auto, round: st.round };
-    u.cd[skill] = t + SKILLS[skill].cd; if (skill !== 'normal') u.cd.normal = Math.max(u.cd.normal, t + SKILLS.normal.cd);
+    u.cd[skill] = t + cdOf(u, skill); if (skill !== 'normal') u.cd.normal = Math.max(u.cd.normal, t + SKILLS.normal.cd);
     if (skill === 'passive') {
       const p = passiveOf(u); ev.passive = p.id;
       if (p.id === 'shield') { u.shield = Math.max(u.shield, Math.round(u.maxHp * p.value)); u.shieldTurns = p.turns; ev.shield = u.shield; }
