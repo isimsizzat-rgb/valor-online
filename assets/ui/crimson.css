@@ -391,12 +391,13 @@ html[data-valor-layout=crimson] body.valor-chat-page .vch-form input,html[data-v
 html[data-valor-layout=crimson] body.valor-chat-page #vch-count{display:none!important}
 html[data-valor-layout=crimson] body.valor-chat-page #vch-count.vch-near{display:block!important}
 html[data-valor-layout=crimson] body.valor-chat-page .vch-msg{padding:5px 9px 6px!important}
-/* Atölye: no character header (only a slim resource strip) and a compact two-row tool menu. */
-html[data-valor-layout=crimson] body[data-valor-page="Atölye"] .vc-masthead{display:none!important}
-html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header] :is(.vc-header-art-frame,.vc-identity,.valor-level-block){display:none!important}
-html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header]{margin-top:10px!important;border-top-width:1px!important}
-html[data-valor-layout=crimson] body[data-valor-page="Atölye"] header.top.valor-resource-bar[data-crimson-header] .vc-resources{border-top:0!important;min-height:40px}
-html[data-valor-layout=crimson] body[data-valor-page="Atölye"] .layout{margin-top:10px!important}
+/* Inner pages (everything except the five tabs): no character header, only a slim resource strip.
+   Atölye and a compact two-row tool menu. */
+html[data-valor-layout=crimson] body.vc-inner .vc-masthead{display:none!important}
+html[data-valor-layout=crimson] body.vc-inner header.top.valor-resource-bar[data-crimson-header] :is(.vc-header-art-frame,.vc-identity,.valor-level-block){display:none!important}
+html[data-valor-layout=crimson] body.vc-inner header.top.valor-resource-bar[data-crimson-header]{margin-top:10px!important;border-top-width:1px!important}
+html[data-valor-layout=crimson] body.vc-inner header.top.valor-resource-bar[data-crimson-header] .vc-resources{border-top:0!important;min-height:40px}
+html[data-valor-layout=crimson] body.vc-inner .layout{margin-top:10px!important}
 html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact]{display:block!important;padding:0!important;margin:0 0 12px!important;background:none!important;border:0!important;box-shadow:none!important}
 html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group{display:none!important;margin:0!important;padding:0!important;background:none!important;border:0!important}
 html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-nav-group.vc-forge-open{display:block!important}
@@ -409,3 +410,12 @@ html[data-valor-layout=crimson] body #main .forge-nav[data-vc-compact] .forge-na
 html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 0 8px;border-bottom:1px solid var(--vc-line)}
 html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups button{min-height:38px!important;height:38px!important;margin:0 0 -1px!important;padding:0 4px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:none!important;background-image:none!important;box-shadow:none!important;color:var(--vc-muted)!important;font:600 11.5px/1 system-ui,sans-serif!important;letter-spacing:1.2px;text-transform:uppercase;text-shadow:none!important}
 html[data-valor-layout=crimson] body #main .forge-nav .vc-forge-groups button[aria-selected=true]{color:var(--vc-red)!important;border-bottom-color:var(--vc-red)!important}
+/* Atölye leftovers from the dark theme, on parchment in light mode. Gem/stone/mount art keeps its dark window. */
+html[data-valor-layout=crimson][data-valor-theme=light] body #main :is(.ve-gems,.vf-fusion-slot,.vf-fusion-result,.vmc-have,.vw-gc-type,.vmc-card){background:#efe5d1!important;background-image:none!important;border-color:color-mix(in srgb,var(--ve-gem-color,#a27d41) 55%,#c9b28c)!important;box-shadow:none!important;color:var(--vc-ink)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main :is(.ve-gems,.vf-fusion-slot,.vf-fusion-result,.vmc-have,.vw-gc-type,.vmc-card) :is(p,span,small,label,div,i):not(.vg-icon):not([class*=art]){color:var(--vc-muted)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main :is(.ve-gems,.vf-fusion-slot,.vf-fusion-result,.vmc-have,.vw-gc-type,.vmc-card) :is(h2,h3,h4,b,strong,.ve-gems-title){color:var(--vc-ink)!important;text-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vw-gc-type h3{color:color-mix(in srgb,var(--ve-gem-color,#87352b) 70%,#2a1c12)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main :is(.ve-gems,.vf-fusion-slot,.vf-fusion-result,.vmc-have,.vw-gc-type,.vmc-card) button{background:linear-gradient(#f5e8cb,#d9c19a)!important;border:1px solid #a98a5a!important;color:#483317!important;text-shadow:none!important;box-shadow:none!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main :is(.ve-gems,.vf-fusion-slot,.vf-fusion-result,.vmc-have,.vw-gc-type,.vmc-card) button:disabled{opacity:.5}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .ve-gems .ve-gem-slot{background:#f7f1e5!important;border-color:color-mix(in srgb,var(--ve-gem-color,#a27d41) 55%,#c9b28c)!important}
+html[data-valor-layout=crimson][data-valor-theme=light] body #main .vw-gc-row{border-color:var(--vc-line)!important}
