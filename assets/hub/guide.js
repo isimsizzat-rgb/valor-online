@@ -44,7 +44,7 @@ const VALOR_GUIDE_TOPICS=[
   'Evrim sırası Normal → Epik → Ebedi → İlahi’dir. Bir eşyayı evrimleştirmek için +21 olması ve yeterli Epik Taşı gerekir:',
   ['Normal → Epik: 10 Epik Taşı','Epik → Ebedi: 30 Epik Taşı','Ebedi → İlahi: 90 Epik Taşı'],
   'Evrimden sonra eşya +0’a döner ama yeni aşamanın +0’ı bile eski +21’den yaklaşık %40 güçlüdür. Takılı mozaik taşları ve efsunlar korunur.',
-  'Epik Taşı her Kabus sahnesi zaferinde 1–5 adet düşer; Şans Çarkı’ndan da 2’li çıkabilir.'
+  'Epik Taşı her Kabus sahnesi zaferinde 1–5 adet düşer; Şans Çarkı’ndan da 1 adet çıkabilir.'
  ],route:'Atölye',link:'Atölyeye Git'},
  {id:'mozaik',category:'Ekipman',title:'Mozaik taşları',tags:'soket yuva mücevher birleştirme değişim taş türü seviye',text:[
   'Her ekipmanda 4 mozaik yuvası vardır. Aynı ekipmana aynı türden ikinci taş takılamaz. Atölye → Mozaik’te yuvaya dokunarak taş takıp çıkarırsın.',
@@ -124,7 +124,7 @@ const VALOR_GUIDE_TOPICS=[
   'Market’in Sınırlı Mağaza bölümündeki günlük limitler her gece sıfırlanır: Binek Taşı 10 elmas (50/gün), Enerji Şişesi 50 (5/gün), Sefer Kağıdı 99 (3/gün), Yıldönümü Kutusu 25 (100/gün).'
  ],route:'Çiftlik',link:'Çiftliğe Git'},
  {id:'gunluk',category:'Ekonomi ve Hesap',title:'Günlük yapılacaklar',tags:'görev ödül ücretsiz çark giriş sandık yan görev ana görev elmas sandığı',text:[
-  ['Giriş Ödülü: 7 günlük takvim. 7. gün 100 elmas ve Yıldönümü Kutusu. Bir gün kaçırırsan sıfırlanmaz, kaldığın yerden devam eder.','Elmas Sandığı: 6 saatte bir açılır, 10–50 elmas verir.','Şans Çarkı: günde 3 ücretsiz çevirme; sonrası 99 elmas ya da 10’lu çevirme 899 elmas.'],
+  ['Giriş Ödülü: 7 günlük takvim. 7. gün 100 elmas ve Yıldönümü Kutusu. Bir gün kaçırırsan sıfırlanmaz, kaldığın yerden devam eder.','Elmas Sandığı: 6 saatte bir açılır, 10–50 elmas verir.','Şans Çarkı: günde 3 ücretsiz çevirme; sonrası 99 elmas ya da 10’lu çevirme 899 elmas. Ücretli çevirme günde en fazla 30 tur.'],
   'Yan Görevler: 100 enerji harca, 3 kez yükseltme yap, 5 sahne geç, Dünya Bossu’na katıl, çiftlikte 10 hasat yap. Beşi bitince paket: 500.000 altın, 15 Binek Taşı, 5 Şans Taşı Çantası, 2 Mozaik Taş Çantası ve 5 Pet Yemi.',
   'Ana Görevler kalıcıdır: her 10 seviyede elmas (Sv.10 100, Sv.100 1.000), her 10 zindan katında Binek Taşı ve her bölgenin Kabus modu için 500 elmas.'
  ],route:'Görevler',link:'Görevleri Aç'},

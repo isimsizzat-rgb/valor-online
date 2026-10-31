@@ -1,6 +1,6 @@
 /* Equal geometry; reward weights are independent of sector size. */
 (function(){
- const PRICE=99,DAILY_FREE_SPINS=3,DURATION=6200,NAME='Şans Çarkı';
+ const PRICE=99,DAILY_FREE_SPINS=3,DAILY_PAID_SPINS=30,DURATION=6200,NAME='Şans Çarkı';
  const prizes=[
   {id:'mosaic',name:'Mozaik Çantası',weight:1534},
   {id:'gold',name:'100K Altın',weight:1227},
@@ -8,7 +8,7 @@
   {id:'mountStone',name:'Binek Taşı ×50',weight:511},
   {id:'king',name:'Kral Bineği · +100',weight:50},
   {id:'luck',name:'Şans Taşı Çantası',weight:1636},
-  {id:'epic',name:'Epik Taşı ×2',weight:1841},
+  {id:'epic',name:'Epik Taşı',weight:1841},
   {id:'wing',name:'Rastgele Kanat',weight:204},
   {id:'energy',name:'Enerji Şişesi ×2',weight:1227},
   {id:'food',name:'Pet Yemi ×5',weight:686},
@@ -41,7 +41,7 @@
    case 'mountStone':addMarketStack('mountStone',50);break;
    case 'king':state.inventory.push({id:valorUniqueItemId(),slot:'Binek',mountId:king.id,name:king.name,cls:state.class,level:1,plus:0,epic:true});break;
    case 'luck':addMarketStack('luckBag',1);break;
-   case 'epic':state.shards=(Number(state.shards)||0)+2;break;
+   case 'epic':state.shards=(Number(state.shards)||0)+1;break;
    case 'wing':return grantWing();
    case 'energy':addMarketStack('energyBottle',2);break;
    case 'food':addMarketStack('petFood',5);break;
@@ -69,7 +69,7 @@
   }
  }
  function iconMarkup(id){return '<span class="vwf-icon" aria-hidden="true">'+art(id)+'</span>'}
- const wheelLabels={mosaic:'Mozaik Çantası',gold:'100K Altın',crystal:'25K Kristal',mountStone:'Binek Taşı ×50',king:'Kral Bineği +100',luck:'Şans Çantası',epic:'Epik Taşı ×2',wing:'Kanat',energy:'Enerji ×2',food:'Yem ×5',health:'Sv.10 Can',fashion:'Fashion Çantası'};
+ const wheelLabels={mosaic:'Mozaik Çantası',gold:'100K Altın',crystal:'25K Kristal',mountStone:'Binek Taşı ×50',king:'Kral Bineği +100',luck:'Şans Çantası',epic:'Epik Taşı',wing:'Kanat',energy:'Enerji ×2',food:'Yem ×5',health:'Sv.10 Can',fashion:'Fashion Çantası'};
  function wheelFace(rotation=0){
   let paths='<defs><pattern id="vwf-worn-red" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#4a0d1a"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".64" style="mix-blend-mode:soft-light"/></pattern><pattern id="vwf-worn-black" width="600" height="600" patternUnits="userSpaceOnUse"><rect width="600" height="600" fill="#17171b"/><image href="assets/wheel/sector-texture.webp" width="600" height="600" opacity=".38" style="mix-blend-mode:screen"/></pattern></defs>';
   for(let i=0;i<12;i++){
@@ -90,6 +90,8 @@
   return Math.max(0,DAILY_FREE_SPINS-used);
  }
  function freeAvailable(){return freeRemaining()>0}
+ /* Paid spins are capped per Turkish day so a large diamond balance is spread over time. */
+ function paidRemaining(){return state.luckyWheelPaidDay!==wheelDay()?DAILY_PAID_SPINS:Math.max(0,DAILY_PAID_SPINS-Math.max(0,Math.floor(Number(state.luckyWheelPaidUsed)||0)))}
  function scheduleDayRefresh(){
   clearTimeout(dayTimer);const next=Date.parse(wheelDay()+'T00:00:00+03:00')+86400000;
   dayTimer=setTimeout(()=>{if(page===NAME&&state.class&&valorAccountCanPlay())render()},Math.max(1,next-Date.now()+30));
@@ -113,7 +115,7 @@
  function pageHtml(){
   const d=data(),busy=spinning(),round=currentRound(d),free=freeAvailable();
   const status=busy?(d.wasFree?'Ücretsiz çevirme…':'Çark dönüyor…'):d.count===10?'10 tur tamamlandı.':d.last?'Kazandın: <strong>'+escapeAttr(d.last)+'</strong>':'On iki dilim, on iki farklı ödül.';
-  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="'+(free?'Günlük ücretsiz çevirme hakkını kullan':'Şans çarkını 99 elmas karşılığında çevir')+'" '+(busy?'disabled aria-busy="true"':'')+'><b>ÇEVİR</b></button></div><div class="vwf-caption">'+(free?'<b class="vwf-free">Günlük ücretsiz hak: '+freeRemaining()+' / '+DAILY_FREE_SPINS+'</b>':'Tek tur <b>99 💎</b> · Ücretsiz hak: 0 / '+DAILY_FREE_SPINS)+'<small>Her gün 00.00’da yenilenir · Türkiye saati</small></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
+  return ('<section class="vwf-page"><header class="vwf-heading"><span>VALOR ONLINE</span><h1>Şans Çarkı</h1><p>Ortadaki mühre dokun, kader çarkını döndür.</p></header><div class="vwf-frame"><div class="vwf-disc" id="valorWheelDisc" style="transform:rotate('+round.to+'deg)">'+wheelFace(round.to||0)+'</div><img class="vwf-dragon-frame" src="assets/wheel/dragon-frame.webp?v=1" alt="" aria-hidden="true"><button id="valorWheelSpin" type="button" class="vwf-hub" onclick="valorWheelSpin()" aria-label="'+(free?'Günlük ücretsiz çevirme hakkını kullan':'Şans çarkını 99 elmas karşılığında çevir')+'" '+(busy?'disabled aria-busy="true"':'')+'><b>ÇEVİR</b></button></div><div class="vwf-caption">'+(free?'<b class="vwf-free">Günlük ücretsiz hak: '+freeRemaining()+' / '+DAILY_FREE_SPINS+'</b>':'Tek tur <b>99 💎</b> · Ücretsiz hak: 0 / '+DAILY_FREE_SPINS)+'<span class="vwf-paid-left" style="display:block;margin-top:3px">Bugün ücretli tur: <b>'+paidRemaining()+' / '+DAILY_PAID_SPINS+'</b></span><small>Her gün 00.00’da yenilenir · Türkiye saati</small></div><div class="vwf-batch-controls"><button id="valorWheelSpinTen" type="button" onclick="valorWheelSpin(10)" '+(busy||paidRemaining()<10?'disabled':'')+'><b>10 TUR ÇEVİR</b><span>899 💎</span></button></div><div class="vwf-result" role="status" aria-live="polite">'+status+(!busy&&d.count===10?' <button type="button" class="vwf-summary-open" onclick="valorWheelShowSummary()">Ödülleri gör</button>':'')+'</div><details class="vwf-rewards"><summary>Ödülleri incele</summary><div>'+prizes.map(p=>'<article>'+iconMarkup(p.id)+'<span>'+p.name+'</span><small>%'+String(p.weight/100).replace('.',',')+'</small></article>').join('')+'</div></details></section>').replaceAll('💎',diamondHtml());
  }
  function animate(){
   clearTimeout(timer);const d=data(),round=currentRound(d),remaining=round.ends-Date.now(),disc=document.getElementById('valorWheelDisc');
@@ -131,7 +133,8 @@
  window.valorWheelSpin=function(count=1){
   if(![1,10].includes(count)||page!==NAME||!state.class||!valorAccountCanPlay()||spinning())return;
   const day=wheelDay(),wasFree=count===1&&freeAvailable();
-  const price=count===10?899:wasFree?0:PRICE;
+  const price=count===10?899:wasFree?0:PRICE,paid=wasFree?0:count;
+  if(paid>paidRemaining())return toast(paidRemaining()?'Bugün '+paidRemaining()+' ücretli tur hakkın kaldı':'Bugünkü '+DAILY_PAID_SPINS+' ücretli tur hakkın doldu · 00.00’da yenilenir');
   if((Number(state.diamonds)||0)<price)return toast('Yeterli elmasın yok · '+price+' 💎 gerekiyor');
   vsData();vwInit();vmData();
   const old=JSON.stringify(state),tickets=new Uint32Array(count);crypto.getRandomValues(tickets);
@@ -139,6 +142,7 @@
   try{
    state.diamonds=Math.max(0,Number(state.diamonds)||0)-price;
    if(wasFree){state.luckyWheelFreeUsed=DAILY_FREE_SPINS-freeRemaining()+1;state.luckyWheelFreeDay=day;}
+   else{const usedPaid=DAILY_PAID_SPINS-paidRemaining();state.luckyWheelPaidDay=day;state.luckyWheelPaidUsed=usedPaid+paid}
    for(const ticket of tickets){
     const index=pick(ticket/4294967296*10000),target=(360-index*30)%360,to=from+(count===10?720:1800)+((target-from%360+360)%360),last=grant(prizes[index].id);
     rounds.push({from,to,last,prize:prizes[index].id});outcomes[last]=(outcomes[last]||0)+1;from=to;
@@ -159,6 +163,6 @@
  const oldRender=render;
  render=function(){oldRender.apply(this,arguments);if(page===NAME&&state.class&&valorAccountCanPlay()){document.body.classList.remove('valor-home','valor-market-page','valor-profile-page');document.getElementById('main').innerHTML=pageHtml();fitWheelLabels();animate();scheduleDayRefresh()}};
  // Expose pure reward geometry for automated checks without changing game state.
- window.valorWheelConfig={price:PRICE,dailyFreeSpins:DAILY_FREE_SPINS,batchPrice:899,batchCount:10,dayKey:wheelDay,prizes:prizes.map(p=>({...p})),pick,sectorAngle:30};
+ window.valorWheelConfig={price:PRICE,dailyFreeSpins:DAILY_FREE_SPINS,dailyPaidSpins:DAILY_PAID_SPINS,paidRemaining,batchPrice:899,batchCount:10,dayKey:wheelDay,prizes:prizes.map(p=>({...p})),pick,sectorAngle:30};
  if(state.class&&valorAccountCanPlay()&&page==='Anasayfa')render();
 })();
