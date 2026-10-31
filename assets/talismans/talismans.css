@@ -48,8 +48,13 @@ html[data-valor-theme=dark] .vt-card{background:#1d1712!important;color:#f0dcb4!
 
 /* Colour grade stays distinct from the illustration's gemstone colour. */
 .vt-card>img,.vt-dialog-art,.vt-pick[style]>img{object-fit:contain;box-sizing:border-box;padding:4px;border:2px solid var(--vt-color);border-radius:9px;background:#100f12}
-.vt-grade-badge{position:absolute;top:3px;left:3px;z-index:2;padding:2px 4px;border:1px solid var(--vt-color);border-radius:4px;background:#100f12;color:#fff;font:700 9px/1.2 system-ui;pointer-events:none}
 .vt-confirm-pair figure{margin:0;padding:4px;border:2px solid var(--vt-color);border-radius:9px;background:#100f12;color:#fff}
 .vt-confirm-pair figure img{display:block;object-fit:contain}
 .vt-confirm-pair figcaption{font:600 11px/1.5 system-ui}
 .vt-slot:not(.vt-slot-empty):not(.vt-slot-locked) small{font-size:9px;white-space:nowrap}
+
+/* Grade is communicated by the coloured frame alone. */
+.vt-card>img,.vt-dialog-art,.vt-pick[style]>img,.vt-confirm-pair figure{border-width:3px;box-shadow:0 0 7px color-mix(in srgb,var(--vt-color) 45%,transparent)}
+.vt-slot:not(.vt-slot-empty):not(.vt-slot-locked){border:3px solid var(--vt-color)!important}
+.bag-slot.vt-bag-talisman{border:3px solid var(--vt-color)!important}
+.vt-card{border-color:var(--vt-color)!important}
