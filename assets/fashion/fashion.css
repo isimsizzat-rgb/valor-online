@@ -63,3 +63,10 @@ html body .vp-wrap .vp-scene .vp-slot.vf-fashion-button .vf-slot-caption{positio
 .vf-merge-chance{margin:6px 0 10px;font:13px/1.5 system-ui;text-align:center}.vf-merge-chance b{color:#c9893b}.vf-merge-chance small{opacity:.8}
 .vf-merge-result.vf-merge-ok h3{color:#5f9d45}.vf-merge-result.vf-merge-fail h3{color:#c4473a}
 .vf-merge-result.vf-merge-fail .vf-confirm-pair img{filter:grayscale(.85) brightness(.7)}
+/* Şans Tüyü option in wing fusion. */
+.vf-feather{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:8px 10px;border:1px solid #c9a35f;border-radius:8px;background:#fff8e6;color:#3d2e1c;text-align:left;cursor:pointer}
+.vf-feather input{flex:none;width:20px;height:20px;margin:0;accent-color:#87352b}
+.vf-feather-art{flex:none;width:34px;height:34px}
+.vf-feather span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}.vf-feather b{font:700 13px system-ui}.vf-feather small{font:11.5px/1.35 system-ui;opacity:.8}
+.vf-feather-off{opacity:.6;cursor:default}
+html[data-valor-theme=dark] .vf-feather{background:#241b14;color:#f0dcb4;border-color:#8d6d3c}
