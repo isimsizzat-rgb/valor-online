@@ -3,7 +3,8 @@
 -- Every write touches only the caller's own save, guarded by expected_rev, so no other device is
 -- interrupted: the seller's earnings wait in market_proceeds until the seller collects them.
 -- Prices (diamonds): Sv.1 100 · 250 · 600 · 1.400 · 3.000 · 6.000 · 12.000 · 24.000 · 48.000 · Sv.10 96.000.
--- A 10% market tax is kept back from the seller's share.
+-- A 10% market tax is kept back from the seller's share. Sales are anonymous: names are stored for admins
+-- only and never returned to players.
 begin;
 
 create table if not exists public.market_listings (
@@ -146,7 +147,7 @@ end $$;
 
 create or replace function public.market_browse() returns jsonb
 language sql stable security definer set search_path = public as $$
-  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'seller', seller_name, 'item', item, 'level', level, 'color', color, 'type', ttype,
+  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'item', item, 'level', level, 'color', color, 'type', ttype,
     'price', price, 'mine', seller = auth.uid(), 'at', created_at) order by created_at desc), '[]'::jsonb)
   from (select * from market_listings where status = 'open' order by created_at desc limit 300) l;
 $$;
@@ -156,7 +157,7 @@ language sql stable security definer set search_path = public as $$
   select jsonb_build_object(
     'proceeds', coalesce((select balance from market_proceeds where user_id = auth.uid()), 0),
     'open', (select count(*) from market_listings where seller = auth.uid() and status = 'open'),
-    'sold', coalesce((select jsonb_agg(jsonb_build_object('item', item, 'price', price, 'buyer', buyer_name, 'at', closed_at) order by closed_at desc)
+    'sold', coalesce((select jsonb_agg(jsonb_build_object('item', item, 'price', price, 'at', closed_at) order by closed_at desc)
              from (select * from market_listings where seller = auth.uid() and status = 'sold' order by closed_at desc limit 20) x), '[]'::jsonb));
 $$;
 

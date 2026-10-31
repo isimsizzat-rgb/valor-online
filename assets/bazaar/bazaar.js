@@ -1,5 +1,5 @@
 /* Genel Pazar: players sell unbound talismans to each other for diamonds (supabase/market.sql).
-   Fixed price by level; 10% tax comes out of the seller's share, which waits as "Kazanç" until
+   Sales are anonymous: neither side sees the other's name. Fixed price by level; 10% tax comes out of the seller's share, which waits as "Kazanç" until
    collected. Every action first saves the game, then calls the server with the save revision and
    finally takes the server's inventory and diamonds, so nothing can be duplicated or lost. */
 (function(){
@@ -39,7 +39,7 @@
  function statsHtml(it){const n={atk:'Saldırı',def:'Defans',matk:'Sihirli Saldırı',mdef:'Sihirli Defans',hp:'Can'},L=Math.max(1,Math.min(10,Number(it.talismanLevel)||1));return Object.entries(it.talismanRolls||{}).map(([k,v])=>'<span><small>'+n[k]+'</small><b>+'+money(Math.round(v*L/10))+'</b></span>').join('')}
  function listingCard(l){
   const it=l.item,c=colors()[l.color]||{hex:'#999',name:''},art=typeof valorTalismanArt==='function'?valorTalismanArt(it):'';
-  return '<article class="vbz-card" style="--vt-color:'+c.hex+'"><img src="'+art+'" alt=""><div class="vbz-copy"><b>'+esc(it.name)+'</b><small><i class="vt-dot"></i>'+c.name+' · Sv. '+l.level+' · Satıcı: '+esc(l.seller)+'</small><span class="vt-card-stats">'+statsHtml(it)+'</span></div><div class="vbz-buy">'+(l.mine?'<button type="button" onclick="valorBazaarCancelAsk('+l.id+')">Geri Çek</button>':'<button type="button" '+(B.busy?'disabled':'')+' onclick="valorBazaarBuyAsk('+l.id+')">'+money(l.price)+' 💎</button>')+'</div></article>';
+  return '<article class="vbz-card" style="--vt-color:'+c.hex+'"><img src="'+art+'" alt=""><div class="vbz-copy"><b>'+esc(it.name)+'</b><small><i class="vt-dot"></i>'+c.name+' · Sv. '+l.level+(l.mine?' · <b class="vbz-mine">Senin ilanın</b>':'')+'</small><span class="vt-card-stats">'+statsHtml(it)+'</span></div><div class="vbz-buy">'+(l.mine?'<button type="button" onclick="valorBazaarCancelAsk('+l.id+')">Geri Çek</button>':'<button type="button" '+(B.busy?'disabled':'')+' onclick="valorBazaarBuyAsk('+l.id+')">'+money(l.price)+' 💎</button>')+'</div></article>';
  }
  function filters(){
   const f=B.filter,opt=(v,t,s)=>'<option value="'+esc(v)+'"'+(String(v)===String(s)?' selected':'')+'>'+esc(t)+'</option>';
@@ -57,10 +57,10 @@
    +'<h3 class="vt-h">İlanlarım <small>'+own.length+' / 20</small></h3>'+(own.length?'<div class="vbz-list">'+own.map(listingCard).join('')+'</div>':'<p class="vt-muted">Açık ilanın yok.</p>')
    +'<h3 class="vt-h">Satılabilir tılsımlar <small>'+free.length+'</small></h3><p class="vt-muted">Sadece hiç kuşanılmamış (bağdaştırılmamış) tılsımlar satılabilir. Fiyat seviyeye göre sabittir.</p>'
    +(free.length?'<div class="vt-list">'+free.map(it=>valorTalismanCard(it,'<span class="vt-card-pick" onclick="event.stopPropagation();valorBazaarSellAsk(\''+esc(it.id)+'\')">Sat · '+money(valorBazaarPrice(it.talismanLevel))+'</span>')).join('')+'</div>':'<p class="vt-muted">Satılabilir tılsımın yok.</p>')
-   +(mine.sold?.length?'<h3 class="vt-h">Son satışlar</h3><div class="vbz-sold">'+mine.sold.map(s=>'<span><b>'+esc(s.item?.name)+' · Sv. '+esc(s.item?.talismanLevel)+'</b><small>'+esc(s.buyer)+' · +'+money(Math.floor(s.price*(1-TAX)))+' 💎</small></span>').join('')+'</div>':'');
+   +(mine.sold?.length?'<h3 class="vt-h">Son satışlar</h3><div class="vbz-sold">'+mine.sold.map(s=>'<span><b>'+esc(s.item?.name)+' · Sv. '+esc(s.item?.talismanLevel)+'</b><small>+'+money(Math.floor(s.price*(1-TAX)))+' 💎</small></span>').join('')+'</div>':'');
  }
  function pageHtml(){
-  const head='<header class="vt-heading"><small>OYUNCULAR ARASI</small><h1>Genel Pazar</h1><p>Bağdaştırılmamış tılsımlar elmasla alınıp satılır.</p></header>';
+  const head='<header class="vt-heading"><small>OYUNCULAR ARASI</small><h1>Genel Pazar</h1><p>Bağdaştırılmamış tılsımlar elmasla alınıp satılır. Alıcı ve satıcı birbirini görmez.</p></header>';
   if(!online())return '<section class="vt-page vbz-page">'+head+'<p class="vt-muted">Pazar için hesabınla giriş yapmalısın.</p></section>';
   if(!B.list&&!B.loading&&!B.error)setTimeout(refresh,0);
   const prices='<details class="vbz-prices"><summary>Fiyat tablosu</summary><div>'+PRICES.map((p,i)=>'<span>Sv. '+(i+1)+' <b>'+money(p)+'</b></span>').join('')+'</div></details>';
@@ -77,7 +77,7 @@
  window.valorBazaarBuyAsk=function(id){
   const l=(B.list||[]).find(x=>x.id===id);if(!l)return;B.pending={kind:'buy',id};
   const c=colors()[l.color]||{name:''};
-  dialog('<small class="vt-kicker">GENEL PAZAR · SATIN AL</small><img class="vt-dialog-art" src="'+valorTalismanArt(l.item)+'" alt=""><h3>'+esc(l.item.name)+'</h3><p>'+c.name+' · Sv. '+l.level+' · Satıcı: '+esc(l.seller)+'</p><div class="vt-dialog-stats">'+statsHtml(l.item)+'</div><p>Fiyat: <b>'+money(l.price)+' 💎</b><br>Elmasın: '+money(Number(state.diamonds)||0)+'</p><div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" '+((Number(state.diamonds)||0)<l.price?'disabled':'')+' onclick="valorBazaarConfirm()">'+((Number(state.diamonds)||0)<l.price?'Elmasın yetersiz':'Satın Al')+'</button></div>');
+  dialog('<small class="vt-kicker">GENEL PAZAR · SATIN AL</small><img class="vt-dialog-art" src="'+valorTalismanArt(l.item)+'" alt=""><h3>'+esc(l.item.name)+'</h3><p>'+c.name+' · Sv. '+l.level+'</p><div class="vt-dialog-stats">'+statsHtml(l.item)+'</div><p>Fiyat: <b>'+money(l.price)+' 💎</b><br>Elmasın: '+money(Number(state.diamonds)||0)+'</p><div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" '+((Number(state.diamonds)||0)<l.price?'disabled':'')+' onclick="valorBazaarConfirm()">'+((Number(state.diamonds)||0)<l.price?'Elmasın yetersiz':'Satın Al')+'</button></div>');
  };
  window.valorBazaarCancelAsk=function(id){B.pending={kind:'cancel',id};dialog('<small class="vt-kicker">GENEL PAZAR</small><h3>İlan geri çekilsin mi?</h3><p class="vt-muted">Tılsım çantana geri döner.</p><div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" onclick="valorBazaarConfirm()">Geri Çek</button></div>')};
  window.valorBazaarConfirm=function(){

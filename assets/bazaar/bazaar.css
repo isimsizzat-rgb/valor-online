@@ -16,3 +16,4 @@ html[data-valor-theme=dark] .vbz-proceeds{background:#241b14;color:#f0dcb4;borde
 .vbz-prices span{display:flex;flex-direction:column;align-items:center;padding:4px;border:1px solid #c9b28c77;border-radius:6px;font-size:10.5px}.vbz-prices b{font-size:12px}
 .vbz-sold{display:flex;flex-direction:column;gap:4px}.vbz-sold span{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid #c9b28c66;border-radius:8px;font:12px system-ui}.vbz-sold small{opacity:.8;white-space:nowrap}
 .vbz-dot{display:inline-block;width:7px;height:7px;margin-left:4px;border-radius:50%;background:#c4473a;vertical-align:2px}
+.vbz-mine{font-weight:700;color:#87352b}html[data-valor-theme=dark] .vbz-mine{color:#e08a72}

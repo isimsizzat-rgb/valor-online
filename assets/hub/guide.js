@@ -118,7 +118,7 @@ const VALOR_GUIDE_TOPICS=[
   ['Yeşil: 2 efsun 3.500–5.000 · 4 efsun 2.000–2.500','Sarı: 2 efsun 5.000–7.500','Mor: 2 efsun 7.500–10.000','Kırmızı: 2 efsun 10.000–15.000'],
   'Aynı seviyeden herhangi iki tılsım birleşir: başarılı olursa rastgele bir tılsım bir üst seviyeye çıkar; başarısız olursa biri yanar, diğeri aynı seviyede farklı bir tılsıma dönüşür. Şanslar: Sv.1→2 %90, Sv.2→3 %85, Sv.3→4 %75, Sv.4→5 %65, Sv.5→6 %55, Sv.6→7 %45, Sv.7→8 %35, Sv.8→9 %25, Sv.9→10 %20. Kesin başarı yoktur; Şans Tüyü tılsımda kullanılamaz. Her deneme elmas bedeli ister: Sv.N→N+1 için 100 × N elmas (100–900).',
   'Bağdaştırma: düşen ve birleştirmeden çıkan tılsımlar bağdaştırılmamıştır. Bir kez kuşanılan tılsım kalıcı olarak bağdaşır ve satılamaz.',
-  'Genel Pazar (Menü → Genel Pazar): bağdaştırılmamış tılsımlar sabit fiyatla elmasa satılır. Sv.1 100 · Sv.2 250 · Sv.3 600 · Sv.4 1.400 · Sv.5 3.000 · Sv.6 6.000 · Sv.7 12.000 · Sv.8 24.000 · Sv.9 48.000 · Sv.10 96.000. Satıştan %10 vergi düşülür; kazanç Pazar → Sat sekmesinden toplanır.'
+  'Genel Pazar (Menü → Genel Pazar): bağdaştırılmamış tılsımlar sabit fiyatla elmasa satılır. Sv.1 100 · Sv.2 250 · Sv.3 600 · Sv.4 1.400 · Sv.5 3.000 · Sv.6 6.000 · Sv.7 12.000 · Sv.8 24.000 · Sv.9 48.000 · Sv.10 96.000. Satıştan %10 vergi düşülür; kazanç Pazar → Sat sekmesinden toplanır. Satışlar anonimdir: alıcı ve satıcı birbirinin adını görmez.'
  ],route:'Tılsım',link:'Tılsımlara Git'},
  {id:'madalyon',category:'Gelişim',title:'Şöhret ve madalyonlar',tags:'şöhret madalyon dukat zırh delme lord unvan market',text:[
   'Şöhret; Arena ve Takım Arenası zaferlerinden (+5) ve Kale Savaşı sıralamasından gelir. Şöhretin arttıkça daha güçlü madalyonların kilidi açılır.',
