@@ -30,15 +30,21 @@
  const rnd=n=>Math.floor(Math.random()*n);
  function weighted(list,key='weight'){let t=list.reduce((s,x)=>s+x[key],0),r=Math.random()*t;for(const x of list){if((r-=x[key])<0)return x}return list[list.length-1]}
  function range(color,n){const max=Math.round(color.two[1]*2/n),min=n===2?color.two[0]:Math.round(max*(n===3?.75:.8));return [min,max]}
- function roll(type,color){const n=type.stats.length,[a,b]=range(color,n),out={};for(const s of type.stats)out[s]=a+rnd(b-a+1);return out}
+ // Can counts 3 power per point while the other stats count 10, so a talisman's Can rolls 3× higher;
+ // that keeps 2-, 3- and 4-stat talismans of the same colour and level roughly equal in power.
+ const HP_FACTOR=3;
+ function statRange(color,n,stat){const [a,b]=range(color,n);return stat==='hp'?[a*HP_FACTOR,b*HP_FACTOR]:[a,b]}
+ function roll(type,color){const n=type.stats.length,out={};for(const s of type.stats){const [a,b]=statRange(color,n,s);out[s]=a+rnd(b-a+1)}return out}
  function make(level,typeId,colorId){
   const type=typeId?TYPES.find(t=>t.id===typeId):TYPES[rnd(TYPES.length)],color=colorId!=null?COLORS[colorId]:weighted(COLORS);
-  return {id:valorUniqueItemId(),slot:SLOT,talismanType:type.id,talismanColor:color.id,talismanLevel:Math.max(1,Math.min(10,level)),talismanRolls:roll(type,color),name:type.name,cls:state.class,level:1,plus:0,epic:false};
+  return {id:valorUniqueItemId(),slot:SLOT,talismanType:type.id,talismanColor:color.id,talismanLevel:Math.max(1,Math.min(10,level)),talismanRolls:roll(type,color),talismanHpV2:true,name:type.name,cls:state.class,level:1,plus:0,epic:false};
  }
  const typeOf=it=>TYPES.find(t=>t.id===it?.talismanType),colorOf=it=>COLORS[it?.talismanColor]||COLORS[0],lvl=it=>Math.max(1,Math.min(10,Number(it?.talismanLevel)||1));
  const isTalisman=it=>!!it&&it.slot===SLOT&&!!typeOf(it);
  function statsOf(it){const out={},L=lvl(it);for(const [k,v] of Object.entries(it.talismanRolls||{}))if(STAT[k])out[k]=Math.round(v*L/10);return out}
- function all(){return (state.inventory||[]).filter(isTalisman)}
+ // Talismans made before the Can change get their Can roll raised once.
+ function upgradeHp(it){if(it.talismanHpV2)return;if(it.talismanRolls&&Number.isFinite(it.talismanRolls.hp))it.talismanRolls.hp=Math.round(it.talismanRolls.hp*HP_FACTOR);it.talismanHpV2=true}
+ function all(){const list=(state.inventory||[]).filter(isTalisman);list.forEach(upgradeHp);return list}
  function slots(){if(!Array.isArray(state.talismanSlots))state.talismanSlots=[null,null,null,null];const ids=new Set(all().map(it=>String(it.id)));state.talismanSlots=state.talismanSlots.slice(0,4).map((id,i)=>id!=null&&ids.has(String(id))&&state.level>=SLOT_LEVELS[i]?String(id):null);while(state.talismanSlots.length<4)state.talismanSlots.push(null);return state.talismanSlots}
  const find=id=>all().find(it=>String(it.id)===String(id));
  const equippedIn=it=>slots().indexOf(String(it.id));
@@ -76,7 +82,7 @@
  let tab='equip',pick=['',''],pendingMerge=null;
  const esc=v=>escapeAttr(String(v??''));
  function statLines(it){return Object.entries(statsOf(it)).map(([k,v])=>'<span><small>'+STAT[k][1]+'</small><b>+'+money(v)+'</b></span>').join('')}
- function rollLines(it){const t=typeOf(it),[a,b]=range(colorOf(it),t.stats.length);return Object.entries(it.talismanRolls).map(([k,v])=>'<span><small>'+STAT[k][1]+' (Sv.10)</small><b>'+money(v)+'</b><i>'+money(a)+'–'+money(b)+'</i></span>').join('')}
+ function rollLines(it){const t=typeOf(it);return Object.entries(it.talismanRolls).map(([k,v])=>{const [a,b]=statRange(colorOf(it),t.stats.length,k);return '<span><small>'+STAT[k][1]+' (Sv.10)</small><b>'+money(v)+'</b><i>'+money(a)+'–'+money(b)+'</i></span>'}).join('')}
  function card(it,extra=''){const c=colorOf(it),slot=equippedIn(it);return '<button type="button" class="vt-card" style="--vt-color:'+c.hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><span class="vt-card-copy"><b>'+esc(it.name)+'</b><small><i class="vt-dot"></i>Sv. '+lvl(it)+(slot>=0?' · Takılı':'')+'</small><span class="vt-card-stats">'+statLines(it)+'</span></span>'+extra+'</button>'}
  function slotsHtml(){return '<div class="vt-slots">'+slots().map((id,i)=>{const open=state.level>=SLOT_LEVELS[i],it=id&&find(id);if(!open)return '<div class="vt-slot vt-slot-locked"><span>🔒</span><small>Sv. '+SLOT_LEVELS[i]+'</small></div>';if(!it)return '<div class="vt-slot vt-slot-empty"><span>+</span><small>Boş yuva</small></div>';return '<button type="button" class="vt-slot" style="--vt-color:'+colorOf(it).hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><small>Sv. '+lvl(it)+'</small></button>'}).join('')+'</div>'}
  function totalsHtml(){const b=bonus(),keys=Object.keys(b);if(!keys.length)return '<p class="vt-muted">Henüz takılı tılsım yok.</p>';const label={Saldırı:'Saldırı',Savunma:'Defans',Sihir:'Sihirli Saldırı','Sihir Savunma':'Sihirli Defans',Can:'Can'};return '<div class="vt-totals">'+keys.map(k=>'<span><small>'+label[k]+'</small><b>+'+money(b[k])+'</b></span>').join('')+'</div>'}
