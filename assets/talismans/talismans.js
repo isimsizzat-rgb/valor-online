@@ -26,7 +26,7 @@
   {id:2,name:'Mor',hex:'#9b5de5',deep:'#5a2d9a',two:[7500,10000],weight:1},
   {id:3,name:'Kırmızı',hex:'#d63c3c',deep:'#8a1a1a',two:[10000,15000],weight:1}
  ];
- const MERGE_CHANCE={1:90,2:85,3:70,4:55,5:40,6:25,7:10,8:10,9:10};
+ const MERGE_CHANCE={1:90,2:85,3:75,4:65,5:55,6:45,7:35,8:25,9:20}; // never below %20
  const rnd=n=>Math.floor(Math.random()*n);
  function weighted(list,key='weight'){let t=list.reduce((s,x)=>s+x[key],0),r=Math.random()*t;for(const x of list){if((r-=x[key])<0)return x}return list[list.length-1]}
  function range(color,n){const max=Math.round(color.two[1]*2/n),min=n===2?color.two[0]:Math.round(max*(n===3?.75:.8));return [min,max]}
@@ -89,7 +89,7 @@
  function sorted(){return all().sort((a,b)=>(equippedIn(b)>=0)-(equippedIn(a)>=0)||lvl(b)-lvl(a)||b.talismanColor-a.talismanColor)}
  function equipTab(){const list=sorted();return slotsHtml()+'<h3 class="vt-h">Toplam bonus</h3>'+totalsHtml()+'<h3 class="vt-h">Tılsımların <small>'+list.length+'</small></h3>'+(list.length?'<div class="vt-list">'+list.map(it=>card(it)).join('')+'</div>':'<p class="vt-muted">Henüz tılsımın yok. Sahneleri kazandıkça %2 şansla Sv.1–3 tılsım düşer.</p>')}
  // Talisman fusion is always a gamble: no Şans Tüyü, no guaranteed success.
- function featherPlan(level){const base=MERGE_CHANCE[level]??10;return {base,use:0,chance:base}}
+ function featherPlan(level){const base=MERGE_CHANCE[level]??20;return {base,use:0,chance:base}}
  // Diamond fee per attempt: Sv.N → N+1 costs 100 × N (100 … 900), paid whether it succeeds or not.
  function mergeCost(level){return 100*level}
  const diamonds=()=>Math.max(0,Number(state.diamonds)||0);
