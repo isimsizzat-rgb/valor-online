@@ -37,3 +37,5 @@ body.valor-chat-page .vch-count{display:block;margin-top:2px}
 .vch-badge{position:absolute;top:2px;left:calc(50% + 8px);min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#b0302a;border:1.5px solid #fff3dc;color:#fff;font:700 10px/14px system-ui,sans-serif;text-align:center;box-shadow:0 1px 3px #0005;pointer-events:none;z-index:2}
 /* Messages on the chat screen: toasts appear at the top so they never cover the send bar. */
 body.valor-chat-page #toast{top:calc(12px + env(safe-area-inset-top,0px))!important;bottom:auto!important}
+/* A message on its way to the server. */
+.vch-msg.vch-pending{opacity:.6}
