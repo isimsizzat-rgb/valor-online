@@ -2,7 +2,7 @@
 html body #main .vp-wrap .vp-scene .valor-selected-profile-hero{
  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
- overflow:hidden!important;pointer-events:none;background:#090a0d url('../home-fantasy/gothic-city.webp') center/cover no-repeat!important;
+ overflow:hidden!important;pointer-events:none;background:transparent!important;
 }
 html body #main .vp-wrap .vp-scene .valor-selected-profile-hero img{
  position:static!important;inset:auto!important;display:block!important;
@@ -22,8 +22,11 @@ html body header.top.valor-resource-bar .valor-hud-portrait-crop img{
  filter:none!important;border-radius:0!important;
 }
 
-/* The new transparent warrior stands centered over the retained profile scene. */
-html body #main .vp-wrap .vp-scene .valor-selected-profile-hero.valor-warrior-cutout img{
+/* All six transparent characters share the same profile framing. */
+html body #main .vp-wrap .vp-scene .valor-selected-profile-hero.valor-profile-cutout img{
  width:76%!important;height:96%!important;object-fit:contain!important;object-position:center center!important;
  filter:drop-shadow(0 9px 12px #0008)!important;
 }
+
+/* Let the profile surface show through instead of adding a castle backdrop. */
+html body #main .vp-wrap .vp-scene{background:transparent!important;}

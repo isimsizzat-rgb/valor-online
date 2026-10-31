@@ -10,8 +10,8 @@
   if(!hero)return html;
   const portrait=document.createElement('div'),image=document.createElement('img');
   portrait.className='vp-hero valor-selected-profile-hero';
-  if(state.class==='Savaşçı'){portrait.classList.add('valor-warrior-cutout');image.src=valorCreationCutout(state.class,state.gender)}
-  else image.src=valorCreationPortrait(state.class,state.gender);
+  portrait.classList.add('valor-profile-cutout');
+  image.src=valorCreationCutout(state.class,state.gender);
   image.alt=(state.gender==='female'?'Kadın ':'Erkek ')+state.class+' karakteri';
   portrait.appendChild(image);
   hero.replaceWith(portrait);
