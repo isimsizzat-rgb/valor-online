@@ -1,9 +1,10 @@
 /* Wings: inventory instances, percentage bonuses and guaranteed level fusion. */
+/* 2026-10-31 gothic visual collection. Existing wing IDs are preserved to keep all player inventory and equipment intact. */
 const valorWings=[
- {id:'seraf',name:'Seraf Kanatları',price:999,color:'#e6c887',desc:'Fildişi tüyler, altın işlemeler ve göğün zarafeti.'},
- {id:'anka',name:'Anka Kanatları',price:999,color:'#ed9150',desc:'Kızıl tüylerin ucunda yeniden doğan alevler.'},
- {id:'ayaz',name:'Ayaz Kanatları',price:999,color:'#8ed7ed',desc:'Kadim buzdan yontulmuş keskin kristal kanatlar.'},
- {id:'hiclik',name:'Hiçlik Kanatları',price:999,color:'#bc8fe3',desc:'Obsidyen tüylerin arasında titreşen mor yıldız ışığı.'}
+ {id:'seraf',name:'Seraf Kanatları',price:999,color:'#1ab88f',desc:'Siyah tüylerin arasında zümrüt alevleri, antik altın gotik işlemeler.'},
+ {id:'anka',name:'Anka Kanatları',price:999,color:'#cf3136',desc:'Obsidyen pençeler, kızıl lav damarları ve parçalanmış iblis zarları.'},
+ {id:'ayaz',name:'Ayaz Kanatları',price:999,color:'#b5e3ef',desc:'Fildişi kemik çerçeve, karanlık zarlar ve buz mavisi kadim rünler.'},
+ {id:'hiclik',name:'Hiçlik Kanatları',price:999,color:'#9b61e0',desc:'Karanlık tüyler, gümüş gotik katedral kuleleri ve mor büyü ışığı.'}
 ];
 const valorWingStatLabels={Saldırı:'Saldırı',Sihir:'Sihirli Saldırı',Savunma:'Defans','Sihir Savunma':'Sihirli Defans',Kritik:'Kritik',Bloke:'Bloke',Can:'Can'};
 function valorWingArt(w){return 'assets/fashion/'+(w.wingId||w.id)+'.webp'}
