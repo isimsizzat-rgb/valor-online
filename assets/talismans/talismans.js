@@ -1,7 +1,7 @@
 /* Tılsımlar: 8 types × 4 colours, Sv.1–10, up to four equipped (slots open at Sv.25/50/75/100), any mix of types.
    Rolled values are the Sv.10 value of each stat; Sv.N gives N/10 of it. A colour's total budget is
    split over the talisman's stats (2, 3 or 4), so two-stat talismans give more per stat.
-   Drops: every stage win has a 2% chance to drop a Sv.1–3 talisman. Two talismans of the same level
+   Drops: every Macera won (zone boss beaten) has a 2% chance to drop a Sv.1–3 talisman. Two talismans of the same level
    (any type) merge into a random Sv.N+1 talisman; on failure one burns and the other turns into a
    different random talisman of the same level. Şans Tüyü does not apply. */
 (function(){
@@ -76,12 +76,12 @@
  };
  const prevPopup=showBagItemPopup;
  showBagItemPopup=function(n){const it=state.inventory[n];if(isTalisman(it))return valorTalismanShow(it.id);return prevPopup.apply(this,arguments)};
- // ---------- Drops from stage wins ----------
- const prevFinish=stageFinish;
- stageFinish=function(){
-  const run=stageRun,before=run?.step;const r=prevFinish.apply(this,arguments);
-  if(run&&before===13&&run.step===14&&Math.random()<DROP_CHANCE){const level=weighted([{l:1,weight:60},{l:2,weight:30},{l:3,weight:10}]).l,it=make(level);state.inventory.push(it);if(run.reward)run.reward.talisman=it.name+' · Sv. '+level;save();render();setTimeout(()=>valorTalismanShow(it.id,'Sahneden tılsım düştü!'),350)}
-  return r;
+ // ---------- Drops from Macera ----------
+ // Beating a Macera zone boss (the end of a 10-step journey) has a 2% chance to drop a Sv.1–3 talisman.
+ window.valorTalismanAdventureDrop=function(){
+  if(Math.random()>=DROP_CHANCE)return null;
+  const level=weighted([{l:1,weight:60},{l:2,weight:30},{l:3,weight:10}]).l,it=make(level);state.inventory.push(it);
+  return {id:String(it.id),name:it.name,level};
  };
  // ---------- UI ----------
  let tab='equip',pick=['',''],pendingMerge=null;
@@ -92,7 +92,7 @@
  function slotsHtml(){return '<div class="vt-slots">'+slots().map((id,i)=>{const open=state.level>=SLOT_LEVELS[i],it=id&&find(id);if(!open)return '<div class="vt-slot vt-slot-locked"><span>🔒</span><small>Sv. '+SLOT_LEVELS[i]+'</small></div>';if(!it)return '<div class="vt-slot vt-slot-empty"><span>+</span><small>Boş yuva</small></div>';return '<button type="button" class="vt-slot" style="--vt-color:'+colorOf(it).hex+'" onclick="valorTalismanShow(\''+esc(it.id)+'\')"><img src="'+art(it)+'" alt=""><small>Sv. '+lvl(it)+'</small></button>'}).join('')+'</div>'}
  function totalsHtml(){const b=bonus(),keys=Object.keys(b);if(!keys.length)return '<p class="vt-muted">Henüz takılı tılsım yok.</p>';const label={Saldırı:'Saldırı',Savunma:'Defans',Sihir:'Sihirli Saldırı','Sihir Savunma':'Sihirli Defans',Can:'Can'};return '<div class="vt-totals">'+keys.map(k=>'<span><small>'+label[k]+'</small><b>+'+money(b[k])+'</b></span>').join('')+'</div>'}
  function sorted(){return all().sort((a,b)=>(equippedIn(b)>=0)-(equippedIn(a)>=0)||lvl(b)-lvl(a)||b.talismanColor-a.talismanColor)}
- function equipTab(){const list=sorted();return slotsHtml()+'<h3 class="vt-h">Toplam bonus</h3>'+totalsHtml()+'<h3 class="vt-h">Tılsımların <small>'+list.length+'</small></h3>'+(list.length?'<div class="vt-list">'+list.map(it=>card(it)).join('')+'</div>':'<p class="vt-muted">Henüz tılsımın yok. Sahneleri kazandıkça %2 şansla Sv.1–3 tılsım düşer.</p>')}
+ function equipTab(){const list=sorted();return slotsHtml()+'<h3 class="vt-h">Toplam bonus</h3>'+totalsHtml()+'<h3 class="vt-h">Tılsımların <small>'+list.length+'</small></h3>'+(list.length?'<div class="vt-list">'+list.map(it=>card(it)).join('')+'</div>':'<p class="vt-muted">Henüz tılsımın yok. Macera bossunu yendikçe %2 şansla Sv.1–3 tılsım düşer.</p>')}
  // Talisman fusion is always a gamble: no Şans Tüyü, no guaranteed success.
  function featherPlan(level){const base=MERGE_CHANCE[level]??20;return {base,use:0,chance:base}}
  // Diamond fee per attempt: Sv.N → N+1 costs 100 × N (100 … 900), paid whether it succeeds or not.

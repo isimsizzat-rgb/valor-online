@@ -60,3 +60,4 @@ html body .vex-go .vex-icon{width:26px;height:26px;margin-right:6px}
 .vex-dialog .vex-result.win{padding-top:0;overflow:hidden}
 .vex-dialog .vex-result>.vex-victory-art{display:block;width:calc(100% + 20px);max-width:none;height:auto;aspect-ratio:3/2;max-height:216px;object-fit:cover;object-position:center 48%;margin:0 -10px 4px;border-radius:9px 9px 0 0;mask-image:linear-gradient(#000 82%,transparent)}
 @media(max-width:380px){.vex-dialog .vdu-foe .vdu-portrait{width:82px;min-width:82px;height:82px}.vex-dialog .vex-boss-card .vdu-portrait{width:94px;min-width:94px;height:94px}}
+.vex-talisman{margin:8px 0 0;font:13px system-ui;color:#c9893b}

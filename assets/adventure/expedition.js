@@ -75,11 +75,11 @@
  function fightOver(r){const s=r.steps[r.i],won=!!r.duel.result?.win;
   setTimeout(()=>{if(run()!==r||r.phase!=='fight')return;
    if(won){r.last=give(r,X.fightReward(r.zone,s.boss));
-    if(s.boss){r.phase='done';state.adventureZoneWins=state.adventureZoneWins||{};state.adventureZoneWins[r.zone]=(Number(state.adventureZoneWins[r.zone])||0)+1;logEnd(r,true)}
+    if(s.boss){r.phase='done';state.adventureZoneWins=state.adventureZoneWins||{};state.adventureZoneWins[r.zone]=(Number(state.adventureZoneWins[r.zone])||0)+1;if(typeof valorTalismanAdventureDrop==='function'){const t=valorTalismanAdventureDrop();if(t)r.talismanDrop=t}logEnd(r,true)}
     else r.phase='won'}
    else{r.phase='lost';r.last=null;logEnd(r,false)}
    r.duel=null;save();paint(true)},1300)}
- function finish(){state.adventureRun=null;save();close();render()}
+ function finish(){const drop=state.adventureRun?.talismanDrop;state.adventureRun=null;save();close();render();if(drop&&typeof valorTalismanShow==='function')setTimeout(()=>valorTalismanShow(drop.id,'Maceradan tılsım düştü!'),300)}
 
  /* ---------- screen ---------- */
  function trail(r){return '<div class="vex-trail" aria-label="Adım '+(r.i+1)+' / 10">'+r.steps.map((s,k)=>{const known=k<r.i||(k===r.i&&r.phase!=='story')||k===9;const symbol=!known?'<i class="vex-unknown"></i>':mark(s.kind==='chest'?'chest':s.boss?'boss':'battle');return '<span class="'+(k<r.i?'done':k===r.i?'now':'')+'">'+symbol+'</span>'}).join('')+'</div>'}
@@ -108,7 +108,7 @@
  function resultView(r){const s=r.steps[r.i];
   if(r.phase==='won')return '<div class="vex-result win">'+victoryArt()+'<b>'+esc(s.foe)+' yenildi!</b><strong>'+prizeHtml(r.last||{})+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>';
   const won=r.phase==='done';
-  return '<div class="vex-result '+(won?'win':'loss')+'">'+(won?victoryArt():'<span>'+mark('loss')+'</span>')+'<b>'+(won?'Macera tamamlandı! '+esc(s.foe)+' yenildi.':'Yenildin… Macera '+(r.i+1)+'. adımda bitti.')+'</b>'+(won&&r.last?'<small>Boss ödülü: '+prizeHtml(r.last)+'</small>':'')+'<em>Toplam kazanç</em><strong>'+prizeHtml(r.earned)+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Tamam</button>'}
+  return '<div class="vex-result '+(won?'win':'loss')+'">'+(won?victoryArt():'<span>'+mark('loss')+'</span>')+'<b>'+(won?'Macera tamamlandı! '+esc(s.foe)+' yenildi.':'Yenildin… Macera '+(r.i+1)+'. adımda bitti.')+'</b>'+(won&&r.last?'<small>Boss ödülü: '+prizeHtml(r.last)+'</small>':'')+(won&&r.talismanDrop?'<p class="vex-talisman">✦ Tılsım düştü: <b>'+esc(r.talismanDrop.name)+' · Sv. '+r.talismanDrop.level+'</b></p>':'')+'<em>Toplam kazanç</em><strong>'+prizeHtml(r.earned)+'</strong></div><button type="button" class="vex-go" onclick="valorExpedition.next()">Tamam</button>'}
  function markup(){const r=run();if(!r)return '';
   const body=r.phase==='fight'&&r.duel?fightView(r):r.phase==='story'?storyView(r):r.phase==='chest'?chestView(r):resultView(r);
   const canLeave=r.phase!=='done'&&r.phase!=='lost';

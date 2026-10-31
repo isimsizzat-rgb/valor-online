@@ -111,8 +111,8 @@ const VALOR_GUIDE_TOPICS=[
   'Astroloji altınla gelişen 8 kalıcı yetenektir; her biri en fazla Sv.20. Bir sonraki seviye 5.000 × (seviye)³ altın tutar: Sv.1 5.000, Sv.10 5 milyon, Sv.20 40 milyon.',
   ['Kızıl Hiddet, Astral Alev, Demir İrade, Yıldız Örtüsü: Saldırı, Sihir, Defans, Sihirli Defans seviye başına +%1','Kader Kıran: kritik hasarı seviye başına +%1','Gece Perdesi: aldığın hasar seviye başına −%1','Sonsuz Direnç: seviye başına %0,5 şansla vuruştan sadece 1 hasar alırsın','Yaşam Işığı: seviye başına %0,5 şansla canının %5’i yenilenir']
  ],route:'Astroloji',link:'Astrolojiyi Aç'},
- {id:'tilsim',category:'Gelişim',title:'Tılsımlar',tags:'tılsım tilsim yeşil sarı mor kırmızı birleştir yuva sahne',text:[
-  'Tılsımlar sahne zaferlerinden %2 şansla Sv.1–3 olarak düşer. 8 tür ve 4 renk vardır: Yeşil, Sarı, Mor, Kırmızı; renk tamamen rastgeledir. Menü → Tılsım ekranından kuşanılır.',
+ {id:'tilsim',category:'Gelişim',title:'Tılsımlar',tags:'tılsım tilsim yeşil sarı mor kırmızı birleştir yuva macera',text:[
+  'Tılsımlar Macera’da bölge bossu yenildiğinde (10 adımlık yolculuğun sonunda) %2 şansla Sv.1–3 olarak düşer. 8 tür ve 4 renk vardır: Yeşil, Sarı, Mor, Kırmızı; renk tamamen rastgeledir. Menü → Tılsım ekranından kuşanılır.',
   'Dört yuva vardır; Sv.25, 50, 75 ve 100’de açılır. Aynı türden dört tılsım bile takılabilir.',
   'Değerler Sv.10 içindir; Sv.1 bunun %10’unu, her seviye %10 daha fazlasını verir. İki efsunlu tılsım efsun başına daha yüksek değer alır; rengin toplam gücü efsunlara bölünür. Can efsunu diğerlerinin 3 katı değerle gelir, böylece aynı renk ve seviyede 2, 3 ve 4 efsunlu tılsımlar benzer güç verir.',
   ['Yeşil: 2 efsun 3.500–5.000 · 4 efsun 2.000–2.500','Sarı: 2 efsun 5.000–7.500','Mor: 2 efsun 7.500–10.000','Kırmızı: 2 efsun 10.000–15.000'],
