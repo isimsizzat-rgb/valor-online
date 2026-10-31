@@ -48,12 +48,13 @@
  function slots(){if(!Array.isArray(state.talismanSlots))state.talismanSlots=[null,null,null,null];const ids=new Set(all().map(it=>String(it.id)));state.talismanSlots=state.talismanSlots.slice(0,4).map((id,i)=>id!=null&&ids.has(String(id))&&state.level>=SLOT_LEVELS[i]?String(id):null);while(state.talismanSlots.length<4)state.talismanSlots.push(null);return state.talismanSlots}
  const find=id=>all().find(it=>String(it.id)===String(id));
  const equippedIn=it=>slots().indexOf(String(it.id));
- // Original transparent artwork; colour grade is shown by frames.
+ // Transparent pendant artwork: each type has a gemstone matching its colour grade.
  const TALISMAN_ART={
   X:'demir-pence',Y:'kizil-muhafiz',Z:'ay-kahini',T:'firtina-muhru',
   K:'ejder-yuregi',L:'yildiz-kalbi',P:'kurt-ruhu',O:'anka-gozu'
  };
- function art(it){return 'assets/talismans/art/'+TALISMAN_ART[(typeOf(it)||TYPES[0]).id]+'.webp'}
+ const TALISMAN_ART_COLORS=['green','yellow','purple','red'];
+ function art(it){return 'assets/talismans/art/pendants/'+TALISMAN_ART[(typeOf(it)||TYPES[0]).id]+'-'+TALISMAN_ART_COLORS[colorOf(it).id]+'.webp'}
  window.valorTalismanArt=art;
  // ---------- Stats into every power / combat calculation ----------
  function bonus(){const out={};for(const id of slots()){const it=id&&find(id);if(!it)continue;for(const [k,v] of Object.entries(statsOf(it))){const key=STAT[k][0];out[key]=(out[key]||0)+v}}return out}
