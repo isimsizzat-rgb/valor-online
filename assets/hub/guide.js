@@ -116,7 +116,7 @@ const VALOR_GUIDE_TOPICS=[
   'Dört yuva vardır; Sv.25, 50, 75 ve 100’de açılır. Aynı türden dört tılsım bile takılabilir.',
   'Değerler Sv.10 içindir; Sv.1 bunun %10’unu, her seviye %10 daha fazlasını verir. İki efsunlu tılsım efsun başına daha yüksek değer alır; rengin toplam gücü efsunlara bölünür.',
   ['Yeşil: 2 efsun 3.500–5.000 · 4 efsun 2.000–2.500','Sarı: 2 efsun 5.000–7.500','Mor: 2 efsun 7.500–10.000','Kırmızı: 2 efsun 10.000–15.000'],
-  'Aynı seviyeden herhangi iki tılsım birleşir: başarılı olursa rastgele bir tılsım bir üst seviyeye çıkar; başarısız olursa biri yanar, diğeri aynı seviyede farklı bir tılsıma dönüşür. Şanslar kanatla aynıdır ve Şans Tüyü kullanılabilir.'
+  'Aynı seviyeden herhangi iki tılsım birleşir: başarılı olursa rastgele bir tılsım bir üst seviyeye çıkar; başarısız olursa biri yanar, diğeri aynı seviyede farklı bir tılsıma dönüşür. Şanslar kanatla aynıdır (%100, %85, %70, %55, %40, %25, sonra %10); Şans Tüyü tılsımda kullanılamaz.'
  ],route:'Tılsım',link:'Tılsımlara Git'},
  {id:'madalyon',category:'Gelişim',title:'Şöhret ve madalyonlar',tags:'şöhret madalyon dukat zırh delme lord unvan market',text:[
   'Şöhret; Arena ve Takım Arenası zaferlerinden (+5) ve Kale Savaşı sıralamasından gelir. Şöhretin arttıkça daha güçlü madalyonların kilidi açılır.',

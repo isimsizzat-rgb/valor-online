@@ -3,7 +3,7 @@
    split over the talisman's stats (2, 3 or 4), so two-stat talismans give more per stat.
    Drops: every stage win has a 2% chance to drop a Sv.1–3 talisman. Two talismans of the same level
    (any type) merge into a random Sv.N+1 talisman; on failure one burns and the other turns into a
-   different random talisman of the same level. Şans Tüyü adds %5 per feather. */
+   different random talisman of the same level. Şans Tüyü does not apply. */
 (function(){
  'use strict';
  const PAGE='Tılsım',SLOT='Tılsım',SLOT_LEVELS=[25,50,75,100],DROP_CHANCE=.02;
@@ -75,7 +75,7 @@
   return r;
  };
  // ---------- UI ----------
- let tab='equip',pick=['',''],useFeathers=false,pendingMerge=null;
+ let tab='equip',pick=['',''],pendingMerge=null;
  const esc=v=>escapeAttr(String(v??''));
  function statLines(it){return Object.entries(statsOf(it)).map(([k,v])=>'<span><small>'+STAT[k][1]+'</small><b>+'+money(v)+'</b></span>').join('')}
  function rollLines(it){const t=typeOf(it),[a,b]=range(colorOf(it),t.stats.length);return Object.entries(it.talismanRolls).map(([k,v])=>'<span><small>'+STAT[k][1]+' (Sv.10)</small><b>'+money(v)+'</b><i>'+money(a)+'–'+money(b)+'</i></span>').join('')}
@@ -84,7 +84,8 @@
  function totalsHtml(){const b=bonus(),keys=Object.keys(b);if(!keys.length)return '<p class="vt-muted">Henüz takılı tılsım yok.</p>';const label={Saldırı:'Saldırı',Savunma:'Defans',Sihir:'Sihirli Saldırı','Sihir Savunma':'Sihirli Defans',Can:'Can'};return '<div class="vt-totals">'+keys.map(k=>'<span><small>'+label[k]+'</small><b>+'+money(b[k])+'</b></span>').join('')+'</div>'}
  function sorted(){return all().sort((a,b)=>(equippedIn(b)>=0)-(equippedIn(a)>=0)||lvl(b)-lvl(a)||b.talismanColor-a.talismanColor)}
  function equipTab(){const list=sorted();return slotsHtml()+'<h3 class="vt-h">Toplam bonus</h3>'+totalsHtml()+'<h3 class="vt-h">Tılsımların <small>'+list.length+'</small></h3>'+(list.length?'<div class="vt-list">'+list.map(it=>card(it)).join('')+'</div>':'<p class="vt-muted">Henüz tılsımın yok. Sahneleri kazandıkça %2 şansla Sv.1–3 tılsım düşer.</p>')}
- function featherPlan(level){const base=MERGE_CHANCE[level]??10,bonusPer=typeof VALOR_FEATHER_BONUS==='number'?VALOR_FEATHER_BONUS:5,need=Math.ceil((100-base)/bonusPer),owned=typeof valorFeatherCount==='function'?valorFeatherCount():0,use=useFeathers?Math.min(need,owned):0;return {base,need,owned,use,chance:Math.min(100,base+use*bonusPer)}}
+ // Talisman fusion is always a gamble: no Şans Tüyü, no guaranteed success.
+ function featherPlan(level){const base=MERGE_CHANCE[level]??10;return {base,use:0,chance:base}}
  function mergeTab(){
   const list=sorted().filter(it=>equippedIn(it)<0),a=find(pick[0]),b=find(pick[1]);
   if(a&&equippedIn(a)>=0)pick[0]='';if(b&&equippedIn(b)>=0)pick[1]='';
@@ -93,12 +94,11 @@
   const choices=list.filter(it=>!A||!B?(!(A||B)||(String(it.id)!==String((A||B).id)&&lvl(it)===lvl(A||B))):false);
   return '<p class="vt-muted">Aynı seviyeden herhangi iki tılsım birleşir. Başarılı olursa <b>rastgele bir tılsım</b> bir üst seviyeye çıkar (tür ve renk yeniden belirlenir). Başarısız olursa biri yanar, diğeri aynı seviyede <b>farklı bir tılsıma</b> dönüşür. Takılı tılsımlar birleştirilemez.</p>'
    +'<div class="vt-picks">'+slotBox(0,A)+'<span class="vt-plus">+</span>'+slotBox(1,B)+'</div>'
-   +(valid?'<div class="vt-merge-box"><p>Sonuç: <b>Rastgele tılsım · Sv. '+(lvl(A)+1)+'</b></p><p class="vt-chance">Başarı şansı: <b>%'+plan.chance+'</b></p>'+(plan.base<100?'<label class="vf-feather'+(plan.owned?'':' vf-feather-off')+'"><input type="checkbox" '+(useFeathers&&plan.owned?'checked ':'')+(plan.owned?'':'disabled ')+'onchange="valorTalismanFeathers(this.checked)"><span class="vf-feather-art">'+(typeof valorFeatherArt==='function'?valorFeatherArt():'')+'</span><span><b>Şans Tüyü kullan</b><small>'+(plan.owned?(plan.owned>=plan.need?plan.need+' tüy → %100':plan.owned+' tüy → %'+Math.min(100,plan.base+plan.owned*5)):'Elinde tüy yok · %100 için '+plan.need+' tüy')+' · Elinde: '+plan.owned+'</small></span></label>':'')+'<button type="button" class="vt-merge-go" onclick="valorTalismanAskMerge()">Sv. '+(lvl(A)+1)+' için Birleştir</button></div>':'')
+   +(valid?'<div class="vt-merge-box"><p>Sonuç: <b>Rastgele tılsım · Sv. '+(lvl(A)+1)+'</b></p><p class="vt-chance">Başarı şansı: <b>%'+plan.chance+'</b></p>'+'<button type="button" class="vt-merge-go" onclick="valorTalismanAskMerge()">Sv. '+(lvl(A)+1)+' için Birleştir</button></div>':'')
    +'<h3 class="vt-h">Seçilebilir tılsımlar</h3>'+(choices.length&&!(A&&B)?'<div class="vt-list">'+choices.map(it=>card(it,'<span class="vt-card-pick" onclick="event.stopPropagation();valorTalismanPick(-1,\''+esc(it.id)+'\')">Seç</span>')).join('')+'</div>':'<p class="vt-muted">'+(A&&B?'İki tılsım seçildi.':'Birleştirilebilecek tılsım yok.')+'</p>');
  }
  function pageHtml(){return '<section class="vt-page"><header class="vt-heading"><small>KADİM MÜHÜRLER</small><h1>Tılsımlar</h1><p>Dört yuvaya istediğin tılsımları tak; renk ve seviye arttıkça güç artar.</p></header><div class="vt-tabs" role="tablist"><button type="button" role="tab" aria-selected="'+(tab==='equip')+'" onclick="valorTalismanTab(\'equip\')">Kuşan</button><button type="button" role="tab" aria-selected="'+(tab==='merge')+'" onclick="valorTalismanTab(\'merge\')">Birleştir</button></div>'+(tab==='equip'?equipTab():mergeTab())+'</section>'}
  window.valorTalismanTab=function(t){tab=t==='merge'?'merge':'equip';render()};
- window.valorTalismanFeathers=function(on){useFeathers=!!on;render()};
  window.valorTalismanPick=function(i,id){if(i===-1){i=pick[0]?1:0;if(pick[0]&&pick[1])return}pick[i]=id?String(id):'';tab='merge';render()};
  function dialog(html){closeBagPopup();const o=document.createElement('div');o.id='valor-bag-popup';o.className='valor-item-overlay';o.innerHTML='<section class="valor-item-dialog vt-dialog" role="dialog" aria-modal="true" aria-label="Tılsım"><button type="button" class="valor-item-close" onclick="closeBagPopup()" aria-label="Kapat">×</button>'+html+'</section>';o.addEventListener('click',e=>{if(e.target===o)closeBagPopup()});document.body.appendChild(o)}
  window.valorTalismanShow=function(id,title){
@@ -115,18 +115,18 @@
  window.valorTalismanAskMerge=function(){
   const A=find(pick[0]),B=find(pick[1]);if(!A||!B||A.id===B.id||lvl(A)!==lvl(B)||lvl(A)>=10||equippedIn(A)>=0||equippedIn(B)>=0)return toast('Aynı seviyede iki takılı olmayan tılsım seç');
   const plan=featherPlan(lvl(A));pendingMerge={a:String(A.id),b:String(B.id),level:lvl(A)};
-  dialog('<small class="vt-kicker">TILSIM BİRLEŞTİR</small><h3>Sv. '+(lvl(A)+1)+' Tılsım</h3><div class="vt-confirm-pair"><img src="'+art(A)+'" alt=""><span>+</span><img src="'+art(B)+'" alt=""></div><p>Başarı şansı: <b>%'+plan.chance+'</b>'+(plan.use?' · '+plan.use+' Şans Tüyü harcanır':'')+'</p>'+(plan.chance<100?'<p class="vt-muted">Başarısız olursa biri yanar, diğeri Sv. '+lvl(A)+' farklı bir tılsıma dönüşür.</p>':'')+'<div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" onclick="valorTalismanMerge()">Birleştir</button></div>');
+  dialog('<small class="vt-kicker">TILSIM BİRLEŞTİR</small><h3>Sv. '+(lvl(A)+1)+' Tılsım</h3><div class="vt-confirm-pair"><img src="'+art(A)+'" alt=""><span>+</span><img src="'+art(B)+'" alt=""></div><p>Başarı şansı: <b>%'+plan.chance+'</b></p>'+(plan.chance<100?'<p class="vt-muted">Başarısız olursa biri yanar, diğeri Sv. '+lvl(A)+' farklı bir tılsıma dönüşür.</p>':'')+'<div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Vazgeç</button><button type="button" onclick="valorTalismanMerge()">Birleştir</button></div>');
  };
  window.valorTalismanMerge=function(){
   const p=pendingMerge;pendingMerge=null;if(!p||!document.getElementById('valor-bag-popup'))return;closeBagPopup();
   const A=find(p.a),B=find(p.b);if(!A||!B||lvl(A)!==p.level||lvl(B)!==p.level||equippedIn(A)>=0||equippedIn(B)>=0)return toast('Tılsımlar değişti · yeniden seç');
-  const plan=featherPlan(p.level),feathers=plan.use&&typeof valorFeatherTake==='function'?valorFeatherTake(plan.use):0,ok=Math.random()*100<plan.chance;
+  const plan=featherPlan(p.level),ok=Math.random()*100<plan.chance;
   state.inventory=state.inventory.filter(it=>String(it.id)!==p.a&&String(it.id)!==p.b);
   let result;
   if(ok){result=make(p.level+1)}else{const others=TYPES.filter(x=>x.id!==A.talismanType&&x.id!==B.talismanType),pool=others.length?others:TYPES.filter(x=>x.id!==A.talismanType);result=make(p.level,pool[rnd(pool.length)].id)}
   state.inventory.push(result);pick=ok?['','']:[String(result.id),''];save();render();
   const c=colorOf(result);
-  dialog('<div class="vt-drop-title '+(ok?'vt-ok':'vt-fail')+'">'+(ok?'Birleştirme Başarılı!':'Birleştirme Başarısız')+'</div><img class="vt-dialog-art" src="'+art(result)+'" alt="" style="--vt-color:'+c.hex+'"><small class="vt-kicker" style="color:'+c.hex+'">'+c.name.toLocaleUpperCase('tr-TR')+' · SV. '+lvl(result)+'</small><h3>'+esc(result.name)+'</h3><div class="vt-dialog-stats">'+statLines(result)+'</div><p class="vt-muted">'+(ok?'İki tılsım birleşti.':'Şans %'+plan.chance+' idi. Bir tılsım yandı, diğeri bu tılsıma dönüştü.')+(feathers?' '+feathers+' Şans Tüyü kullanıldı.':'')+'</p><div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Tamam</button></div>');
+  dialog('<div class="vt-drop-title '+(ok?'vt-ok':'vt-fail')+'">'+(ok?'Birleştirme Başarılı!':'Birleştirme Başarısız')+'</div><img class="vt-dialog-art" src="'+art(result)+'" alt="" style="--vt-color:'+c.hex+'"><small class="vt-kicker" style="color:'+c.hex+'">'+c.name.toLocaleUpperCase('tr-TR')+' · SV. '+lvl(result)+'</small><h3>'+esc(result.name)+'</h3><div class="vt-dialog-stats">'+statLines(result)+'</div><p class="vt-muted">'+(ok?'İki tılsım birleşti.':'Şans %'+plan.chance+' idi. Bir tılsım yandı, diğeri bu tılsıma dönüştü.')+'</p><div class="vt-dialog-actions"><button type="button" onclick="closeBagPopup()">Tamam</button></div>');
  };
  // ---------- Page ----------
  const prevRender=render;
