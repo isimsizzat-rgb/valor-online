@@ -2,7 +2,7 @@
    The attacker picks one of four skills on their turn; the defender is played by the AI.
    Hits use the same engine as the classic arena (fury, guardians, astrology, medallions).
      1 Saldırı      normal hit           1 s cooldown
-     2 Güçlü Vuruş  130% hit             5 s cooldown
+     2 Güçlü Vuruş  130% hit            10 s cooldown
      3 Son Darbe    175% hit (max)      20 s cooldown
      4 Pasif        class effect, uses the turn, 45 s cooldown
                     (Savaşçı shield and Okçu damage boost last 3 turns; Büyücü heals at once)
@@ -26,7 +26,7 @@
   // ---- skills ----
   const SKILLS = {
     normal: { name: 'Saldırı', mult: 1, cd: 1000, icon: 'assets/arena/skills/normal.webp' },
-    strong: { name: 'Güçlü Vuruş', mult: 1.3, cd: 5000, icon: 'assets/arena/skills/strong.webp' },
+    strong: { name: 'Güçlü Vuruş', mult: 1.3, cd: 10000, icon: 'assets/arena/skills/strong.webp' },
     max: { name: 'Son Darbe', mult: 1.75, cd: 20000, icon: 'assets/arena/skills/max.webp' },
     passive: { name: 'Pasif', mult: 0, cd: 45000 }
   };
