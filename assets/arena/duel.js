@@ -36,7 +36,7 @@
   const log=duel.all.slice(-10).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
   return '<section class="vdu-dialog" role="dialog" aria-modal="true" aria-labelledby="vdu-title"><small class="vdu-eyebrow">ARENA · TUR '+st.round+'</small><h2 id="vdu-title">'+esc(st.foe.name)+'</h2>'
    +card(st.foe,'foe',portraitFoe)
-   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?'Savaş bitti':mine?'Sıra sende!':st.turn==='me'?'Hamleler oynatılıyor…':'Rakip saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span></div>'
+   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?'Savaş bitti':mine?'Sıra sende!':st.turn==='me'?'':'Rakip saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span></div>'
    +'<div class="vdu-ticker" aria-live="polite">'+log+'</div>'
    +card(me,'me',portraitMe)
    +'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,mine,t)).join('')+'</div>'

@@ -25,7 +25,7 @@
  function markup(){const st=td.st,t=now(),me=mine(),actor=st.units[st.actor],myTurn=st.status==='battle'&&actor&&me&&actor.idx===me.idx&&!locked(t),left=secs(D.TURN_MS-(t-(st.turnAt||t)));
   const side=s=>st.units.filter(u=>u.side===s).map(u=>mini(u,st.actor)).join('');
   const log=td.all.slice(-12).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
-  const who=st.status!=='battle'?'Savaş bitti':myTurn?'Sıra sende!':me&&actor?.idx===me.idx?'Hamleler oynatılıyor…':actor?.side==='A'?'Sıra: '+esc(actor.name):'Rakip saldırıyor…';
+  const who=st.status!=='battle'?'Savaş bitti':myTurn?'Sıra sende!':me&&actor?.idx===me.idx?'':actor?.side==='A'?'Sıra: '+esc(actor.name):'Rakip saldırıyor…';
   return '<section class="vdu-dialog vtd-dialog" role="dialog" aria-modal="true" aria-labelledby="vtd-title"><small class="vdu-eyebrow">TAKIM ARENASI · TUR '+st.round+'</small><h2 id="vtd-title">Rakip Takım</h2>'
    +'<div class="vtd-side foes">'+side('B')+'</div>'
    +'<div class="vdu-turn '+(myTurn?'mine':'')+'" role="status"><b>'+who+'</b><span data-live="turn">'+(st.status==='battle'&&actor?.side==='A'?left+' sn':'')+'</span></div>'
