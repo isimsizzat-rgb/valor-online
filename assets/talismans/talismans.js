@@ -86,8 +86,8 @@
  function equipTab(){const list=sorted();return slotsHtml()+'<h3 class="vt-h">Toplam bonus</h3>'+totalsHtml()+'<h3 class="vt-h">Tılsımların <small>'+list.length+'</small></h3>'+(list.length?'<div class="vt-list">'+list.map(it=>card(it)).join('')+'</div>':'<p class="vt-muted">Henüz tılsımın yok. Sahneleri kazandıkça %2 şansla Sv.1–3 tılsım düşer.</p>')}
  // Talisman fusion is always a gamble: no Şans Tüyü, no guaranteed success.
  function featherPlan(level){const base=MERGE_CHANCE[level]??10;return {base,use:0,chance:base}}
- // A small diamond fee per attempt: Sv.N → N+1 costs 10 × N (10 … 90), paid whether it succeeds or not.
- function mergeCost(level){return 10*level}
+ // Diamond fee per attempt: Sv.N → N+1 costs 100 × N (100 … 900), paid whether it succeeds or not.
+ function mergeCost(level){return 100*level}
  const diamonds=()=>Math.max(0,Number(state.diamonds)||0);
  function mergeTab(){
   const list=sorted().filter(it=>equippedIn(it)<0),a=find(pick[0]),b=find(pick[1]);
