@@ -40,11 +40,12 @@ const VALOR_GUIDE_TOPICS=[
   'Şans Taşı her denemede bir tane harcanır ve seviyesinin 10 katı ekler: Sv.1 +%10, Sv.8 +%80. Yüksek seviyelerde taşsız deneme çok pahalıya gelir.',
   'Atölye’deki Şans Taşı sekmesinde aynı seviyeden 2 taşı altınla bir üst seviyeye birleştirirsin (Sv.1→2 2.500 altın, Sv.7→8 32.500 altın).'
  ],route:'Atölye',link:'Atölyeye Git'},
- {id:'evrim',category:'Ekipman',title:'Normal → Epik → Ebedi → İlahi',tags:'evrim epik taşı parçası +21 +0 kabus çark',text:[
+ {id:'evrim',category:'Ekipman',title:'Normal → Epik → Ebedi → İlahi',tags:'evrim epik taşı parçası evrim parçası dukat +21 +0 kabus çark',text:[
   'Evrim sırası Normal → Epik → Ebedi → İlahi’dir. Bir eşyayı evrimleştirmek için +21 olması ve yeterli Epik Taşı gerekir:',
-  ['Normal → Epik: 10 Epik Taşı','Epik → Ebedi: 30 Epik Taşı','Ebedi → İlahi: 90 Epik Taşı'],
+  ['Normal → Epik: 10 Epik Taşı','Epik → Ebedi: 30 Epik Taşı + 5 Evrim Parçası','Ebedi → İlahi: 90 Epik Taşı + 15 Evrim Parçası'],
   'Evrimden sonra eşya +0’a döner ama yeni aşamanın +0’ı bile eski +21’den yaklaşık %40 güçlüdür. Takılı mozaik taşları ve efsunlar korunur.',
-  'Epik Taşı her Kabus sahnesi zaferinde 1–5 adet düşer; Şans Çarkı’ndan da 1 adet çıkabilir.'
+  'Epik Taşı her Kabus sahnesi zaferinde 1–5 adet düşer; Şans Çarkı’ndan da 1 adet çıkabilir.',
+  'Evrim Parçası Market → Madalyonlar’da Dukat ile alınır (tanesi 20 Dukat). Dukat Kale Savaşı’ndan kazanılır.'
  ],route:'Atölye',link:'Atölyeye Git'},
  {id:'mozaik',category:'Ekipman',title:'Mozaik taşları',tags:'soket yuva mücevher birleştirme değişim taş türü seviye',text:[
   'Her ekipmanda 4 mozaik yuvası vardır. Aynı ekipmana aynı türden ikinci taş takılamaz. Atölye → Mozaik’te yuvaya dokunarak taş takıp çıkarırsın.',
