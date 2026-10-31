@@ -83,3 +83,9 @@ html[data-valor-layout=crimson] body #main .valor-bag .bag-slots .bag-slot.vt-ba
  background:#101014!important;
  box-shadow:inset 0 0 20px 0 color-mix(in srgb,var(--vt-color) 30%,transparent)!important;
 }
+/* Bağdaştırma status */
+.vt-bind{font-weight:600}.vt-bind.vt-free{color:#3f8a3b}.vt-bind.vt-bound{color:#9a6b2f}
+html[data-valor-theme=dark] .vt-bind.vt-free{color:#8fd47a}html[data-valor-theme=dark] .vt-bind.vt-bound{color:#d6aa6a}
+.vt-bind-line{margin:-4px 0 10px;font:600 12px system-ui}.vt-bind-line.vt-free{color:#3f8a3b}.vt-bind-line.vt-bound{color:#9a6b2f}
+html[data-valor-theme=dark] .vt-bind-line.vt-free{color:#8fd47a}html[data-valor-theme=dark] .vt-bind-line.vt-bound{color:#d6aa6a}
+.vt-dialog-actions .vt-sell{grid-column:1/-1}
