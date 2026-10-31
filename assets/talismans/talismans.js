@@ -1,4 +1,4 @@
-/* Tılsımlar: 8 types × 4 colours, Sv.1–10, up to four equipped (slots open at Sv.25/50/75/100).
+/* Tılsımlar: 8 types × 4 colours, Sv.1–10, up to four equipped (slots open at Sv.25/50/75/100), any mix of types.
    Rolled values are the Sv.10 value of each stat; Sv.N gives N/10 of it. A colour's total budget is
    split over the talisman's stats (2, 3 or 4), so two-stat talismans give more per stat.
    Drops: every stage win has a 2% chance to drop a Sv.1–3 talisman. Two talismans of the same level
@@ -19,11 +19,12 @@
   {id:'O',name:'Anka Gözü Tılsımı',rune:'eye',stats:['matk','mdef','hp']}
  ];
  // Per colour: [min,max] of one stat on a two-stat talisman at Sv.10. Max total = 2 × max.
+ // Colours drop with equal chance (no rarity weighting).
  const COLORS=[
-  {id:0,name:'Yeşil',hex:'#3fae5a',deep:'#1d6b31',two:[3500,5000],weight:60},
-  {id:1,name:'Sarı',hex:'#e6b93a',deep:'#9a6f12',two:[5000,7500],weight:28},
-  {id:2,name:'Mor',hex:'#9b5de5',deep:'#5a2d9a',two:[7500,10000],weight:10},
-  {id:3,name:'Kırmızı',hex:'#d63c3c',deep:'#8a1a1a',two:[10000,15000],weight:2}
+  {id:0,name:'Yeşil',hex:'#3fae5a',deep:'#1d6b31',two:[3500,5000],weight:1},
+  {id:1,name:'Sarı',hex:'#e6b93a',deep:'#9a6f12',two:[5000,7500],weight:1},
+  {id:2,name:'Mor',hex:'#9b5de5',deep:'#5a2d9a',two:[7500,10000],weight:1},
+  {id:3,name:'Kırmızı',hex:'#d63c3c',deep:'#8a1a1a',two:[10000,15000],weight:1}
  ];
  const MERGE_CHANCE={1:100,2:85,3:70,4:55,5:40,6:25,7:10,8:10,9:10};
  const rnd=n=>Math.floor(Math.random()*n);
@@ -95,19 +96,18 @@
    +(valid?'<div class="vt-merge-box"><p>Sonuç: <b>Rastgele tılsım · Sv. '+(lvl(A)+1)+'</b></p><p class="vt-chance">Başarı şansı: <b>%'+plan.chance+'</b></p>'+(plan.base<100?'<label class="vf-feather'+(plan.owned?'':' vf-feather-off')+'"><input type="checkbox" '+(useFeathers&&plan.owned?'checked ':'')+(plan.owned?'':'disabled ')+'onchange="valorTalismanFeathers(this.checked)"><span class="vf-feather-art">'+(typeof valorFeatherArt==='function'?valorFeatherArt():'')+'</span><span><b>Şans Tüyü kullan</b><small>'+(plan.owned?(plan.owned>=plan.need?plan.need+' tüy → %100':plan.owned+' tüy → %'+Math.min(100,plan.base+plan.owned*5)):'Elinde tüy yok · %100 için '+plan.need+' tüy')+' · Elinde: '+plan.owned+'</small></span></label>':'')+'<button type="button" class="vt-merge-go" onclick="valorTalismanAskMerge()">Sv. '+(lvl(A)+1)+' için Birleştir</button></div>':'')
    +'<h3 class="vt-h">Seçilebilir tılsımlar</h3>'+(choices.length&&!(A&&B)?'<div class="vt-list">'+choices.map(it=>card(it,'<span class="vt-card-pick" onclick="event.stopPropagation();valorTalismanPick(-1,\''+esc(it.id)+'\')">Seç</span>')).join('')+'</div>':'<p class="vt-muted">'+(A&&B?'İki tılsım seçildi.':'Birleştirilebilecek tılsım yok.')+'</p>');
  }
- function pageHtml(){return '<section class="vt-page"><header class="vt-heading"><small>KADİM MÜHÜRLER</small><h1>Tılsımlar</h1><p>Dört yuvaya farklı tılsımlar tak; renk ve seviye arttıkça güç artar.</p></header><div class="vt-tabs" role="tablist"><button type="button" role="tab" aria-selected="'+(tab==='equip')+'" onclick="valorTalismanTab(\'equip\')">Kuşan</button><button type="button" role="tab" aria-selected="'+(tab==='merge')+'" onclick="valorTalismanTab(\'merge\')">Birleştir</button></div>'+(tab==='equip'?equipTab():mergeTab())+'</section>'}
+ function pageHtml(){return '<section class="vt-page"><header class="vt-heading"><small>KADİM MÜHÜRLER</small><h1>Tılsımlar</h1><p>Dört yuvaya istediğin tılsımları tak; renk ve seviye arttıkça güç artar.</p></header><div class="vt-tabs" role="tablist"><button type="button" role="tab" aria-selected="'+(tab==='equip')+'" onclick="valorTalismanTab(\'equip\')">Kuşan</button><button type="button" role="tab" aria-selected="'+(tab==='merge')+'" onclick="valorTalismanTab(\'merge\')">Birleştir</button></div>'+(tab==='equip'?equipTab():mergeTab())+'</section>'}
  window.valorTalismanTab=function(t){tab=t==='merge'?'merge':'equip';render()};
  window.valorTalismanFeathers=function(on){useFeathers=!!on;render()};
  window.valorTalismanPick=function(i,id){if(i===-1){i=pick[0]?1:0;if(pick[0]&&pick[1])return}pick[i]=id?String(id):'';tab='merge';render()};
  function dialog(html){closeBagPopup();const o=document.createElement('div');o.id='valor-bag-popup';o.className='valor-item-overlay';o.innerHTML='<section class="valor-item-dialog vt-dialog" role="dialog" aria-modal="true" aria-label="Tılsım"><button type="button" class="valor-item-close" onclick="closeBagPopup()" aria-label="Kapat">×</button>'+html+'</section>';o.addEventListener('click',e=>{if(e.target===o)closeBagPopup()});document.body.appendChild(o)}
  window.valorTalismanShow=function(id,title){
-  const it=find(id);if(!it)return;const c=colorOf(it),slot=equippedIn(it),open=SLOT_LEVELS.filter(l=>state.level>=l).length,sameType=slots().some((sid,i)=>sid&&i!==slot&&find(sid)?.talismanType===it.talismanType);
-  const actions=slot>=0?'<button type="button" onclick="valorTalismanUnequip(\''+esc(it.id)+'\')">Çıkar</button>':(open?'<button type="button" '+(sameType?'disabled':'')+' onclick="valorTalismanEquip(\''+esc(it.id)+'\')">'+(sameType?'Aynı tür takılı':'Kuşan')+'</button>':'<button type="button" disabled>İlk yuva Sv. 25’te açılır</button>')+'<button type="button" onclick="closeBagPopup();valorTalismanPick(-1,\''+esc(it.id)+'\');go(\''+PAGE+'\')">Birleştirmeye Seç</button>';
+  const it=find(id);if(!it)return;const c=colorOf(it),slot=equippedIn(it),open=SLOT_LEVELS.filter(l=>state.level>=l).length;
+  const actions=slot>=0?'<button type="button" onclick="valorTalismanUnequip(\''+esc(it.id)+'\')">Çıkar</button>':(open?'<button type="button" onclick="valorTalismanEquip(\''+esc(it.id)+'\')">Kuşan</button>':'<button type="button" disabled>İlk yuva Sv. 25’te açılır</button>')+'<button type="button" onclick="closeBagPopup();valorTalismanPick(-1,\''+esc(it.id)+'\');go(\''+PAGE+'\')">Birleştirmeye Seç</button>';
   dialog((title?'<div class="vt-drop-title">'+title+'</div>':'')+'<img class="vt-dialog-art" src="'+art(it)+'" alt="" style="--vt-color:'+c.hex+'"><small class="vt-kicker" style="color:'+c.hex+'">'+c.name.toLocaleUpperCase('tr-TR')+' · SV. '+lvl(it)+' / 10</small><h3>'+esc(it.name)+'</h3><div class="vt-dialog-stats">'+statLines(it)+'</div><details class="vt-rolls"><summary>Sv.10 değerleri</summary><div>'+rollLines(it)+'</div></details><div class="vt-dialog-actions">'+actions+'</div>'+(page!==PAGE?'<button type="button" class="vt-open-page" onclick="closeBagPopup();go(\''+PAGE+'\')">Tılsım ekranına git</button>':''));
  };
  window.valorTalismanEquip=function(id){
   const it=find(id);if(!it)return;const s=slots();if(s.includes(String(it.id)))return;
-  if(s.some(sid=>sid&&find(sid)?.talismanType===it.talismanType))return toast('Aynı türden ikinci tılsım takılamaz');
   const i=s.findIndex((sid,k)=>!sid&&state.level>=SLOT_LEVELS[k]);if(i<0)return toast(SLOT_LEVELS.filter(l=>state.level>=l).length?'Bütün açık yuvalar dolu · önce birini çıkar':'İlk tılsım yuvası Sv. 25’te açılır');
   s[i]=String(it.id);pick=pick.map(p=>p===String(it.id)?'':p);save();closeBagPopup();render();toast(it.name+' takıldı');
  };

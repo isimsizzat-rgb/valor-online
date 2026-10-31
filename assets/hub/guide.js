@@ -112,8 +112,8 @@ const VALOR_GUIDE_TOPICS=[
   ['Kızıl Hiddet, Astral Alev, Demir İrade, Yıldız Örtüsü: Saldırı, Sihir, Defans, Sihirli Defans seviye başına +%1','Kader Kıran: kritik hasarı seviye başına +%1','Gece Perdesi: aldığın hasar seviye başına −%1','Sonsuz Direnç: seviye başına %0,5 şansla vuruştan sadece 1 hasar alırsın','Yaşam Işığı: seviye başına %0,5 şansla canının %5’i yenilenir']
  ],route:'Astroloji',link:'Astrolojiyi Aç'},
  {id:'tilsim',category:'Gelişim',title:'Tılsımlar',tags:'tılsım tilsim yeşil sarı mor kırmızı birleştir yuva sahne',text:[
-  'Tılsımlar sahne zaferlerinden %2 şansla Sv.1–3 olarak düşer. 8 tür ve 4 renk vardır: Yeşil, Sarı, Mor, Kırmızı. Menü → Tılsım ekranından kuşanılır.',
-  'Dört yuva vardır; Sv.25, 50, 75 ve 100’de açılır. Aynı türden iki tılsım aynı anda takılamaz.',
+  'Tılsımlar sahne zaferlerinden %2 şansla Sv.1–3 olarak düşer. 8 tür ve 4 renk vardır: Yeşil, Sarı, Mor, Kırmızı; renk tamamen rastgeledir. Menü → Tılsım ekranından kuşanılır.',
+  'Dört yuva vardır; Sv.25, 50, 75 ve 100’de açılır. Aynı türden dört tılsım bile takılabilir.',
   'Değerler Sv.10 içindir; Sv.1 bunun %10’unu, her seviye %10 daha fazlasını verir. İki efsunlu tılsım efsun başına daha yüksek değer alır; rengin toplam gücü efsunlara bölünür.',
   ['Yeşil: 2 efsun 3.500–5.000 · 4 efsun 2.000–2.500','Sarı: 2 efsun 5.000–7.500','Mor: 2 efsun 7.500–10.000','Kırmızı: 2 efsun 10.000–15.000'],
   'Aynı seviyeden herhangi iki tılsım birleşir: başarılı olursa rastgele bir tılsım bir üst seviyeye çıkar; başarısız olursa biri yanar, diğeri aynı seviyede farklı bir tılsıma dönüşür. Şanslar kanatla aynıdır ve Şans Tüyü kullanılabilir.'
