@@ -26,7 +26,7 @@
   {id:2,name:'Mor',hex:'#9b5de5',deep:'#5a2d9a',two:[7500,10000],weight:1},
   {id:3,name:'Kırmızı',hex:'#d63c3c',deep:'#8a1a1a',two:[10000,15000],weight:1}
  ];
- const MERGE_CHANCE={1:100,2:85,3:70,4:55,5:40,6:25,7:10,8:10,9:10};
+ const MERGE_CHANCE={1:90,2:85,3:70,4:55,5:40,6:25,7:10,8:10,9:10};
  const rnd=n=>Math.floor(Math.random()*n);
  function weighted(list,key='weight'){let t=list.reduce((s,x)=>s+x[key],0),r=Math.random()*t;for(const x of list){if((r-=x[key])<0)return x}return list[list.length-1]}
  function range(color,n){const max=Math.round(color.two[1]*2/n),min=n===2?color.two[0]:Math.round(max*(n===3?.75:.8));return [min,max]}
