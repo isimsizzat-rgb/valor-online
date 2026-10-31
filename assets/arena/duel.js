@@ -5,7 +5,10 @@
 (function(){
  'use strict';
  const D=window.ValorDuelCore;if(!D)return;
- const duel={st:null,foe:null,rival:null,kind:null,busy:false,skew:0,all:[],shown:0,stable:null,timer:null,floats:[]};
+ const duel={st:null,foe:null,rival:null,kind:null,busy:false,skew:0,all:[],shown:0,stable:null,timer:null,floats:[],animating:false,animToken:0,readyAt:0};
+ /* While skill animations play, the player's skills are locked and the 5 s turn clock waits, so taps cannot pile up. */
+ const turnStart=()=>Math.max(duel.st?.turnAt||0,duel.readyAt||0);
+ function settle(root){const token=++duel.animToken;duel.animating=true;(window.ValorCombatMotion?.whenIdle(root)||Promise.resolve()).catch(()=>{}).then(()=>{if(token!==duel.animToken)return;duel.animating=false;duel.readyAt=now();paint()})}
  const now=()=>Date.now()+(duel.kind==='online'?duel.skew:0);
  const secs=ms=>Math.max(0,Math.ceil(ms/1000));
  const esc=s=>escapeAttr(String(s??''));
@@ -28,12 +31,12 @@
  function chip(e){const who=e.side==='me'?'Sen':esc(duel.st.foe.name);if(e.skill==='burn')return '<span class="burn">🔥 Yanık '+money(e.damage)+'</span>';
   if(e.skill==='passive')return '<span class="pas">'+who+' · '+esc(D.PASSIVES[(e.side==='me'?duel.st.me:duel.st.foe).cls]?.name||'Pasif')+(e.shield?' 🛡'+money(e.shield):e.healed?' +'+money(e.healed):e.focus?' 🎯':'')+'</span>';
   return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(skillName(e.skill,e.side==='me'?duel.st.me:duel.st.foe))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' 🛡'+money(e.hit.absorbed):'')+(e.auto&&e.side==='me'?' ⏱':'')+'</span>'}
- function skillButton(k,mine,t){const u=duel.st.me,cd=secs((u.cd[k]||0)-t),ok=mine&&!cd&&!duel.busy;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorDuel.use(\''+k+'\')" title="'+esc(skillText(k,u))+'"><img src="'+skillIcon(k,u)+'" alt="" onerror="'+fallbackIcon+'"><span class="vdu-sname">'+esc(skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
- function markup(){const st=duel.st,t=now(),mine=st.status==='battle'&&st.turn==='me',left=secs(D.TURN_MS-(t-(st.turnAt||t))),me=st.me,portraitMe=valorBattlePortraitMine(),portraitFoe=duel.rival?.portrait||(duel.kind==='training'?portraitMe:heroImages[Math.max(0,classes.indexOf(st.foe.cls))]);
+ function skillButton(k,mine,t){const u=duel.st.me,cd=secs((u.cd[k]||0)-t),ok=mine&&!cd&&!duel.busy&&!duel.animating;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorDuel.use(\''+k+'\')" title="'+esc(skillText(k,u))+'"><img src="'+skillIcon(k,u)+'" alt="" onerror="'+fallbackIcon+'"><span class="vdu-sname">'+esc(skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
+ function markup(){const st=duel.st,t=now(),mine=st.status==='battle'&&st.turn==='me'&&!duel.animating,left=secs(D.TURN_MS-(t-(turnStart()||t))),me=st.me,portraitMe=valorBattlePortraitMine(),portraitFoe=duel.rival?.portrait||(duel.kind==='training'?portraitMe:heroImages[Math.max(0,classes.indexOf(st.foe.cls))]);
   const log=duel.all.slice(-10).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
   return '<section class="vdu-dialog" role="dialog" aria-modal="true" aria-labelledby="vdu-title"><small class="vdu-eyebrow">ARENA · TUR '+st.round+'</small><h2 id="vdu-title">'+esc(st.foe.name)+'</h2>'
    +card(st.foe,'foe',portraitFoe)
-   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?'Savaş bitti':mine?'Sıra sende!':'Rakip saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span></div>'
+   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?'Savaş bitti':mine?'Sıra sende!':st.turn==='me'?'Hamleler oynatılıyor…':'Rakip saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span></div>'
    +'<div class="vdu-ticker" aria-live="polite">'+log+'</div>'
    +card(me,'me',portraitMe)
    +'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,mine,t)).join('')+'</div>'
@@ -45,12 +48,12 @@
  function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
  function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
- function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(window.ValorCombatMotion){const p=motionPlayers();for(const e of list){const a=e.side==='me'?0:1;ValorCombatMotion.play(el,e,p[a],p[1-a]);}}list.forEach((e,i)=>setTimeout(()=>{
+ function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(window.ValorCombatMotion){const p=motionPlayers();for(const e of list){const a=e.side==='me'?0:1;ValorCombatMotion.play(el,e,p[a],p[1-a]);}if(list.length)settle(el)}list.forEach((e,i)=>setTimeout(()=>{
   const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),host=document.querySelector('#valor-duel .vdu-'+target+' .vdu-portrait');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡 '+money(e.shield):e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*550))}
 
  function open(){duel.finishing=false;document.getElementById('valor-duel')?.remove();const el=document.createElement('div');el.id='valor-duel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';duel.stable=null;paint();clearInterval(duel.timer);duel.timer=setInterval(tick,250)}
- function close(){window.ValorCombatMotion?.close(document.getElementById('valor-duel'));clearInterval(duel.timer);duel.timer=null;document.getElementById('valor-duel')?.remove();document.documentElement.style.overflow=''}
+ function close(){duel.animToken++;duel.animating=false;duel.readyAt=0;window.ValorCombatMotion?.close(document.getElementById('valor-duel'));clearInterval(duel.timer);duel.timer=null;document.getElementById('valor-duel')?.remove();document.documentElement.style.overflow=''}
  function adopt(view,fresh=true){duel.st=view;if(fresh&&Array.isArray(view.events))duel.all=duel.all.concat(view.events)}
  async function server(body){const r=await valorFightCall(body);if(r&&Number.isFinite(r.now))duel.skew=r.now-Date.now();return r}
 
@@ -61,14 +64,14 @@
   else if(kind==='training'){valorPrecomputedBattle=battle;valorArenaImmediateTraining();valorPrecomputedBattle=null}
   else{valorPrecomputedBattle=battle;valorArenaWithFury(()=>valorArenaImmediateFight(rival.id));valorPrecomputedBattle=null}},500))}
 
- async function use(skill){const st=duel.st;if(!st||duel.busy||st.status!=='battle'||st.turn!=='me')return;
+ async function use(skill){const st=duel.st;if(!st||duel.busy||duel.animating||st.status!=='battle'||st.turn!=='me')return;
   if(duel.kind==='online'){duel.busy=true;paint();let r;try{r=await server({mode:'duel_act',skill})}finally{duel.busy=false}
    if(r?.duel){adopt(r.duel,!r.error)}else if(r?.error&&!r.duel){toast(valorFightError(r.error));close();return}
    paint();if(duel.st.status==='done')done();return}
   if(!D.act(duel.local,skill,Date.now()))return;adopt(D.view(duel.local));paint();if(duel.st.status==='done')done()}
- function tick(){if(document.hidden||!duel.st)return;const st=duel.st;if(st.status==='battle'&&st.turn==='me'&&!duel.busy&&now()-(st.turnAt||0)>=D.TURN_MS){use('auto');return}paint()}
+ function tick(){if(document.hidden||!duel.st)return;const st=duel.st;if(st.status==='battle'&&st.turn==='me'&&!duel.busy&&!duel.animating&&now()-turnStart()>=D.TURN_MS){use('auto');return}paint()}
 
- function localStart(kind,meStats,foe,rival){duel.kind=kind;duel.rival=rival;duel.all=[];duel.shown=0;
+ function localStart(kind,meStats,foe,rival){duel.animating=false;duel.readyAt=0;duel.kind=kind;duel.rival=rival;duel.all=[];duel.shown=0;
   duel.local=D.create({name:state.name||'Sen',cls:state.class,level:state.level,gender:state.gender,stats:meStats},foe,Date.now());adopt(D.view(duel.local));open();if(duel.st.status==='done')done()}
 
  const prevFight=valorArenaFight,prevTraining=valorArenaTraining;

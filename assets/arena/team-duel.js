@@ -6,7 +6,10 @@
 (function(){
  'use strict';
  const D=window.ValorDuelCore,H=window.valorDuel;if(!D||!D.teamCreate||!H)return;
- const td={st:null,meta:null,kind:null,local:null,busy:false,skew:0,all:[],shown:0,stable:null,timer:null,lastPoll:0,applied:new Set(),closedAt:0};
+ const td={st:null,meta:null,kind:null,local:null,busy:false,skew:0,all:[],shown:0,stable:null,timer:null,lastPoll:0,applied:new Set(),closedAt:0,animating:false,animToken:0};
+ /* Skills stay locked while skill animations play (at most until 2 s of the turn are left), so taps cannot pile up. */
+ function settle(root){const token=++td.animToken;td.animating=true;(window.ValorCombatMotion?.whenIdle(root)||Promise.resolve()).catch(()=>{}).then(()=>{if(token!==td.animToken)return;td.animating=false;paint()})}
+ const locked=t=>td.animating&&D.TURN_MS-(t-(td.st?.turnAt||t))>2000;
  const now=()=>Date.now()+(td.kind==='online'?td.skew:0);
  const secs=ms=>Math.max(0,Math.ceil(ms/1000));
  const esc=s=>escapeAttr(String(s??''));
@@ -19,10 +22,10 @@
   const cls=a?.side==='A'?'mine':'theirs';if(e.skill==='passive')return '<span class="pas">'+esc(a?.name)+' · '+esc(D.passiveOf(a).name)+'</span>';
   return '<span class="'+cls+'">'+esc(a?.name)+' → '+esc(b?.name)+' · '+esc(H.skillName(e.skill,a))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.ko?' ☠':'')+(e.auto&&a?.side==='A'?' ⏱':'')+'</span>'}
  function skillButton(k,u,myTurn,t){const cd=secs((u.cd[k]||0)-t),ok=myTurn&&!cd&&!td.busy;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorTeamDuel.use(\''+k+'\')" title="'+esc(H.skillText(k,u))+'"><img src="'+H.skillIcon(k,u)+'" alt="" onerror="'+H.fallbackIcon+'"><span class="vdu-sname">'+esc(H.skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
- function markup(){const st=td.st,t=now(),me=mine(),actor=st.units[st.actor],myTurn=st.status==='battle'&&actor&&me&&actor.idx===me.idx,left=secs(D.TURN_MS-(t-(st.turnAt||t)));
+ function markup(){const st=td.st,t=now(),me=mine(),actor=st.units[st.actor],myTurn=st.status==='battle'&&actor&&me&&actor.idx===me.idx&&!locked(t),left=secs(D.TURN_MS-(t-(st.turnAt||t)));
   const side=s=>st.units.filter(u=>u.side===s).map(u=>mini(u,st.actor)).join('');
   const log=td.all.slice(-12).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
-  const who=st.status!=='battle'?'Savaş bitti':myTurn?'Sıra sende!':actor?.side==='A'?'Sıra: '+esc(actor.name):'Rakip saldırıyor…';
+  const who=st.status!=='battle'?'Savaş bitti':myTurn?'Sıra sende!':me&&actor?.idx===me.idx?'Hamleler oynatılıyor…':actor?.side==='A'?'Sıra: '+esc(actor.name):'Rakip saldırıyor…';
   return '<section class="vdu-dialog vtd-dialog" role="dialog" aria-modal="true" aria-labelledby="vtd-title"><small class="vdu-eyebrow">TAKIM ARENASI · TUR '+st.round+'</small><h2 id="vtd-title">Rakip Takım</h2>'
    +'<div class="vtd-side foes">'+side('B')+'</div>'
    +'<div class="vdu-turn '+(myTurn?'mine':'')+'" role="status"><b>'+who+'</b><span data-live="turn">'+(st.status==='battle'&&actor?.side==='A'?left+' sn':'')+'</span></div>'
@@ -33,13 +36,13 @@
   if(stable===td.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
   td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}floatNew()}
  function motionUnit(u){const gender=u.uid===myUid()&&u.side==='A'?state.gender:u.gender;return {...u,gender,art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,gender):null}}
- function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=e.skill==='passive'?(td.st.units.find(u=>u.side!==a?.side&&u.hp>0)||td.st.units.find(u=>u.side!==a?.side)):td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
+ function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=e.skill==='passive'?(td.st.units.find(u=>u.side!==a?.side&&u.hp>0)||td.st.units.find(u=>u.side!==a?.side)):td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}if(list.length)settle(root)}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"] .vdu-portrait');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
   if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)},i*400))}
 
  function open(){td.finishing=false;if(document.getElementById('valor-tduel'))return;const el=document.createElement('div');el.id='valor-tduel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';td.stable=null;paint();clearInterval(td.timer);td.timer=setInterval(tick,250)}
- function close(){window.ValorCombatMotion?.close(document.getElementById('valor-tduel'));clearInterval(td.timer);td.timer=null;document.getElementById('valor-tduel')?.remove();document.documentElement.style.overflow='';td.closedAt=Date.now()}
+ function close(){td.animToken++;td.animating=false;window.ValorCombatMotion?.close(document.getElementById('valor-tduel'));clearInterval(td.timer);td.timer=null;document.getElementById('valor-tduel')?.remove();document.documentElement.style.overflow='';td.closedAt=Date.now()}
  function adopt(view,fresh=true){td.st=view;if(view.meta)td.meta=view.meta;if(fresh&&Array.isArray(view.events))td.all=td.all.concat(view.events)}
  async function server(body){const r=await valorFightCall(body);if(r&&Number.isFinite(r.now))td.skew=r.now-Date.now();return r}
 
@@ -51,7 +54,7 @@
   if(kind==='local'){valorTeamResolve(prep);return}
   if(td.applied.has(prep.duelId))return;td.applied.add(prep.duelId);valorTeamData().duelApplied=prep.duelId;valorTeamApplyResult(prep)},500))}
 
- async function use(skill){const st=td.st,me=mine();if(!st||!me||td.busy||st.status!=='battle'||st.actor!==me.idx)return;
+ async function use(skill){const st=td.st,me=mine();if(!st||!me||td.busy||st.status!=='battle'||st.actor!==me.idx||locked(now()))return;
   if(td.kind==='online'){td.busy=true;paint();let r;try{r=await server({mode:'tduel_act',skill})}finally{td.busy=false}
    if(r?.tduel){adopt(r.tduel,!r.error);paint();if(td.st.status==='done')finish()}else if(r&&r.tduel===null){close();td.st=null}return}
   if(!D.teamAct(td.local,'me',skill,Date.now()))return;adopt(D.teamView(td.local));paint();if(td.st.status==='done')finish()}
