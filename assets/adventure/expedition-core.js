@@ -8,6 +8,8 @@
 (function (root) {
   'use strict';
   const STEPS = 10, CHESTS = 3;
+  // Keep in sync with VALOR_XP_REWARD_SCALE in index.html (EXP is counted in millions).
+  const XP_REWARD_SCALE = 800;
   // Same zones as assets/adventure/adventure.js (names, level range, rewards).
   const LORE = [
     { foes: ['Yaban Kurdu', 'Patika Haydudu', 'Dikenli Sarmaşık'], boss: 'Yaşlı Ayı Grimtaş', places: ['eski bir kilometre taşının', 'yosunlu bir köprünün', 'terk edilmiş bir kamp ateşinin', 'kadim bir meşenin'] },
@@ -22,7 +24,7 @@
     { foes: ['Ejderha Muhafızı', 'Pul Zırhlı Şövalye', 'Ejderha Yavrusu'], boss: 'Kadim Ejderha Valdrak', places: ['devasa bir pulun', 'altın yığınlarının', 'tahta çıkan basamakların', 'yanık bir sancağın'] }
   ];
   const zones = ['Kadim Patika', 'Kızıl Koruluk', 'Sisli Bataklık', 'Unutulmuş Harabeler', 'Gölge Vadisi', 'Fırtına Geçidi', 'Buzul Zirvesi', 'Alev Çorakları', 'Lanetli Uçurum', 'Ejderha Tahtı']
-    .map((name, i) => ({ name, min: i * 10 + 1, max: i * 10 + 10, gold: 2500 * (i + 1), xp: 30 + i * 15, stoneChance: .10 + i * .01, ...LORE[i] }));
+    .map((name, i) => ({ name, min: i * 10 + 1, max: i * 10 + 10, gold: 2500 * (i + 1), xp: (30 + i * 15) * XP_REWARD_SCALE, stoneChance: .10 + i * .01, ...LORE[i] }));
 
   // Reference player power by level (R0 Sv.1, R1 Sv.25, R2 Sv.50, R3 Sv.75, R4 Sv.100).
   const POWER = [[1, 63000], [25, 113000], [50, 235000], [75, 390000], [100, 1285000]];

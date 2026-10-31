@@ -39,7 +39,7 @@
   if(prize.luck){state.stones=state.stones||{};state.stones[1]=(Number(state.stones[1])||0)+prize.luck;if(typeof syncDirectStones==='function')syncDirectStones();got.luck=prize.luck}
   for(const k in got)r.earned[k]=(r.earned[k]||0)+got[k];
   return got}
- function prizeText(p,sep=' · '){return [p.gold&&'🪙 +'+money(p.gold)+' Altın',p.xp&&'✦ +'+p.xp+' EXP',p.stone&&'💎 +'+p.stone+' Binek Taşı',p.luck&&'🔷 +'+p.luck+' Şans Taşı',p.hearts&&'❤ +'+p.hearts+' Kalp'].filter(Boolean).join(sep)||'Ödül yok'}
+ function prizeText(p,sep=' · '){return [p.gold&&'🪙 +'+money(p.gold)+' Altın',p.xp&&'✦ +'+money(p.xp)+' EXP',p.stone&&'💎 +'+p.stone+' Binek Taşı',p.luck&&'🔷 +'+p.luck+' Şans Taşı',p.hearts&&'❤ +'+p.hearts+' Kalp'].filter(Boolean).join(sep)||'Ödül yok'}
  function logEnd(r,won){const z=zoneOf(r);state.logs=state.logs||[];state.logs.unshift((won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+z.name+' ('+(won?10:r.i+1)+'/10): '+prizeText(r.earned,', ')+' · −10 Enerji');state.logs=state.logs.slice(0,30)}
 
  /* ---------- flow ---------- */

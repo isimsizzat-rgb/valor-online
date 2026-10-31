@@ -11,7 +11,7 @@ const valorAdventureZones=[
 {name:'Alev Çorakları',icon:'🌋',min:71,max:80,color:'#d0784f'},
 {name:'Lanetli Uçurum',icon:'🕳️',min:81,max:90,color:'#a060aa'},
 {name:'Ejderha Tahtı',icon:'🐉',min:91,max:100,color:'#d1a05c'}
-].map((z,i)=>({...z,thumbnail:valorAdventureThumbnails[i],image:'assets/adventure/region-'+(i+1)+'.webp?v=20261023-visible',gold:2500*(i+1),xp:30+i*15,stoneChance:.10+i*.01}));
+].map((z,i)=>({...z,thumbnail:valorAdventureThumbnails[i],image:'assets/adventure/region-'+(i+1)+'.webp?v=20261023-visible',gold:2500*(i+1),xp:(30+i*15)*(typeof VALOR_XP_REWARD_SCALE==='number'?VALOR_XP_REWARD_SCALE:1),stoneChance:.10+i*.01}));
 
 /* Her bolge yatay tek satir; sagdaki oka dokununca onay acilir. */
 function valorAdventurePage(){
@@ -78,7 +78,7 @@ function valorAdventureAccept(i){
 function valorAdventureShowResult(zone,won,gold,xp,stone){
  const reward=won?
    '<div class="adventure-result-rewards"><div><span>🪙 Altın</span><strong>+'+money(gold)+'</strong></div>'
-   +'<div><span>✦ EXP</span><strong>+'+xp+'</strong></div>'
+   +'<div><span>✦ EXP</span><strong>+'+money(xp)+'</strong></div>'
    +(stone?'<div><span>💎 Binek Taşı</span><strong>+1</strong></div>':'')
    +'</div>'
    +(stone?'<p class="adventure-stone-note">Şansına Binek Taşı kazandın!</p>':''):
@@ -117,7 +117,7 @@ function valorAdventureFight(i){
   state.adventureZoneWins=state.adventureZoneWins||{};
   state.adventureZoneWins[i]=(Number(state.adventureZoneWins[i])||0)+1;
  }
- const msg=(won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+zone.name+': '+(won?'+'+money(zone.gold)+' Altın, +'+(window.valorLastXpGain||zone.xp)+' EXP'+(stone?', +1 Binek Taşı':''):'Ödül yok')+' · −10 Enerji';
+ const msg=(won?'🏆 Zafer':'💀 Yenilgi')+' — Macera · '+zone.name+': '+(won?'+'+money(zone.gold)+' Altın, +'+money(window.valorLastXpGain||zone.xp)+' EXP'+(stone?', +1 Binek Taşı':''):'Ödül yok')+' · −10 Enerji';
  state.logs=state.logs||[];
  state.logs.unshift(msg);
  state.logs=state.logs.slice(0,30);

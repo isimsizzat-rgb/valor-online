@@ -24,7 +24,7 @@ const VALOR_GUIDE_TOPICS=[
  {id:'enerji',category:'Başlangıç',title:'Macera ve enerji',tags:'macera enerji şişe yenileme bölge altın exp binek taşı',text:[
   'Macera’daki her savaş 10 enerji harcar. Enerji en fazla 100 olur; her 30 dakikada 10 yenilenir, oyun kapalıyken de dolar. Her gece 00.00’da enerjin 100’e tamamlanır.',
   'Macerada seviyene göre açılan 10 bölge vardır (her 10 seviyede bir yenisi). Kazanınca:',
-  ['Altın: 1. bölgede 2.500, her bölgede 2.500 artar (10. bölge 25.000).','EXP: 30’dan başlar, her bölgede 15 artar.','Binek Taşı: %10 şans, her bölgede %1 artar.'],
+  ['Altın: 1. bölgede 2.500, her bölgede 2.500 artar (10. bölge 25.000).','EXP: 24.000’den başlar, her bölgede 12.000 artar.','Binek Taşı: %10 şans, her bölgede %1 artar.'],
   'Enerji Şişesi +50 enerji verir. Market’ten 50 elmasa (günde 5) veya Zindan Marketi’nden 20 zindan parasına (günde 2) alınır.'
  ],route:'Macera',link:'Maceraya Git'},
  {id:'canta',category:'Ekipman',title:'Çanta ve eşyalar',tags:'envanter eşya tak çıkar sat toplu çanta aç şans çantası mozaik çantası',text:[
