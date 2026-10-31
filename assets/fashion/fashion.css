@@ -59,3 +59,7 @@ html body .vp-wrap .vp-scene .vfp-spacer{visibility:hidden;pointer-events:none;w
 html body .vp-wrap .vp-scene .vp-slot.vf-fashion-button{position:relative!important;padding:0!important;overflow:hidden!important}
 html body .vp-wrap .vp-scene .vp-slot.vf-fashion-button img.vf-fashion-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;aspect-ratio:auto!important;border:0!important;border-radius:6px!important;box-shadow:none!important}
 html body .vp-wrap .vp-scene .vp-slot.vf-fashion-button .vf-slot-caption{position:absolute!important;left:0;right:0;bottom:0;z-index:1;padding:8px 0 3px;background:linear-gradient(transparent,#000d);color:#f3d18e;text-shadow:0 1px 2px #000}
+/* Wing fusion chance and result. */
+.vf-merge-chance{margin:6px 0 10px;font:13px/1.5 system-ui;text-align:center}.vf-merge-chance b{color:#c9893b}.vf-merge-chance small{opacity:.8}
+.vf-merge-result.vf-merge-ok h3{color:#5f9d45}.vf-merge-result.vf-merge-fail h3{color:#c4473a}
+.vf-merge-result.vf-merge-fail .vf-confirm-pair img{filter:grayscale(.85) brightness(.7)}

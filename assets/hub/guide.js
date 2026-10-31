@@ -101,7 +101,7 @@ const VALOR_GUIDE_TOPICS=[
  {id:'kanat',category:'Gelişim',title:'Kanatlar',tags:'fashion kanat tak birleştir seviye seraf anka ayaz hiçlik yüzde',text:[
   'Dört kanat vardır: Seraf, Anka, Ayaz ve Hiçlik. Hepsi tüm sınıflara uyar ve Market → Kanatlar’da 999 elmastır.',
   'Kanat seviyesi başına yedi özelliğin hepsine +%2 verir: Sv.1 +%2, Sv.10 +%20.',
-  'Kanat Birleştirme’de aynı seviyeden iki kanat kesin olarak bir üst seviye kanat olur. İki kanat aynı türse aynı kanadı, farklıysa rastgele bir kanat alırsın. En yüksek seviye 10’dur.',
+  'Kanat Birleştirme’de aynı seviyeden iki kanat bir üst seviye kanat olur. Başarı şansı seviyeye göre düşer: Sv.1→2 %100, Sv.2→3 %85, Sv.3→4 %70, Sv.4→5 %55, Sv.5→6 %40, Sv.6→7 %25, Sv.7’den sonra %10. Başarısız olursa kanatlardan biri yanar (takılı kanat korunur), diğeri aynı seviyede kalır. İki kanat aynı türse aynı kanadı, farklıysa rastgele bir kanat alırsın. En yüksek seviye 10’dur.',
   'Kanatlarını Fashion ekranında görür, oradan kuşanırsın.'
  ],route:'Fashion',link:'Kanatları Aç'},
  {id:'kalici',category:'Gelişim',title:'Teknoloji ve Astroloji',tags:'kalıcı özellik altın kristal pasif üretim yetenek kızıl hiddet sonsuz direnç yaşam ışığı gece perdesi',text:[
