@@ -97,7 +97,7 @@ function valorTeamApplyResult(prep){
   if(page!=='Savaş'||!state.class||valorArenaPendingBattle||document.getElementById('valor-arena-result'))return;
   if(!valorTeamOpen())return valorTeamClosedNotice();
   const d=valorTeamData(),room=d.room;if(!room)return;
-  if(!room.own){valorTeamNotice='Savaşı oda lideri başlatır. Lider başlatınca savaş senin ekranında da oynar.';render();return}
+  if(!room.own){valorTeamNotice='Savaşı oda lideri başlatır. Rakip takım bulununca savaş senin ekranında da açılır.';render();return}
   if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
   if(valorTeamNet.busy)return;valorTeamNet.busy=true;
   try{
@@ -133,10 +133,10 @@ function valorTeamApplyResult(prep){
   let html=prevPage.apply(this,arguments);if(!valorTeamIsOnline())return html;
   const n=valorTeamNet,d=valorTeamData();
   if(n.myRank)html=html.replace(/(<span>Sıran<\/span><b>)#\d+/,'$1#'+n.myRank);
-  html=html.replace(/<p class="vc-local">[\s\S]*?<\/p>/,'<p class="vc-local vc-online">Odalar ve takım arkadaşların gerçek oyuncular · rakipler rastgele seçilen gerçek oyunculardır.'+(d.room&&!d.room.own?' Savaşı oda lideri başlatır.':'')+'</p>');
+  html=html.replace(/<p class="vc-local">[\s\S]*?<\/p>/,'<p class="vc-local vc-online">Odalar, takım arkadaşların ve rakiplerin gerçek oyuncular · rakip, aynı anda savaş arayan bir takımdır.'+(d.room&&!d.room.own?' Savaşı oda lideri başlatır.':'')+'</p>');
   const inv=(!d.room&&n.lobby?.invites)||[];
   if(inv.length&&valorTeamOpen())html=html.replace('<section class="vt-create">','<section class="vt-invites"><div class="arena-section-heading"><h2>Davetler</h2><span>'+inv.length+'</span></div>'+inv.map(i=>'<div class="vt-room-row"><div><b>'+escapeAttr(i.room_name)+'</b><small>'+escapeAttr(i.from_name||'Bir oyuncu')+' seni davet etti</small></div><button type="button" class="vt-mini vt-primary" onclick="valorTeamJoin(\''+i.room_id+'\',\'\')">Katıl</button><button type="button" class="vt-mini" onclick="valorTeamAct(\'team_decline\',{rid:\''+i.room_id+'\'},\'Davet reddedildi.\')">Reddet</button></div>').join('')+'</section><section class="vt-create">');
-  if(d.room&&!d.room.own)html=html.replace(/(<button type="button" class="vt-primary"[^>]*onclick="valorTeamFight\(\)">)[^<]*/,'$1Lider Başlatacak');
+  if(d.room&&!d.room.own)html=html.replace(/(<button type="button" class="vt-primary"[^>]*onclick="valorTeamFight\(\)">)[^<]*/,'$1'+(n.room?.searching?'Lider rakip takım arıyor…':'Lider Başlatacak'));
   return html;
  };
  setInterval(()=>{if(!state.class||document.hidden||!valorTeamIsOnline()||!valorTeamOpen())return;const inRoom=!!valorTeamData().room?.server,onTab=page==='Savaş'&&valorArenaMode==='team';if(onTab||inRoom)valorTeamPoll(false)},3000);

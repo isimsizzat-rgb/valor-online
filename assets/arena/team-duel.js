@@ -86,7 +86,7 @@
  /* Members: when the room's fight starts, open the screen (also after a refresh). */
  setInterval(()=>{if(document.hidden||!state.class||document.getElementById('valor-tduel')||typeof valorTeamIsOnline!=='function'||!valorTeamIsOnline())return;
   const room=valorTeamNet?.room;if(!room?.duel||Date.now()-td.closedAt<4000)return;
-  td.kind='online';td.all=[];td.shown=0;td.lastBatch='';td.meta=null;
+  if(ts.on)return;td.kind='online';td.all=[];td.shown=0;td.lastBatch='';td.meta=null;
   server({mode:'tduel_state'}).then(r=>{if(r?.tduel&&r.tduel.status==='battle'&&!document.getElementById('valor-tduel')){adopt(r.tduel);open()}}).catch(()=>{})},1500);
 
  /* Results of a turn-based fight are not replayed: everyone already watched it live. */
@@ -98,6 +98,32 @@
    td.applied.add(id);d.duelApplied=id;if(document.getElementById('valor-tduel')){close();td.st=null}valorTeamApplyResult(prep);return}
   return prevCheck.apply(this,arguments)};
 
+ /* Matchmaking (online): the leader waits up to 60 s for another real team that is searching at the same time.
+    Matched teams fight each other live; nobody else searching = "Takım bulunamadı". */
+ const SEARCH_MS=60000,ts={on:false,timer:null,started:0,token:0};
+ function searchBox(title,sub,done){let el=document.getElementById('valor-tsearch');
+  if(!el){el=document.createElement('div');el.id='valor-tsearch';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden'}
+  el.innerHTML='<section class="vdu-dialog vts-dialog'+(done?' vts-done':'')+'" role="dialog" aria-modal="true" aria-labelledby="vts-title"><small class="vdu-eyebrow">TAKIM ARENASI</small><h2 id="vts-title">'+title+'</h2>'
+   +(done?'':'<div class="vts-ring" role="timer"><i></i><b data-live="vts">'+Math.ceil(SEARCH_MS/1000)+'</b><small>saniye</small></div>')
+   +'<p class="vts-sub">'+sub+'</p>'
+   +(done?'<button type="button" class="vt-primary" onclick="valorTeamSearchClose()">Tamam</button>':'<button type="button" class="vt-mini" onclick="valorTeamSearchCancel()">Aramayı İptal Et</button>')+'</section>'}
+ function searchClose(){document.getElementById('valor-tsearch')?.remove();if(!document.getElementById('valor-tduel'))document.documentElement.style.overflow=''}
+ function searchStop(notFound){clearInterval(ts.timer);ts.timer=null;ts.on=false;ts.token++;
+  if(notFound){searchBox('Takım bulunamadı','Şu an savaş arayan başka bir takım yok. Biraz sonra tekrar dene.',true);valorTeamNotice='Takım bulunamadı.';render()}else searchClose()}
+ async function search(){ts.on=true;ts.started=Date.now();const token=++ts.token;
+  searchBox('Rakip takım aranıyor…','Aynı anda savaş arayan gerçek bir takım bulununca eşleşip savaşacaksınız.');
+  ts.timer=setInterval(()=>{const n=document.querySelector('#valor-tsearch [data-live="vts"]');if(n)n.textContent=Math.max(0,Math.ceil((SEARCH_MS-(Date.now()-ts.started))/1000))},250);
+  let pending=false;
+  while(ts.on&&token===ts.token){let r;try{r=await server({mode:'tduel_search'})}catch{r=null}
+   if(!ts.on||token!==ts.token)return;
+   if(r?.tduel){searchStop(false);if(document.getElementById('valor-tduel'))return;td.kind='online';td.all=[];td.shown=0;td.lastBatch='';td.meta=null;adopt(r.tduel);open();if(td.st.status==='done')finish();return}
+   if(r?.error&&!r.search){searchStop(false);valorTeamNotice=valorFightError(r.error);render();return}
+   pending=r?.search==='pending';
+   if(r?.search==='timeout'||(!pending&&Date.now()-ts.started>=SEARCH_MS)){if(r?.search!=='timeout')server({mode:'tduel_cancel'}).catch(()=>{});searchStop(true);return}
+   await new Promise(res=>setTimeout(res,pending?800:2000))}}
+ window.valorTeamSearchCancel=function(){if(!ts.on)return searchClose();searchStop(false);server({mode:'tduel_cancel'}).catch(()=>{});valorTeamNotice='Arama iptal edildi.';render()};
+ window.valorTeamSearchClose=searchClose;
+
  /* Leader starts (online); guests fight locally with AI teammates. */
  const prevFight=valorTeamFight;
  valorTeamFight=async function(){
@@ -107,11 +133,9 @@
   if(valorTeamIsOnline()){
    if(!room.own){valorTeamNotice='Savaşı oda lideri başlatır. Lider başlatınca savaş senin ekranında da açılır.';render();return}
    if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
-   if(td.busy)return;td.busy=true;let r;
-   try{if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{});r=await server({mode:'tduel_start'})}finally{td.busy=false}
-   if(r?.missing||(!r?.tduel&&/Sunucu hatası|Sunucuya bağlanılamadı/.test(String(r?.error||''))))return prevFight.apply(this,arguments);   // server missing/failing: classic fight
-   if(!r?.tduel){valorTeamNotice=valorFightError(r?.error);render();return}
-   td.kind='online';td.all=[];td.shown=0;td.lastBatch='';td.meta=null;adopt(r.tduel);open();if(td.st.status==='done')finish();return}
+   if(td.busy||ts.on)return;td.busy=true;
+   try{if(typeof valorCloudFlush==='function')await valorCloudFlush().catch(()=>{})}finally{td.busy=false}
+   search();return}
   if(valorTeamRemaining()<1){valorTeamNotice='Bugünkü '+VALOR_TEAM_DAILY+' takım savaşı hakkını kullandın.';render();return}
   const mineStats=valorArenaStats(),hud=document.getElementById('valor-hud-portrait')?.src;
   const A=[{uid:'me',name:state.name||'Sen',cls:state.class,level:state.level,gender:state.gender,stats:mineStats,human:true,portrait:hud},...room.members.map((m,i)=>({uid:'m'+i,name:m.name,cls:m.cls,level:m.level,gender:m.gender,stats:valorTeamBotStats(m.ratio,m.cls),portrait:valorTeamPortrait(m)}))];

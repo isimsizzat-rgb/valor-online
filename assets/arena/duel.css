@@ -35,3 +35,12 @@ html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:not(:disabled):act
 .foes .vtd-unit .vdu-hp i{background:linear-gradient(90deg,#842c35,#e07265)}
 .vtd-unit.active{border-color:#f0c97e;box-shadow:0 0 10px #eeb55460}.vtd-unit.me{background:#1b1a14}.vtd-unit.down{opacity:.4}
 .vtd-label{margin:2px 0 6px;font:700 12px Georgia,serif;color:#b9ab93;letter-spacing:1px}
+
+/* Team Arena matchmaking */
+.vts-dialog{text-align:center;max-width:360px}.vts-dialog h2{margin:6px 0 14px}
+.vts-ring{position:relative;width:120px;height:120px;margin:4px auto 14px;display:grid;place-content:center;color:#f3dcb4}
+.vts-ring i{position:absolute;inset:0;border-radius:50%;border:4px solid #c9a46a33;border-top-color:#e8b764;animation:vts-spin 1.1s linear infinite}
+.vts-ring b{font:800 38px system-ui;line-height:1}.vts-ring small{font-size:11px;opacity:.75}
+.vts-sub{margin:0 0 16px;color:#cdbb9f;font-size:13px;line-height:1.45}
+.vts-done h2{color:#ffb4a2}
+@keyframes vts-spin{to{transform:rotate(360deg)}}

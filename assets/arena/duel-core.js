@@ -180,9 +180,9 @@
     while (st.status === 'battle' && !tActor(st).human) { const u = tActor(st); t = Math.max(t, u.cd.normal); tPerform(st, u, choose(u, t), t, rng, true); }
     st.turnAt = now + (st.events.length ? GRACE_MS : 0);
   }
-  /* A and B: [{uid, name, cls, level, gender, stats, human}] */
+  /* A and B: [{uid, name, cls, level, gender, stats, human}]; B is human when two real teams were matched. */
   function teamCreate(A, B, now, rng = Math.random) {
-    const units = [...A.map((p, i) => tUnit(p, 'A', i, p.human)), ...B.map((p, i) => tUnit(p, 'B', A.length + i, false))];
+    const units = [...A.map((p, i) => tUnit(p, 'A', i, p.human)), ...B.map((p, i) => tUnit(p, 'B', A.length + i, p.human))];
     const st = { v: 1, team: true, units, round: 1, status: 'battle', events: [], tlog: [], startedAt: now };
     tQueue(st, rng); tRunAi(st, now, rng); return st;
   }
