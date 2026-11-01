@@ -6,7 +6,7 @@ const valorTeamNet={lobby:null,lobbyAt:0,room:undefined,stateAt:0,cands:null,top
 function valorTeamIsOnline(){return !valorTeamNet.unavailable&&!!(typeof valorAccountActive!=='undefined'&&valorAccountActive?.cloud&&typeof valorCloudFetch==='function')}
 function valorTeamRpc(name,body){return valorCloudFetch('/rest/v1/rpc/'+name,{method:'POST',body:JSON.stringify(body||{})})}
 function valorTeamMissing(e){if(e&&(e.status===404||e.code==='PGRST202')){valorTeamNet.unavailable=true;return true}return false}
-function valorTeamMsg(r){return {closed:'Takım Arenası şu an kapalı.',already:'Zaten bir odadasın.',full:'Bu oda dolu.',gone:'Bu oda artık yok.',wrong_password:'Şifre yanlış.',not_leader:'Bunu yalnızca oda lideri yapabilir.',busy:'Bu oyuncu başka bir odada.'}[r]||'İşlem yapılamadı.'}
+function valorTeamMsg(r){return {closed:'Takım Arenası şu an kapalı.',already:'Zaten bir odadasın.',full:'Bu oda dolu.',gone:'Bu oda artık yok.',wrong_password:'Şifre yanlış.',not_leader:'Bunu yalnızca oda lideri yapabilir.',busy:'Bu oyuncu başka bir odada.',offline:'Bu oyuncu şu an çevrimiçi değil.',target_busy:'Bu oyuncu şu an meşgul (sahnede, macerada ya da savaşta). Biraz sonra tekrar dene.'}[r]||'İşlem yapılamadı.'}
 function valorTeamRedraw(){if(page==='Savaş'&&valorArenaMode==='team'&&!document.getElementById('valor-arena-result')&&!valorArenaPendingBattle&&!document.querySelector('.vt-page input:focus'))render()}
 
 /* Server room → the local room object the existing page draws. */
@@ -83,9 +83,9 @@ function valorTeamApplyResult(prep){
  wrap('valorTeamLeave',function(){valorTeamInviteOpen=false;valorTeamAct('team_leave',{},'Odadan çıktın.',()=>{valorTeamData().room=null})});
  wrap('valorTeamKick',function(id){valorTeamAct('team_kick',{target:id},'Oyuncu odadan çıkarıldı.')});
  wrap('valorTeamInviteCandidates',function(){
-  if(!valorTeamNet.cands&&!valorTeamNet.candsLoading){valorTeamNet.candsLoading=true;valorTeamRpc('team_invite_candidates').then(r=>{valorTeamNet.cands=Array.isArray(r)?r:[];valorTeamNet.candsAt=Date.now()}).catch(()=>{valorTeamNet.cands=[]}).finally(()=>{valorTeamNet.candsLoading=false;valorTeamRedraw()})}
-  else if(valorTeamNet.candsAt&&Date.now()-valorTeamNet.candsAt>20000)valorTeamNet.cands=null;
-  return (valorTeamNet.cands||[]).map(p=>({id:p.user_id,name:p.name,cls:p.class,level:p.level}));
+  if(!valorTeamNet.cands&&!valorTeamNet.candsLoading){valorTeamNet.candsLoading=true;valorTeamRpc('team_online_players').then(r=>{valorTeamNet.cands=Array.isArray(r)?r:[];valorTeamNet.candsAt=Date.now()}).catch(()=>{valorTeamNet.cands=[]}).finally(()=>{valorTeamNet.candsLoading=false;valorTeamRedraw()})}
+  else if(valorTeamNet.candsAt&&Date.now()-valorTeamNet.candsAt>8000)valorTeamNet.cands=null;
+  return (valorTeamNet.cands||[]).map(p=>({id:p.user_id,name:p.name,cls:p.class,level:p.level,busy:!!p.busy,online:true}));
  });
  wrap('valorTeamInvite',function(id){valorTeamAct('team_invite',{target:id},'Davet gönderildi. Oyuncu kabul edince odana gelir.')});
  wrap('valorTeamRanking',function(){
@@ -142,3 +142,45 @@ function valorTeamApplyResult(prep){
  };
  setInterval(()=>{if(!state.class||document.hidden||!valorTeamIsOnline()||!valorTeamOpen())return;const inRoom=!!valorTeamData().room?.server,onTab=page==='Savaş'&&valorArenaMode==='team';if(onTab||inRoom)valorTeamPoll(false)},3000);
 })();
+
+
+/* Invites from anywhere: while the arena is open the game tells the server every 5 s whether this player is
+   online and busy (stage, adventure, dungeon, boss or a fight) and gets fresh invites back. A free player sees
+   an "X seni takıma davet etti · Evet / Hayır" pop-up wherever they are. */
+const valorTeamInviteUi={shown:new Set(),current:null,timer:null,pinging:false};
+function valorTeamBusyNow(){try{
+ if(typeof stageRun!=='undefined'&&stageRun)return true;
+ if(typeof valorArenaPendingBattle!=='undefined'&&valorArenaPendingBattle)return true;
+ if(['Macera','Zindan','Dünya Bossu','Kale Testi'].includes(page))return true;
+ return !!document.querySelector('.vdu-overlay,#valor-arena-result,[aria-modal="true"]:not(.vti-card)');
+}catch(e){return false}}
+function valorTeamInviteClose(){clearInterval(valorTeamInviteUi.timer);valorTeamInviteUi.timer=null;valorTeamInviteUi.current=null;document.getElementById('valor-tinvite')?.remove()}
+function valorTeamInviteShow(inv){
+ valorTeamInviteUi.current=inv;valorTeamInviteUi.shown.add(inv.room_id+':'+inv.at);
+ let el=document.getElementById('valor-tinvite');if(!el){el=document.createElement('div');el.id='valor-tinvite';el.className='vti-overlay';document.body.appendChild(el)}
+ el.innerHTML='<section class="vti-card" role="dialog" aria-modal="true" aria-labelledby="vti-title"><small class="vti-eyebrow">TAKIM ARENASI</small>'
+  +'<h2 id="vti-title"><b>'+escapeAttr(inv.from_name||'Bir oyuncu')+'</b> seni takımına davet etti</h2>'
+  +'<p>'+escapeAttr(inv.room_name||'Oda')+' · '+(Number(inv.members)||1)+' / 3 kişi</p>'
+  +'<div class="vti-actions"><button type="button" class="vti-no" onclick="valorTeamInviteAnswer(false)">Hayır</button><button type="button" class="vti-yes" onclick="valorTeamInviteAnswer(true)">Evet <span data-vti-left></span></button></div></section>';
+ const tick=()=>{const left=Math.max(0,Math.ceil((Number(inv.at)+60000-Date.now())/1000)),n=el.querySelector('[data-vti-left]');if(n)n.textContent='('+left+')';if(!left)valorTeamInviteClose()};
+ tick();clearInterval(valorTeamInviteUi.timer);valorTeamInviteUi.timer=setInterval(tick,500);
+}
+async function valorTeamInviteAnswer(yes){
+ const inv=valorTeamInviteUi.current;if(!inv)return valorTeamInviteClose();valorTeamInviteClose();
+ if(!yes){valorTeamRpc('team_decline',{rid:inv.room_id}).catch(()=>{});return}
+ try{const r=await valorTeamRpc('team_join',{rid:inv.room_id,pass:''});
+  if(r!=='ok'){toast(valorTeamMsg(r));return}
+  valorTeamNotice='Odaya katıldın.';valorArenaMode='team';valorTeamNet.lobbyAt=0;
+  if(typeof go==='function')go('Savaş');else{page='Savaş';render()}
+  await valorTeamPoll(true);render();
+ }catch(e){toast(e.message||'Odaya katılınamadı.')}
+}
+setInterval(async()=>{const u=valorTeamInviteUi;
+ if(u.pinging||u.off||document.hidden||!state.class||!valorTeamIsOnline()||typeof valorTeamOpen!=='function'||!valorTeamOpen())return;
+ const busy=valorTeamBusyNow();u.pinging=true;
+ try{const r=await valorTeamRpc('team_ping',{busy});
+  const inv=(r?.invites||[]).find(i=>!u.shown.has(i.room_id+':'+i.at)&&Number(i.at)+60000>Date.now());
+  if(inv&&!busy&&!u.current&&!valorTeamData().room)valorTeamInviteShow(inv);
+ }catch(e){if(e&&(e.status===404||e.code==='PGRST202'))u.off=true}   // server functions not installed
+ finally{u.pinging=false}
+},5000);

@@ -47,3 +47,19 @@ button.vt-inv:is(.vt-inv,#vt-none){display:flex;align-items:center;justify-conte
 button.vt-inv:is(.vt-inv,#vt-none):active{background:#2a2216!important;border-color:#c9a36b!important}
 .vt-inv b{font-size:12px;font-weight:600;color:#ecd7b4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-inv small{flex:none;font-size:10px;color:#c9b38a}
+
+.vt-inv .vt-dot{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;background:#56d27c;box-shadow:0 0 5px #56d27c99;vertical-align:1px}
+button.vt-inv.busy:is(.vt-inv,#vt-none){opacity:.55}.vt-inv.busy .vt-dot{background:#e0a33c;box-shadow:none}.vt-inv.busy small{color:#e0a33c}
+.vt-inv-empty{display:block;margin:2px 0 6px;color:#9d8b6f;font-size:11px}
+/* Invite pop-up (anywhere in the game) */
+.vti-overlay{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#0008;animation:vti-in .18s ease-out}
+.vti-card{width:min(340px,100%);padding:18px 16px 14px;border:1px solid #c9a36b;border-radius:12px;background:linear-gradient(#211a13,#130f0c);box-shadow:0 12px 40px #000a;text-align:center;color:#ecd7b4}
+.vti-eyebrow{letter-spacing:.18em;font-size:10px;color:#c9a36b}
+.vti-card h2{margin:6px 0 4px;font:600 17px/1.35 Georgia,serif;color:#f0dcb6}.vti-card h2 b{color:#ffd27a}
+.vti-card p{margin:0 0 14px;font-size:12px;color:#b9a17c}
+.vti-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.vti-actions button:is(.vti-yes,.vti-no,#vt-none){min-height:42px;border-radius:8px;font:600 14px system-ui;cursor:pointer;box-shadow:none!important;text-shadow:none!important}
+button.vti-no:is(.vti-no,#vt-none){background:#1d1814!important;color:#d8c4a2!important;border:1px solid #6d5a3d!important}
+button.vti-yes:is(.vti-yes,#vt-none){background:linear-gradient(#e8b764,#b8823a)!important;color:#22160a!important;border:1px solid #f0c97e!important}
+.vti-yes span{font-weight:400;opacity:.75}
+@keyframes vti-in{from{opacity:0;transform:scale(.97)}}
