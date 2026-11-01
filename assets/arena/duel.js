@@ -52,10 +52,10 @@
    +card(meU,'me',portraitMe)
    +'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,mine,t)).join('')+'</div>'
    +'<small class="vdu-hint">'+(mine?'Pasif: '+esc(D.passiveOf(me).text)+' · sıranı harcar':'')+'</small></section>'}
- function paint(){const el=document.getElementById('valor-duel');if(!el||!duel.st)return;const html=markup();
+ function paint(){const el=document.getElementById('valor-duel');if(!el||!duel.st)return;floatNew();const html=markup();
   const stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
   if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  duel.stable=stable;el.innerHTML=html;mountMotion(el);floatNew()}
+  duel.stable=stable;el.innerHTML=html;mountMotion(el)}
  function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
  function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'||u.cls==='Büyücü'))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
