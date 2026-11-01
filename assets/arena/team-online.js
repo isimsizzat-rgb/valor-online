@@ -136,6 +136,7 @@ function valorTeamApplyResult(prep){
   html=html.replace(/<p class="vc-local">[\s\S]*?<\/p>/,'<p class="vc-local vc-online">Odalar, takım arkadaşların ve rakiplerin gerçek oyuncular · rakip, aynı anda savaş arayan bir takımdır.'+(d.room&&!d.room.own?' Savaşı oda lideri başlatır.':'')+'</p>');
   const inv=(!d.room&&n.lobby?.invites)||[];
   if(inv.length&&valorTeamOpen())html=html.replace('<section class="vt-create">','<section class="vt-invites"><div class="arena-section-heading"><h2>Davetler</h2><span>'+inv.length+'</span></div>'+inv.map(i=>'<div class="vt-room-row"><div><b>'+escapeAttr(i.room_name)+'</b><small>'+escapeAttr(i.from_name||'Bir oyuncu')+' seni davet etti</small></div><button type="button" class="vt-mini vt-primary" onclick="valorTeamJoin(\''+i.room_id+'\',\'\')">Katıl</button><button type="button" class="vt-mini" onclick="valorTeamAct(\'team_decline\',{rid:\''+i.room_id+'\'},\'Davet reddedildi.\')">Reddet</button></div>').join('')+'</section><section class="vt-create">');
+  html=html.replace(/<p class="vt-hint">[\s\S]*?<\/p>/,'<p class="vt-hint">Savaşa 1, 2 ya da 3 kişiyle girebilirsin. Lider savaşı başlatınca 60 saniye boyunca aynı anda savaş arayan gerçek bir takım aranır; bulunursa iki takım canlı savaşır. Mümkünse aynı kişi sayısındaki takımla eşleşirsin.</p>');
   if(d.room&&!d.room.own)html=html.replace(/(<button type="button" class="vt-primary"[^>]*onclick="valorTeamFight\(\)">)[^<]*/,'$1'+(n.room?.searching?'Lider rakip takım arıyor…':'Lider Başlatacak'));
   return html;
  };
