@@ -44,3 +44,7 @@ html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:not(:disabled):act
 .vts-sub{margin:0 0 16px;color:#cdbb9f;font-size:13px;line-height:1.45}
 .vts-done h2{color:#ffb4a2}
 @keyframes vts-spin{to{transform:rotate(360deg)}}
+
+/* Team Arena: no portraits on the fighter cards (the animation shows the characters), just name and HP */
+.vtd-unit{padding:8px 7px 6px}.vtd-unit>b{font-size:12px;margin-bottom:2px}.vtd-unit .vdu-hp{height:9px}
+.vtd-unit.hit{animation:vdu-shake .35s}.vtd-unit .vdu-float{top:-6px}

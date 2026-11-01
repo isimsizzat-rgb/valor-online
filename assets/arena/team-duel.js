@@ -25,7 +25,7 @@
  const mine=()=>td.st&&td.st.units.find(u=>u.uid===myUid()&&u.side==='A');
  function portrait(u){if(u.portrait)return u.portrait;if(u.uid===myUid())return valorBattlePortraitMine();return typeof valorArenaPortrait==='function'?valorArenaPortrait(u.cls,u.gender):heroImages[Math.max(0,classes.indexOf(u.cls))]}
 
- function mini(u,actor){const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100));return '<div class="vtd-unit '+(u.hp<=0?'down ':'')+(u.idx===actor?'active ':'')+(u.uid===myUid()&&u.side==='A'?'me':'')+'" data-idx="'+u.idx+'"><div class="vdu-portrait"><img src="'+portrait(u)+'" alt=""></div><b>'+esc(u.name)+'</b><div class="vdu-hp"><i style="width:'+hp+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+(u.hp<=0?'Düştü':money(Math.max(0,u.hp)))+(u.shield>0?' 🛡'+(u.shieldTurns||''):'')+(u.focusTurns>0?' 🎯'+u.focusTurns:'')+'</small></div>'}
+ function mini(u,actor){const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100));return '<div class="vtd-unit '+(u.hp<=0?'down ':'')+(u.idx===actor?'active ':'')+(u.uid===myUid()&&u.side==='A'?'me':'')+'" data-idx="'+u.idx+'"><b>'+esc(u.name)+'</b><div class="vdu-hp"><i style="width:'+hp+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+(u.hp<=0?'Düştü':money(Math.max(0,u.hp)))+(u.shield>0?' 🛡'+(u.shieldTurns||''):'')+(u.focusTurns>0?' 🎯'+u.focusTurns:'')+'</small></div>'}
  function chip(e){const U=td.st.units,a=U[e.ai],b=U[e.bi];if(e.skill==='burn')return '<span class="burn">🔥 '+esc(b?.name)+' '+money(e.damage)+'</span>';
   const cls=a?.side==='A'?'mine':'theirs';if(e.skill==='passive')return '<span class="pas">'+esc(a?.name)+' · '+esc(D.passiveOf(a).name)+'</span>';
   return '<span class="'+cls+'">'+esc(a?.name)+' → '+esc(b?.name)+' · '+esc(H.skillName(e.skill,a))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.ko?' ☠':'')+(e.auto&&a?.side==='A'?' ⏱':'')+'</span>'}
@@ -50,7 +50,7 @@
    if(token===td.animToken&&document.getElementById('valor-tduel'))reveal(e)});
   const end=td.chain=td.chain.catch(()=>{}).then(()=>{if(token!==td.animToken||end!==td.chain)return;td.animating=false;td.view=null;td.revealed=td.all.length;paint()})}
  function floatOne(e){{
-  const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"] .vdu-portrait');if(!host)return;
+  const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"]');if(!host)return;
   const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
   if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)}}
 
