@@ -27,7 +27,28 @@ function magePoseAt(k,t){if(k==='normal'){const seq=[0,1,2,3,4,4,3,2,1,0];return
 function mageBurst(c,x,y,size,age,life=.42){if(age<0||age>life)return;const q=age/life,f=Math.min(7,Math.floor(q*8)),cw=maxFX.width/4,ch=maxFX.height/2;c.save();c.globalCompositeOperation='screen';c.globalAlpha=1-q*.3;c.drawImage(maxFX,f%4*cw,Math.floor(f/4)*ch,cw,ch,x-size/2,y-size/2,size,size);c.restore()}
 function fireRain(c,target,floor,size,t){for(let i=0;i<12;i++){const at=.8+i*.13,age=t-at,travel=.55,x=target+Math.sin(i*2.399)*size*.2,hitY=floor-size*(.66+Math.cos(i*3)*.025);if(age>=0&&age<travel){const p=age/travel,y=-size*.25+(hitY+size*.25)*p*p,h=size*.9,w=h*rainFX.width/rainFX.height;c.save();c.globalAlpha=Math.min(1,age/.055);c.drawImage(rainFX,x-w*.5,y-h*.89,w,h);c.restore();}mageBurst(c,x,hitY,size*.55,age-travel,.38);}}
 function meteorFall(c,target,floor,size,t){const launch=1.05,impact=2.25,hitY=floor-size*.3;if(t<launch||t>3.3)return;const p=Math.max(0,Math.min(1,(t-launch)/(impact-launch))),h=size*2.05,w=h*meteorFX.width/meteorFX.height,x=target-size*.8*(1-p),y=hitY-(floor+size*.55)*(1-p*p);c.save();if(t<impact+.15){c.globalAlpha=t>impact?Math.max(0,1-(t-impact)/.15):1;c.drawImage(meteorFX,x-w*.76,y-h*.73,w,h);}c.restore();const age=t-impact;if(age>=0){mageBurst(c,target,hitY,size*2.15,age,.8);c.save();c.globalCompositeOperation='screen';c.globalAlpha=.22*Math.exp(-age*12);c.fillStyle='#ffe1a5';c.fillRect(0,0,canvas.width,canvas.height);const q=age/.95;c.globalAlpha=Math.max(0,1-q)*.65;c.strokeStyle='#ffb546';c.lineWidth=3;c.beginPath();c.ellipse(target,floor,size*(.15+q*1.15),size*(.035+q*.2),0,0,Math.PI*2);c.stroke();c.restore();}}
-function healingAura(c,start,floor,size,t,layer='front'){const age=t-.9;if(age<0||age>2.1)return;const fade=Math.min(1,age/.3)*Math.min(1,(2.1-age)/.45),h=size*1.34,w=h*healFX.width/healFX.height;c.save();c.globalAlpha=fade*(layer==='back'?.72:.16);c.drawImage(healFX,start-w*.5,floor-h*.865,w,h);if(layer==='back'){c.restore();return}c.globalCompositeOperation='screen';c.fillStyle='#a8ffbc';for(let i=0;i<12;i++){const q=(age*.5+i*.618)%1;c.globalAlpha=fade*(1-q)*.55;const x=start+Math.sin(i*2.399+age)*size*.27,y=floor-size*(q*.94+.04);c.beginPath();c.arc(x,y,1.1+q,0,Math.PI*2);c.fill();}c.restore();}
+function healingAura(c,start,floor,size,t,layer='front'){
+ const age=t-.9;if(age<0||age>2.15)return;
+ const span=1.75,turns=3,progress=Math.max(0,Math.min(1,age/span)),fade=Math.min(1,age/.25)*Math.min(1,(2.15-age)/.3),angle=progress*Math.PI*2*turns;
+ const point=q=>{const p=Math.max(0,Math.min(1,q/(Math.PI*2*turns))),r=size*(.48-.2*p);return{x:start+Math.cos(q)*r,y:floor-size*(.045+.96*p)+Math.sin(q)*size*.115,front:Math.sin(q)>=0}};
+ c.save();
+ if(layer==='back'){
+  const sw=healFX.width,sh=healFX.height*.22,dw=size*.98,dh=dw*sh/sw;
+  c.globalAlpha=fade*.65;c.drawImage(healFX,0,healFX.height*.74,sw,sh,start-dw/2,floor-dh*.568,dw,dh);
+  c.globalCompositeOperation='screen';const glow=c.createRadialGradient(start,floor,0,start,floor,size*.55);glow.addColorStop(0,'#83ffc54d');glow.addColorStop(1,'#2de78000');c.globalAlpha=fade;c.fillStyle=glow;c.fillRect(start-size*.55,floor-size*.55,size*1.1,size*1.1);
+ }
+ c.globalCompositeOperation='screen';c.lineCap='round';c.lineJoin='round';
+ const tail=Math.min(angle,Math.PI*1.8),steps=52;
+ for(let i=0;i<steps;i++){
+  const q0=angle-tail+tail*i/steps,q1=angle-tail+tail*(i+1)/steps,a=point(q0),b=point(q1),front=point((q0+q1)/2).front;
+  if(front!==(layer==='front'))continue;
+  const strength=fade*Math.pow((i+1)/steps,1.35);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.globalAlpha=strength*.8;c.strokeStyle='#28eb87';c.lineWidth=size*.024;c.shadowColor='#42ff9c';c.shadowBlur=size*.055;c.stroke();c.shadowBlur=0;c.globalAlpha=strength;c.strokeStyle='#caffdf';c.lineWidth=size*.006;c.stroke();
+ }
+ if(layer==='front'){
+  for(let i=0;i<16;i++){const lag=i*.23,q=Math.max(0,angle-lag),p=point(q);if(!p.front)continue;const pulse=(1-i/16)*fade;c.globalAlpha=pulse*.8;c.fillStyle=i%3?'#8dffbb':'#edfff1';c.shadowColor='#51ffa2';c.shadowBlur=8;c.beginPath();c.arc(p.x+Math.sin(i*7+age*4)*size*.025,p.y+Math.cos(i*4)*size*.025,size*(i===0?.014:.006),0,Math.PI*2);c.fill();}
+ }
+ c.restore();
+}
 function mageEffect(c,k,start,target,floor,size,t){if(k==='normal')lightning(c,target,floor,size,t);else if(k==='strong')fireRain(c,target,floor,size,t);else if(k==='max')meteorFall(c,target,floor,size,t);else if(k==='passive')healingAura(c,start,floor,size,t)}
 const shieldPoseMeta={"male": {"feet": [[238, 415], [250, 416], [244, 415], [245, 416], [252, 386], [250, 386], [246, 388], [229, 395]], "height": 312}, "female": {"feet": [[257, 419], [274, 417], [270, 416], [265, 416], [266, 411], [270, 411], [263, 413], [248, 411]], "height": 363}};
 function shieldSprite(c,frame,x,y,size){if(frame===0||frame===7){sprite(c,8,x,y,size,'normal');return}const source=gender==='female'?shieldFemale:shieldMale,meta=shieldPoseMeta[gender],cw=source.width/4,ch=source.height/2,foot=meta.feet[frame],scale=size/meta.height;c.drawImage(source,frame%4*cw,Math.floor(frame/4)*ch,cw,ch,x-foot[0]*scale,y-foot[1]*scale,cw*scale,ch*scale)}
@@ -80,6 +101,7 @@ function maxExplosion(c,target,floor,size,t){
  window.ValorCombatMotion={mount,play,close,whenIdle:root=>sessions.get(root)?.queue||Promise.resolve()};
  const style=document.createElement('style');style.textContent='.valor-combat-motion{position:relative;margin:10px 0;border:1px solid #99765166;border-radius:9px;overflow:hidden;background:#17171f}.valor-combat-motion canvas{display:block;width:100%;aspect-ratio:1000/480}.valor-motion-status{position:absolute;top:9px;left:12px;color:#ead0aa;font:11px system-ui;text-shadow:0 1px 3px #000;pointer-events:none}.vdu-dialog:has(.valor-combat-motion){max-width:720px}.vdu-dialog:has(.valor-combat-motion) .vdu-card{padding:7px}.vdu-dialog:has(.valor-combat-motion) .vdu-portrait{width:45px;height:45px;min-width:45px}.vdu-dialog:has(.valor-combat-motion) .vdu-ticker{max-height:72px}@media(max-width:500px){.valor-combat-motion canvas{aspect-ratio:1000/480}.vdu-dialog:has(.valor-combat-motion){padding:12px}.vdu-dialog:has(.valor-combat-motion) h2{margin:4px 0;font-size:18px}}';document.head.appendChild(style);
 })();
+
 
 
 
