@@ -34,7 +34,7 @@
    +(me&&me.hp>0?'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,me,myTurn,t)).join('')+'</div><small class="vdu-hint">'+(myTurn?'Pasif: '+esc(D.passiveOf(me).text)+' · sadece sana':'Sıran gelince becerilerin açılır')+'</small>':'<small class="vdu-hint">'+(me?'Düştün · takımın savaşmaya devam ediyor':'')+'</small>')+'</section>'}
  function paint(){const el=document.getElementById('valor-tduel');if(!el||!td.st)return;const html=markup(),stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
   if(stable===td.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}floatNew()}
+  td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı'||u.cls==='Büyücü')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}floatNew()}
  function motionUnit(u){const gender=u.uid===myUid()&&u.side==='A'?state.gender:u.gender;return {...u,gender,art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,gender):null}}
  function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(window.ValorCombatMotion){const root=document.getElementById('valor-tduel');for(const e of list){const a=td.st.units[e.ai],b=e.skill==='passive'?(td.st.units.find(u=>u.side!==a?.side&&u.hp>0)||td.st.units.find(u=>u.side!==a?.side)):td.st.units[e.bi];if(a&&b)ValorCombatMotion.play(root,{...e,side:a.side==='A'?'me':'foe'},motionUnit(a),motionUnit(b));}if(list.length)settle(root)}list.slice(-6).forEach((e,i)=>setTimeout(()=>{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"] .vdu-portrait');if(!host)return;
@@ -102,5 +102,6 @@
   td.kind='local';td.all=[];td.shown=0;td.meta=null;td.local=D.teamCreate(A,B,Date.now());adopt(D.teamView(td.local));open();if(td.st.status==='done')finish()};
  window.valorTeamDuel={use,state:()=>td,close};
 })();
+
 
 

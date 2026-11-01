@@ -19,7 +19,7 @@
  };
  const classSkillNames={
   'Savaşçı':{normal:'Kılıç Darbesi',strong:'Alev Dalgası',max:'Kızıl Kıyamet'},
-  'Büyücü':{normal:'Büyü Küresi',strong:'Güç Küresi',max:'Meteor'},
+  'Büyücü':{normal:'Yıldırım',strong:'Ateş Yağmuru',max:'Meteor'},
   'Okçu':{normal:'Ok Atışı',strong:'Delici Ok',max:'Ok Yağmuru'}
  };
  const skillName=(k,u)=>k==='passive'?D.passiveOf(u).name:classSkillNames[u.cls]?.[k]||D.SKILLS[k]?.name||'';
@@ -46,7 +46,7 @@
   if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
   duel.stable=stable;el.innerHTML=html;mountMotion(el);floatNew()}
  function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
- function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'))ValorCombatMotion.mount(el,motionPlayers())}
+ function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'||u.cls==='Büyücü'))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
  function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(window.ValorCombatMotion){const p=motionPlayers();for(const e of list){const a=e.side==='me'?0:1;ValorCombatMotion.play(el,e,p[a],p[1-a]);}if(list.length)settle(el)}list.forEach((e,i)=>setTimeout(()=>{
   const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),host=document.querySelector('#valor-duel .vdu-'+target+' .vdu-portrait');if(!host)return;
@@ -94,4 +94,5 @@
   return html};
  window.valorDuel={use,state:()=>duel,close,skillIcon,skillName,skillText,fallbackIcon};
 })();
+
 
