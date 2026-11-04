@@ -199,6 +199,8 @@
   function teamAutoplay(st, now, rng = Math.random) { let t = Math.max(now, st.turnAt + TURN_MS), g = 0; while (st.status === 'battle' && g++ < 5000) { teamTick(st, t, rng); t += TURN_MS; } return st; }
   function teamView(st) { const u = st.status === 'battle' ? tActor(st) : null; return { v: st.v, team: true, units: st.units.map(({ stats, ...x }) => x), round: st.round, status: st.status, actor: u ? u.idx : null, actorUid: u && u.human ? u.uid : null, turnAt: st.turnAt, events: st.events, result: st.result || null }; }
 
-  const api = { SKILLS, PASSIVES, ORDER, TURN_MS, passiveOf, ready, choose, create, act, autoplay, view, arenaUnit, teamCreate, teamAct, teamTick, teamAutoplay, teamView };
+  /* Damage to show on screen: the full hit, even when the target had less health left (HP itself never goes below 0). */
+  const shownDamage = (e) => Math.max(Number(e?.damage)||0,e?.hit?(Number(e.hit.damage)||0)-(Number(e.hit.absorbed)||0)+(Number(e.hit.shadow)||0):0);
+  const api = { shownDamage, SKILLS, PASSIVES, ORDER, TURN_MS, passiveOf, ready, choose, create, act, autoplay, view, arenaUnit, teamCreate, teamAct, teamTick, teamAutoplay, teamView };
   root.ValorDuelCore = api; if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

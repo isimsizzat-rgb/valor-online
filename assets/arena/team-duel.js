@@ -28,7 +28,7 @@
  function mini(u,actor){const hp=Math.max(0,Math.min(100,u.hp/u.maxHp*100));return '<div class="vtd-unit '+(u.hp<=0?'down ':'')+(u.idx===actor?'active ':'')+(u.uid===myUid()&&u.side==='A'?'me':'')+'" data-idx="'+u.idx+'"><b>'+esc(u.name)+'</b><div class="vdu-hp"><i style="width:'+hp+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+(u.hp<=0?'Düştü':money(Math.max(0,u.hp)))+(u.shield>0?' 🛡'+(u.shieldTurns||''):'')+(u.focusTurns>0?' 🎯'+u.focusTurns:'')+'</small></div>'}
  function chip(e){const U=td.st.units,a=U[e.ai],b=U[e.bi];if(e.skill==='burn')return '<span class="burn">🔥 '+esc(b?.name)+' '+money(e.damage)+'</span>';
   const cls=a?.side==='A'?'mine':'theirs';if(e.skill==='passive')return '<span class="pas">'+esc(a?.name)+' · '+esc(D.passiveOf(a).name)+'</span>';
-  return '<span class="'+cls+'">'+esc(a?.name)+' → '+esc(b?.name)+' · '+esc(H.skillName(e.skill,a))+' <b>'+money(e.damage||0)+'</b>'+(e.hit?.critical?' Kritik':'')+(e.ko?' ☠':'')+(e.auto&&a?.side==='A'?' ⏱':'')+'</span>'}
+  return '<span class="'+cls+'">'+esc(a?.name)+' → '+esc(b?.name)+' · '+esc(H.skillName(e.skill,a))+' <b>'+money(D.shownDamage(e))+'</b>'+(e.hit?.critical?' Kritik':'')+(e.ko?' ☠':'')+(e.auto&&a?.side==='A'?' ⏱':'')+'</span>'}
  function skillButton(k,u,myTurn,t){const cd=secs((u.cd[k]||0)-t),ok=myTurn&&!cd&&!td.busy;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorTeamDuel.use(\''+k+'\')" title="'+esc(H.skillText(k,u))+'"><img src="'+H.skillIcon(k,u)+'" alt="" onerror="'+H.fallbackIcon+'"><span class="vdu-sname">'+esc(H.skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
  function markup(){const st=td.st,t=now(),me=mine(),actor=st.units[st.actor],myTurn=st.status==='battle'&&actor&&me&&actor.idx===me.idx&&!locked(t),left=secs(D.TURN_MS-(t-(st.turnAt||t)));
   const side=s=>st.units.filter(u=>u.side===s).map(u=>mini(shownUnit(u),st.actor)).join('');
@@ -51,7 +51,7 @@
   const end=td.chain=td.chain.catch(()=>{}).then(()=>{if(token!==td.animToken||end!==td.chain)return;td.animating=false;td.view=null;td.revealed=td.all.length;paint()})}
  function floatOne(e){{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"]');if(!host)return;
-  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?(e.healed?'pas heal':'pas'):e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
+  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?(e.healed?'pas heal':'pas'):e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(D.shownDamage(e));host.appendChild(f);
   if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300);
   if(e.hit?.healed)setTimeout(()=>{if(!host.isConnected)return;const h=document.createElement('span');h.className='vdu-float heal low';h.textContent='+'+money(e.hit.healed);host.appendChild(h);setTimeout(()=>h.remove(),1300)},380);}}
 
