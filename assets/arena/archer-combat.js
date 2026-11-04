@@ -82,7 +82,7 @@ function archerProjectile(c,x,y,size,large=false,alpha=1,phase=0,scale=1) {
  const pulse=large?1:1+Math.sin(phase*23)*.025,w=size*(large?1.80:1.45)*scale*pulse,h=w*source.naturalHeight/source.naturalWidth;
  c.save();c.globalAlpha=alpha;c.translate(x,y);
  // Core anchors keep the leading light on the exact flight/impact path.
- c.drawImage(source,-w*(large?.88:.95),-h*(large?.57:.50),w,h);
+ c.drawImage(source,-w*(large?.97:.95),-h*(large?.58:.50),w,h);
  c.restore();
 }
 function archerImpact(c,x,y,size,age,large=false,index=0) {
@@ -92,13 +92,13 @@ function archerImpact(c,x,y,size,age,large=false,index=0) {
  archerProjectile(c,x,y,size,large,fade*.85,age,.7+q*.5);
  c.save();c.globalCompositeOperation='screen';for(let i=0;i<(large?28:10);i++){const a=i*2.399+index*.6,d=r*q*(.5+(i%5)/5);c.globalAlpha=fade;c.fillStyle=i%3?'#9dffd3':'#fff1ae';c.shadowColor='#5affb3';c.shadowBlur=7;c.save();c.translate(x+Math.cos(a)*d,y+Math.sin(a)*d);c.rotate(a+q);const z=(large?3.5:2)*(1-q*.6);c.beginPath();c.moveTo(0,-z*2);c.lineTo(z,0);c.lineTo(0,z*2);c.lineTo(-z,0);c.closePath();c.fill();c.restore();}c.restore();
 }
-function archerShotLayout(k,start,floor,size){const emitX=start+size*.5,emitY=floor-size*.77;return {emitX,emitY,hitY:k===3?floor-size*.47:emitY};}
+function archerShotLayout(k,start,floor,size){const emitX=start+size*.5,emitY=floor-size*.77;return {emitX,emitY,hitY:emitY};}
 function archerEffects(c,start,target,floor,size,t) {
  const {emitX,emitY,hitY}=archerShotLayout(skill,start,floor,size);
  if(skill===3)archerCharge(c,emitX,emitY,size,t);
  for(const [i,at] of archerLaunches[skill].entries()){
   const travel=archerTravel(skill),p=(t-at)/travel;
-  if(p>=0&&p<1){const x=archerMix(emitX,target,p),y=archerMix(emitY,hitY,p);c.save();c.translate(x,y);if(skill===3)c.rotate(Math.atan2(hitY-emitY,target-emitX));archerProjectile(c,0,0,size,skill===3,1,t,skill===3?archerMaxScale(p):1);c.restore();}
+  if(p>=0&&p<1){const x=archerMix(emitX,target,p),y=archerMix(emitY,hitY,p);c.save();c.translate(x,y);archerProjectile(c,0,0,size,skill===3,1,t,skill===3?archerMaxScale(p):1);c.restore();}
   archerImpact(c,target,hitY,size,t-at-travel,skill===3,i);
  }
 }
