@@ -36,7 +36,28 @@ function lightning(c,target,floor,size,t){
 function mageDuration(k){return k==='strong'?3.8:k==='max'?4.2:3.25}
 function magePoseAt(k,t){if(k==='normal'){const seq=[0,1,2,3,4,4,3,2,1,0];return seq[Math.min(9,Math.floor(Math.max(0,t)/2.85*10))]}const rise=k==='max'?1.2:.9,hold=k==='max'?2.9:k==='strong'?2.8:2.15,end=k==='max'?3.9:k==='strong'?3.55:2.95;if(t<rise)return Math.min(4,Math.floor(Math.max(0,t)/rise*5));if(t<hold)return k==='passive'?5:4;if(t<end)return [3,2,1,0][Math.min(3,Math.floor((t-hold)/(end-hold)*4))];return 0}
 function mageBurst(c,x,y,size,age,life=.42){if(age<0||age>life)return;const q=age/life,f=Math.min(7,Math.floor(q*8)),cw=maxFX.width/4,ch=maxFX.height/2;c.save();c.globalCompositeOperation='screen';c.globalAlpha=1-q*.3;c.drawImage(maxFX,f%4*cw,Math.floor(f/4)*ch,cw,ch,x-size/2,y-size/2,size,size);c.restore()}
-function fireRain(c,target,floor,size,t){for(let i=0;i<12;i++){const at=.8+i*.13,age=t-at,travel=.55,x=target+Math.sin(i*2.399)*size*.2,hitY=floor-size*(.66+Math.cos(i*3)*.025);if(age>=0&&age<travel){const p=age/travel,y=-size*.25+(hitY+size*.25)*p*p,h=size*.9,w=h*rainFX.width/rainFX.height;c.save();c.globalAlpha=Math.min(1,age/.055);c.drawImage(rainFX,x-w*.5,y-h*.89,w,h);c.restore();}mageBurst(c,x,hitY,size*.55,age-travel,.38);}}
+function fireRain(c,target,floor,size,t){
+ // The first impact aligns with damage at 1.75; later strikes complete the shower.
+ for(let i=0;i<10;i++){
+  const at=1.1+i*.12,travel=.65,age=t-at,x=target+Math.sin(i*2.399)*size*.43,ground=floor+Math.cos(i*2.17)*size*.025;
+  if(age>=0&&age<travel){
+   const p=age/travel,hitY=ground,startY=-size*.55,y=startY+(hitY-startY)*p*p,h=size*(.8+.18*p),w=h*rainFX.width/rainFX.height;
+   c.save();c.globalAlpha=Math.min(1,age/.06);c.drawImage(rainFX,x-w*.5,y-h*.9,w,h);c.restore();
+  }
+  const hit=age-travel,life=.7;if(hit<0||hit>life)continue;
+  const q=hit/life,fade=1-q;
+  c.save();
+  // Low ground footprint and fading hot cracks make the contact point unmistakable.
+  c.globalAlpha=fade*.65;c.fillStyle='#33140b';c.beginPath();c.ellipse(x,ground,size*(.12+q*.18),size*.035,0,0,Math.PI*2);c.fill();
+  c.globalCompositeOperation='lighter';const glow=c.createRadialGradient(x,ground-size*.04,0,x,ground-size*.04,size*.42);glow.addColorStop(0,'#ffd27d99');glow.addColorStop(.3,'#ff762b55');glow.addColorStop(1,'#ff440000');c.globalAlpha=fade;c.fillStyle=glow;c.fillRect(x-size*.42,ground-size*.46,size*.84,size*.84);
+  c.globalAlpha=fade*.8;c.strokeStyle='#ffb751';c.lineWidth=2;c.beginPath();c.ellipse(x,ground,size*(.08+q*.5),size*(.018+q*.1),0,0,Math.PI*2);c.stroke();
+  // Painted explosion opens upward from the floor rather than bursting at chest height.
+  if(hit<.48){const f=Math.min(7,Math.floor(hit/.48*8)),cw=maxFX.width/4,ch=maxFX.height/2,extent=size*(.65+q*.22);c.globalAlpha=fade;c.drawImage(maxFX,f%4*cw,Math.floor(f/4)*ch,cw,ch,x-extent/2,ground-extent*.78,extent,extent);}
+  for(let j=0;j<6;j++){const a=j*1.37+i*2.1,vx=Math.cos(a)*size*.5,vy=-size*(.48+.32*Math.sin(j+1)**2),px=x+vx*hit,py=ground+vy*hit+size*.8*hit*hit;c.globalAlpha=fade;c.strokeStyle=j%2?'#ff9b36':'#fff0b5';c.lineWidth=1.5;c.beginPath();c.moveTo(px,py);c.lineTo(px-vx*.025,py-vy*.02);c.stroke();}
+  c.globalAlpha=fade*.6;c.strokeStyle='#ff772d';c.lineWidth=1.4;for(let j=0;j<4;j++){const a=j*1.57+i;c.beginPath();c.moveTo(x,ground);c.lineTo(x+Math.cos(a)*size*.17,ground+Math.sin(a)*size*.035);c.stroke();}
+  c.restore();
+ }
+}
 function meteorFall(c,target,floor,size,t){const launch=1.05,impact=2.25,hitY=floor-size*.3;if(t<launch||t>3.3)return;const p=Math.max(0,Math.min(1,(t-launch)/(impact-launch))),h=size*2.05,w=h*meteorFX.width/meteorFX.height,x=target-size*.8*(1-p),y=hitY-(floor+size*.55)*(1-p*p);c.save();if(t<impact+.15){c.globalAlpha=t>impact?Math.max(0,1-(t-impact)/.15):1;c.drawImage(meteorFX,x-w*.76,y-h*.73,w,h);}c.restore();const age=t-impact;if(age>=0){mageBurst(c,target,hitY,size*2.15,age,.8);c.save();c.globalCompositeOperation='screen';c.globalAlpha=.22*Math.exp(-age*12);c.fillStyle='#ffe1a5';c.fillRect(0,0,canvas.width,canvas.height);const q=age/.95;c.globalAlpha=Math.max(0,1-q)*.65;c.strokeStyle='#ffb546';c.lineWidth=3;c.beginPath();c.ellipse(target,floor,size*(.15+q*1.15),size*(.035+q*.2),0,0,Math.PI*2);c.stroke();c.restore();}}
 function healingAura(c,start,floor,size,t,layer='front'){
  const age=t-.9;if(age<0||age>2.15)return;
@@ -115,6 +136,7 @@ function maxExplosion(c,target,floor,size,t){
  window.ValorCombatMotion={mount,play,close,whenIdle:root=>sessions.get(root)?.queue||Promise.resolve()};
  const style=document.createElement('style');style.textContent='.valor-combat-motion{position:relative;margin:10px 0;border:1px solid #99765166;border-radius:9px;overflow:hidden;background:#17171f}.valor-combat-motion canvas{display:block;width:100%;aspect-ratio:1000/480}.valor-motion-status{position:absolute;top:9px;left:12px;color:#ead0aa;font:11px system-ui;text-shadow:0 1px 3px #000;pointer-events:none}.vdu-dialog:has(.valor-combat-motion){max-width:720px}.vdu-dialog:has(.valor-combat-motion) .vdu-card{padding:7px}.vdu-dialog:has(.valor-combat-motion) .vdu-portrait{width:45px;height:45px;min-width:45px}.vdu-dialog:has(.valor-combat-motion) .vdu-ticker{max-height:72px}@media(max-width:500px){.valor-combat-motion canvas{aspect-ratio:1000/480}.vdu-dialog:has(.valor-combat-motion){padding:12px}.vdu-dialog:has(.valor-combat-motion) h2{margin:4px 0;font-size:18px}}';document.head.appendChild(style);
 })();
+
 
 
 
