@@ -13,7 +13,7 @@
  const snap=u=>({hp:u.hp,shield:u.shield||0,shieldTurns:u.shieldTurns||0,focus:u.focus||0,focusTurns:u.focusTurns||0});
  const fresh=u=>({hp:u.maxHp,shield:0,shieldTurns:0,focus:0,focusTurns:0});
  const shown=(u,side)=>duel.view?{...u,...duel.view[side]}:u;
- const animated=(el,e,u)=>!!(window.ValorCombatMotion&&el?.querySelector('.valor-combat-motion')&&['normal','strong','max','passive'].includes(e.skill)&&['Savaşçı','Büyücü'].includes(u?.cls));
+ const animated=(el,e,u)=>!!(window.ValorCombatMotion&&el?.querySelector('.valor-combat-motion')&&['normal','strong','max','passive'].includes(e.skill)&&['Savaşçı','Büyücü','Okçu'].includes(u?.cls));
  function reveal(e){const v=duel.view;if(v){const a=v[e.side==='me'?'me':'foe'];if(Number.isFinite(e.myHp))v.me.hp=e.myHp;if(Number.isFinite(e.enemyHp))v.foe.hp=e.enemyHp;
    if(e.myShield!=null)v.me.shield=e.myShield;if(e.enemyShield!=null)v.foe.shield=e.enemyShield;for(const x of [v.me,v.foe])if(!x.shield)x.shieldTurns=0;
    if(e.passive==='shield')a.shieldTurns=D.passiveOf(e.side==='me'?duel.st.me:duel.st.foe).turns||3;if(e.passive==='focus'){a.focus=e.focus;a.focusTurns=D.passiveOf(e.side==='me'?duel.st.me:duel.st.foe).turns||3}
@@ -31,7 +31,7 @@
  const classSkillNames={
   'Savaşçı':{normal:'Kılıç Darbesi',strong:'Alev Dalgası',max:'Kızıl Kıyamet'},
   'Büyücü':{normal:'Yıldırım',strong:'Ateş Yağmuru',max:'Meteor'},
-  'Okçu':{normal:'Ok Atışı',strong:'Delici Ok',max:'Ok Yağmuru'}
+  'Okçu':{normal:'Işık Oku',strong:'İkili Işık Oku',max:'Zümrüt Patlaması'}
  };
  const skillName=(k,u)=>k==='passive'?D.passiveOf(u).name:classSkillNames[u.cls]?.[k]||D.SKILLS[k]?.name||'';
  const skillText=(k,u)=>k==='passive'?D.passiveOf(u).text+' · sıranı harcar':k==='normal'?'Normal hasar':k==='strong'?'%130 hasar':'%175 hasar';
@@ -57,7 +57,7 @@
   if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
   duel.stable=stable;el.innerHTML=html;mountMotion(el)}
  function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
- function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>u.cls==='Savaşçı'||u.cls==='Büyücü'))ValorCombatMotion.mount(el,motionPlayers())}
+ function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>['Savaşçı','Büyücü','Okçu'].includes(u.cls)))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
  function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(!list.length)return;
   const token=duel.animToken;duel.animating=true;
@@ -111,5 +111,6 @@
   return html};
  window.valorDuel={use,state:()=>duel,close,skillIcon,skillName,skillText,fallbackIcon};
 })();
+
 
 

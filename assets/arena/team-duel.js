@@ -12,7 +12,7 @@
  const snap=u=>({hp:u.hp,shield:u.shield||0,shieldTurns:u.shieldTurns||0,focus:u.focus||0,focusTurns:u.focusTurns||0});
  const fresh=u=>({hp:u.maxHp,shield:0,shieldTurns:0,focus:0,focusTurns:0});
  const shownUnit=u=>td.view&&td.view.units[u.idx]?{...u,...td.view.units[u.idx]}:u;
- const animated=(el,e,u)=>!!(window.ValorCombatMotion&&el?.querySelector('.valor-combat-motion')&&['normal','strong','max','passive'].includes(e.skill)&&['Savaşçı','Büyücü'].includes(u?.cls));
+ const animated=(el,e,u)=>!!(window.ValorCombatMotion&&el?.querySelector('.valor-combat-motion')&&['normal','strong','max','passive'].includes(e.skill)&&['Savaşçı','Büyücü','Okçu'].includes(u?.cls));
  const wait=ms=>new Promise(r=>setTimeout(r,ms));
  function reveal(e){const v=td.view;if(v){if(Array.isArray(e.hp))e.hp.forEach(([hp,sh],i)=>{const x=v.units[i];if(!x)return;x.hp=hp;x.shield=sh||0;if(!x.shield)x.shieldTurns=0});
    const a=v.units[e.ai],u=td.st.units[e.ai];if(a&&u){if(e.passive==='shield')a.shieldTurns=D.passiveOf(u).turns||3;if(e.passive==='focus'){a.focus=e.focus;a.focusTurns=D.passiveOf(u).turns||3}if(e.focused&&a.focusTurns>0&&--a.focusTurns<=0)a.focus=0}v.round=e.round}
@@ -42,7 +42,7 @@
    +(me&&me.hp>0?'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,me,myTurn,t)).join('')+'</div><small class="vdu-hint">'+(myTurn?'Pasif: '+esc(D.passiveOf(me).text)+' · sadece sana':'Sıran gelince becerilerin açılır')+'</small>':'<small class="vdu-hint">'+(me?'Düştün · takımın savaşmaya devam ediyor':'')+'</small>')+'</section>'}
  function paint(){const el=document.getElementById('valor-tduel');if(!el||!td.st)return;floatNew();const html=markup(),stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
   if(stable===td.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>u.cls==='Savaşçı'||u.cls==='Büyücü')){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}}
+  td.stable=stable;el.innerHTML=html;if(window.ValorCombatMotion&&td.st.units.some(u=>['Savaşçı','Büyücü','Okçu'].includes(u.cls))){const a=td.st.units.find(u=>u.side==='A'&&u.hp>0)||td.st.units.find(u=>u.side==='A'),b=td.st.units.find(u=>u.side==='B'&&u.hp>0)||td.st.units.find(u=>u.side==='B');ValorCombatMotion.mount(el,[motionUnit(a),motionUnit(b)]);}}
  function motionUnit(u){const gender=u.uid===myUid()&&u.side==='A'?state.gender:u.gender;return {...u,gender,art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,gender):null}}
  function floatNew(){const list=td.all.slice(td.shown);td.shown=td.all.length;if(!list.length)return;const token=td.animToken;td.animating=true;
   for(const e of list)td.chain=td.chain.catch(()=>{}).then(async()=>{if(token!==td.animToken)return;const root=document.getElementById('valor-tduel'),a=td.st.units[e.ai],b=e.skill==='passive'?(td.st.units.find(u=>u.side!==a?.side&&u.hp>0)||td.st.units.find(u=>u.side!==a?.side)):td.st.units[e.bi];
@@ -144,6 +144,7 @@
   td.kind='local';td.all=[];td.shown=0;td.lastBatch='';td.meta=null;td.local=D.teamCreate(A,B,Date.now());adopt(D.teamView(td.local));open();if(td.st.status==='done')finish()};
  window.valorTeamDuel={use,state:()=>td,close};
 })();
+
 
 
 
