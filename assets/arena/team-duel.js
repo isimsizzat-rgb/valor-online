@@ -51,8 +51,9 @@
   const end=td.chain=td.chain.catch(()=>{}).then(()=>{if(token!==td.animToken||end!==td.chain)return;td.animating=false;td.view=null;td.revealed=td.all.length;paint()})}
  function floatOne(e){{
   const idx=e.skill==='passive'?e.ai:e.bi,host=document.querySelector('#valor-tduel .vtd-unit[data-idx="'+idx+'"]');if(!host)return;
-  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?'pas':e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
-  if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300)}}
+  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?(e.healed?'pas heal':'pas'):e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡':e.healed?'+'+money(e.healed):'🎯'):'-'+money(e.damage||0);host.appendChild(f);
+  if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300);
+  if(e.hit?.healed)setTimeout(()=>{if(!host.isConnected)return;const h=document.createElement('span');h.className='vdu-float heal low';h.textContent='+'+money(e.hit.healed);host.appendChild(h);setTimeout(()=>h.remove(),1300)},380);}}
 
  function open(){td.finishing=false;if(document.getElementById('valor-tduel'))return;const el=document.createElement('div');el.id='valor-tduel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';td.stable=null;paint();clearInterval(td.timer);td.timer=setInterval(tick,250)}
  function close(){td.animToken++;td.animating=false;td.view=null;td.revealed=0;window.ValorCombatMotion?.close(document.getElementById('valor-tduel'));clearInterval(td.timer);td.timer=null;document.getElementById('valor-tduel')?.remove();document.documentElement.style.overflow='';td.closedAt=Date.now()}

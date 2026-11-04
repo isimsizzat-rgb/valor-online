@@ -23,7 +23,7 @@ html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:not(:disabled):act
 .vdu-sname{font-size:10px;line-height:1.15;text-align:center;font-weight:700}
 .vdu-cd{position:absolute;top:28%;left:0;right:0;text-align:center;font:800 18px system-ui;color:#fff;text-shadow:0 2px 4px #000}
 .vdu-hint{display:block;min-height:14px;margin-top:6px;text-align:center;font-size:10px;color:#b9ab93}
-.vdu-float{position:absolute;left:50%;top:0;transform:translateX(-50%);font:900 24px system-ui;color:#fff;-webkit-text-stroke:1px #1a0703;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 10px #ff3b1a99;pointer-events:none;animation:vdu-float 1.2s forwards;white-space:nowrap;z-index:3}.vdu-float.crit{color:#ffd23a;font-size:30px;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 14px #ff8a00}.vdu-float.pas{color:#9fe0ff}
+.vdu-float{position:absolute;left:50%;top:0;transform:translateX(-50%);font:900 24px system-ui;color:#fff;-webkit-text-stroke:1px #1a0703;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 10px #ff3b1a99;pointer-events:none;animation:vdu-float 1.2s forwards;white-space:nowrap;z-index:3}.vdu-float.crit{color:#ffd23a;font-size:30px;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 14px #ff8a00}.vdu-float.pas{color:#9fe0ff}.vdu-float.heal{color:#7dff9a;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 12px #2bff6a99}.vdu-float.low{top:30px}.vdu-ticker .heal{color:#7dff9a;font-style:normal}
 @keyframes vdu-float{0%{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
 /* Team (3v3) duel */
 .vtd-dialog h2{margin-bottom:6px}
