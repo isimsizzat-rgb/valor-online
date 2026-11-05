@@ -53,12 +53,41 @@
    +dailySummary()+(typeof valorRewardsStrip==='function'?valorRewardsStrip():'')
    +'<div class="vc-utilities">'+['Birlik','Sıralama','Sosyal','Rehber','Destek'].map(r=>'<button type="button" class="mmorpg-home-tile" aria-label="'+r+'" onclick="'+action(r)+'">'+icon(entries.find(e=>e[0]===r)[2])+'<span>'+r+'</span></button>').join('')+'</div></div>';
  };
+ const menuGroups=[
+  ['Savaş','Savaş Alanları','Keşfet, rakiplerle savaş ve ödül kazan.'],
+  ['Gelişim','Karakter Gelişimi','Ekipmanını ve karakterinin gücünü geliştir.'],
+  ['Ödüller','Market ve Ödüller','Alışveriş yap, görevleri tamamla, ödülleri topla.'],
+  ['Topluluk','Topluluk','Oyuncularla buluş ve sıralamadaki yerini gör.'],
+  ['Yardım','Yardım ve Ayarlar','Oyun hakkında bilgi al ve tercihlerini düzenle.']
+ ];
+ const menuDetails={
+  'Macera':'Enerji harcayarak keşfe çık', 'Sahneler':'Bölgeleri geç, bossları yen',
+  'Savaş':'Oyunculara karşı sıralama savaşı', 'Zindan':'Katları aşarak Dukat kazan',
+  'Dünya Bossu':'10.00 ve 20.00’de ortak boss savaşı', 'Valor Zindanı':'1–3 kişiyle 30 katı aş',
+  'Kale Savaşı':'Birliğinle kale için mücadele et', 'Birlik':'Birliğine katıl, birlikte güçlen',
+  'Atölye':'Ekipman güçlendir, taşları birleştir', 'Teknoloji':'Kalıcı özellik geliştirmeleri',
+  'Çiftlik':'Altın ve kristal yetiştir', 'Binek':'Bineklerini ve özelliklerini geliştir',
+  'Fashion':'Kanatlarını kuşan ve birleştir', 'Pet':'Muhafızlarını besle ve geliştir',
+  'Astroloji':'Savaş özelliklerini güçlendir', 'Tılsım':'Tılsımlarla ek özellik kazan',
+  'Madalyon':'Madalyonları ve özelliklerini incele', 'Market':'Eşya ve malzeme satın al',
+  'Pazar':'Oyuncularla eşya al ve sat', 'Görevler':'Hedefleri tamamla, ödüllerini al',
+  'Şans Çarkı':'Çarkı çevir, şansını dene', 'Etkinlikler':'Etkinlikleri ve ödülleri incele',
+  'Sıralama':'Oyuncu sıralamalarını gör', 'Sosyal':'Arkadaşlarını bul ve yönet',
+  'Rehber':'Oyun sistemlerini öğren', 'Destek':'Sorununu destek ekibine ilet',
+  'Ayarlar':'Tema ve oyun tercihlerini düzenle'
+ };
+ const menuCategory=e=>e[3]!=='Diğer'?e[3]:['Rehber','Destek','Ayarlar'].includes(e[0])?'Yardım':'Ödüller';
+ const menuText=value=>String(value).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').trim();
  let menuFilter='Tümü',menuQuery='';
- function menuButton(e){return '<button type="button" class="vc-menu-tile valor-map-choice" aria-label="'+e[1]+'" onclick="'+action(e[0])+'">'+icon(e[2])+'<span>'+e[1]+'</span></button>'}
- function menuMatches(){return entries.filter(e=>(menuFilter==='Tümü'||e[3]===menuFilter)&&e[1].toLocaleLowerCase('tr-TR').includes(menuQuery.toLocaleLowerCase('tr-TR')))}
- mapPage=function(){if(!modern())return legacy.mapPage.apply(this,arguments);return '<section class="vc-menu"><header class="vc-page-heading"><div><span>KRALLIĞIN TÜM KAPILARI</span><h1>Menü</h1></div>'+icon('grid')+'</header><label class="vc-menu-search">'+icon('search')+'<input type="search" id="vc-menu-search" aria-label="Oyun bölümü ara" placeholder="Bölüm ara…" value="'+esc(menuQuery)+'" oninput="valorCrimsonSearch(this.value)"></label><div class="vc-menu-filters" aria-label="Bölüm kategorisi">'+['Tümü','Savaş','Gelişim','Topluluk','Diğer'].map(f=>'<button type="button" aria-pressed="'+(f===menuFilter)+'" onclick="valorCrimsonFilter(\''+f+'\')">'+f+'</button>').join('')+'</div><div class="vc-menu-grid" id="vc-menu-grid">'+menuMatches().map(menuButton).join('')+'</div><p id="vc-menu-empty" '+(menuMatches().length?'hidden':'')+'>Aramana uygun bölüm bulunamadı.</p></section>'};
- window.valorCrimsonSearch=function(query){menuQuery=String(query).slice(0,80);const grid=document.getElementById('vc-menu-grid');if(grid){const matches=menuMatches();grid.innerHTML=matches.map(menuButton).join('');document.getElementById('vc-menu-empty').hidden=!!matches.length}};
- window.valorCrimsonFilter=function(filter){if(!['Tümü','Savaş','Gelişim','Topluluk','Diğer'].includes(filter))return;menuFilter=filter;render()};
+ function menuButton(e){return '<button type="button" class="vc-menu-tile valor-map-choice" aria-label="'+e[1]+'" onclick="'+action(e[0])+'">'+icon(e[2])+'<span class="vc-menu-copy"><strong>'+e[1]+'</strong><small>'+menuDetails[e[0]]+'</small></span><span class="vc-menu-arrow" aria-hidden="true">›</span></button>'}
+ function menuMatches(){const query=menuText(menuQuery);return entries.filter(e=>(menuFilter==='Tümü'||menuCategory(e)===menuFilter)&&menuText([e[1],e[0],menuDetails[e[0]],menuCategory(e)].join(' ')).includes(query))}
+ function menuSections(matches){return menuGroups.map(([key,title,hint])=>{const items=matches.filter(e=>menuCategory(e)===key);return items.length?'<section class="vc-menu-group" aria-labelledby="vc-menu-'+key+'"><header><h2 id="vc-menu-'+key+'">'+title+'</h2><p>'+hint+'</p></header><div class="vc-menu-grid">'+items.map(menuButton).join('')+'</div></section>':''}).join('')}
+ function menuResults(){const matches=menuMatches();return '<p class="vc-menu-result-count" role="status">'+matches.length+' bölüm'+(menuQuery.trim()?' bulundu':'')+'</p>'+menuSections(matches)+(matches.length?'':'<div class="vc-menu-empty"><strong>Bölüm bulunamadı</strong><p>Başka bir kelime dene veya tüm bölümleri göster.</p><button type="button" onclick="valorCrimsonResetMenu()">Tüm bölümleri göster</button></div>')}
+ mapPage=function(){if(!modern())return legacy.mapPage.apply(this,arguments);return '<section class="vc-menu"><header class="vc-page-heading"><div><span>GİTMEK İSTEDİĞİN BÖLÜMÜ SEÇ</span><h1>Menü</h1></div>'+icon('grid')+'</header><label class="vc-menu-search">'+icon('search')+'<input type="search" id="vc-menu-search" aria-label="Oyun bölümü ara" placeholder="Bölüm veya özellik ara…" maxlength="80" value="'+esc(menuQuery)+'" oninput="valorCrimsonSearch(this.value)"></label><div class="vc-menu-filters" role="group" aria-label="Bölüm kategorisi">'+[['Tümü','Tümü'],['Savaş','Savaş'],['Gelişim','Gelişim'],['Ödüller','Ödüller'],['Topluluk','Topluluk'],['Yardım','Yardım']].map(([key,label])=>'<button type="button" aria-pressed="'+(key===menuFilter)+'" onclick="valorCrimsonFilter(\''+key+'\')">'+label+'</button>').join('')+'</div><div id="vc-menu-results">'+menuResults()+'</div></section>'};
+ function refreshMenu(){const results=document.getElementById('vc-menu-results');if(results)results.innerHTML=menuResults();document.querySelectorAll('.vc-menu-filters button').forEach((button,i)=>button.setAttribute('aria-pressed',(['Tümü',...menuGroups.map(g=>g[0])][i]===menuFilter)))}
+ window.valorCrimsonSearch=function(query){menuQuery=String(query).slice(0,80);refreshMenu()};
+ window.valorCrimsonFilter=function(filter){if(filter!=='Tümü'&&!menuGroups.some(g=>g[0]===filter))return;menuFilter=filter;refreshMenu()};
+ window.valorCrimsonResetMenu=function(){menuFilter='Tümü';menuQuery='';const input=document.getElementById('vc-menu-search');if(input)input.value='';refreshMenu()};
  window.valorSetLayout=function(layout){if(!['crimson','classic'].includes(layout))return;root.dataset.valorLayout=layout;try{localStorage.setItem(LAYOUT_KEY,layout)}catch{}if(layout==='classic'){const current=document.querySelector('.top.valor-resource-bar');if(current?.dataset.crimsonHeader)current.replaceWith(originalHeader.cloneNode(true));document.querySelector('.vc-masthead')?.remove()}else header();render()};
  window.valorSettingsPage=function(){const template=document.createElement('template');template.innerHTML=legacy.settings.apply(this,arguments);const card=template.content.querySelector('.vhub-card');if(card){const controls=document.createElement('div');controls.className='vc-layout-picker';controls.innerHTML='<p>Arayüz düzeni</p><div role="group" aria-label="Arayüz düzeni"><button type="button" aria-pressed="'+modern()+'" onclick="valorSetLayout(\'crimson\')">Yeni düzen</button><button type="button" aria-pressed="'+!modern()+'" onclick="valorSetLayout(\'classic\')">Klasik görünüm</button></div><small>Klasik görünümünü istediğin zaman geri açabilirsin. Karakterin ve ilerlemen korunur.</small>';card.append(controls)}return template.innerHTML};
  render=function(){header();const result=legacy.render.apply(this,arguments);headerValues();document.body.dataset.valorPage=page;trackPage();backBar();armBack();compactForgeNav();document.body.classList.toggle('vc-inner',!!state.class&&!tabRoutes.has(page));swapGlyphs(document.getElementById('main'));return result};
