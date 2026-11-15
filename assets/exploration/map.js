@@ -35,7 +35,8 @@
   function persist(){if(!dirty)return;c.r.walkPosition={x:p.x,y:p.y};if(kind==='adventure')save();else stageRunSave();dirty=false;lastSaved=performance.now()}
   function setPosition(){c.r.walkPosition={x:p.x,y:p.y};dirty=true}
   function stop(){keys.clear();route=[];persist()}
-  function size(){const r=canvas.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);w=r.width;h=r.height;zoom=Math.max(1.2,w/map.width,h/map.height);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0)}
+  function size(){const r=canvas.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);w=r.width;h=r.height;zoom=Math.max(1.2,w/map.width,h/map.height);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);updateCamera()}
+  function updateCamera(){cam.x=Math.max(0,Math.min(map.width-w/zoom,p.x-w/zoom/2));cam.y=Math.max(0,Math.min(map.height-h/zoom,p.y-h/zoom*.57))}
   const observer=new ResizeObserver(size);observer.observe(canvas);size();
   function key(e,on){const k={ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down',ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right'}[e.key];if(!k)return;e.preventDefault();route=[];on?keys.add(k):keys.delete(k)}
   el.addEventListener('keydown',e=>key(e,true),opts);el.addEventListener('keyup',e=>key(e,false),opts);
@@ -52,7 +53,7 @@
    if(route.length&&!dx&&!dy){const next=route[0],dist=Math.hypot(next.x-p.x,next.y-p.y);if(dist<5)route.shift();else {dx=(next.x-p.x)/dist;dy=(next.y-p.y)/dist}}
    const len=Math.hypot(dx,dy),old={...p};if(len&&!triggered){dx=dx/len*180*dt;dy=dy/len*180*dt;if(map.walkable(p.x+dx,p.y))p.x+=dx;if(map.walkable(p.x,p.y+dy))p.y+=dy;if(dx)facing=dx>0?1:-1}
    const nowMoving=Math.hypot(p.x-old.x,p.y-old.y)>.01;if(nowMoving)setPosition();if((moving&&!nowMoving)||(dirty&&t-lastSaved>1500))persist();moving=nowMoving;
-   const vw=w/zoom,vh=h/zoom;cam.x=Math.max(0,Math.min(map.width-vw,p.x-vw/2));cam.y=Math.max(0,Math.min(map.height-vh,p.y-vh*.57));
+   const vw=w/zoom,vh=h/zoom;updateCamera();
    ctx.clearRect(0,0,w,h);ctx.drawImage(terrain,cam.x,cam.y,vw,vh,0,0,w,h);
    ctx.save();ctx.scale(zoom,zoom);ctx.translate(-cam.x,-cam.y);
    const entities=map.nodes.map((n,i)=>({n,i})).filter(e=>e.i>=c.index);entities.push({n:p,i:-1});entities.sort((a,b)=>a.n.y-b.n.y);
