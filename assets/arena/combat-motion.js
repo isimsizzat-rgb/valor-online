@@ -144,6 +144,7 @@ function maxExplosion(c,target,floor,size,t){
  const mainImpact=list=>list.reduce((best,x)=>!best||x[1]>best[1]?x:best,null);
  function camera(s,ev,t,T,w){
   const still=s.reduced;let z=1.03+(still?0:.008*Math.sin(T*.5)),fx=w/2+(still?0:10*Math.sin(T*.21)),sx=0,sy=0;
+  if(s.intro&&!still)z+=.1*(1-ease((T-s.intro.at)/.9));
   if(s.finale&&!still){const q=ease((T-s.finale.at)/.9);z+=.17*q;fx+=((s.finale.side?w*.78:w*.22)-fx)*q*.6}
   if(ev&&!still){const side=ev.side==='foe'?1:0,ax=side?w*.78:w*.22,tx=side?w*.22:w*.78,full=ev._full||4,main=ev._main,crit=!!ev.hit?.critical;
    const env=Math.min(ease(t/.5),1-ease((t-(full-.45))/.45));
@@ -170,7 +171,7 @@ function maxExplosion(c,target,floor,size,t){
  function mount(root,players){let s=sessions.get(root);
   /* A screen that provides a stage slot gets the tall cinematic stage with its own HUD; other screens keep the classic strip. */
   const slot=root.querySelector('.vdu-stage-slot'),hud=!!(slot&&typeof slot.prepend==='function');
-  if(!s){const wrap=document.createElement('div');wrap.className='valor-combat-motion';wrap.innerHTML='<canvas width="1000" height="'+(hud?760:480)+'" aria-label="Beceri animasyonu"></canvas><span class="valor-motion-status" aria-live="polite">Hazır</span>';s={root,wrap,canvas:wrap.querySelector('canvas'),players:[],queue:Promise.resolve(),version:0,current:null,decals:[],ko:null,finale:null,hud,reduced:reducedMotion()};fastCtx(s.canvas.getContext('2d'));sessions.set(root,s);}
+  if(!s){const wrap=document.createElement('div');wrap.className='valor-combat-motion';wrap.innerHTML='<canvas width="1000" height="'+(hud?760:480)+'" aria-label="Beceri animasyonu"></canvas><span class="valor-motion-status" aria-live="polite">Hazır</span>';s={root,wrap,canvas:wrap.querySelector('canvas'),players:[],queue:Promise.resolve(),version:0,current:null,decals:[],ko:null,finale:null,hud,reduced:reducedMotion()};if(hud&&!s.reduced)s.intro={at:clock()};fastCtx(s.canvas.getContext('2d'));sessions.set(root,s);}
   s.closed=false;s.players=players.map(normalize);s.players.forEach(portrait);if(s.ko&&s.players[s.ko.index]?.name!==s.ko.name)s.ko=null;
   const before=root.querySelector('.vdu-turn');
   if(hud){if(s.wrap.parentNode!==slot)slot.prepend(s.wrap)}
@@ -191,12 +192,26 @@ function maxExplosion(c,target,floor,size,t){
  /* Reaction of the fighter that is hit: knock-back, a white flash on contact, and the fall on the last blow. */
  let recoil=0,flash=0;if(event&&!still)for(const [at,str] of imp){const d=t-at;if(d<0)continue;recoil+=str*Math.exp(-d/.22)*(soaked?.25:1);if(d<.13&&str>=.5&&!soaked)flash=Math.max(flash,1-d/.13)}
  const falling=event?._kill&&main&&t>=main[0]?ease((t-main[0])/.7):0;
+ /* Motion added on top of the painted poses, so the eight frames of an action read as one movement: the caster
+    gathers power (aura, a mage lifts off the ground), a warrior stretches into the dash and leaves after-images,
+    everyone dips before acting, and both fighters walk in when the fight opens. */
+ const power=event&&!still?Math.min(ease(t/.35),1-ease((t-((event._full||4)-.45))/.45)):0;
+ const dash=event&&!still&&actor.cls==='Savaşçı'&&(k==='max'?(t<.55||(t>=3.15&&t<4.1)):k==='normal'?(t<1||(t>=2.05&&t<3.05)):false);
+ const glow=!event?null:k==='passive'?(actor.cls==='Büyücü'?'#5dffa0':actor.cls==='Okçu'?'#8dffb0':'#ffd95a'):actor.cls==='Büyücü'?(k==='normal'?'#7db4ff':'#ff8a3c'):actor.cls==='Okçu'?'#74f0a0':k==='normal'?null:'#ff6a2c';
+ const entering=s.intro&&!event&&!still?ease((T-s.intro.at)/.85):1;if(s.intro&&T-s.intro.at>1)s.intro=null;
  const fighter=(f,px,fr,flip,sk,place)=>{const acting=!!event&&f===actor,struck=!!event&&f===foe,down=struck?falling:(s.ko&&s.ko.name===f.name&&s.players[s.ko.index]===f?1:0),lean=place?1:-1;
   const body=cc=>{if(f.cls==='Okçu'&&archer?.isReady())archer.sprite(cc,f,fr,0,0,size,k,t,acting);else if(f.cls==='Büyücü'&&allReady)mageSprite(cc,fr%8,0,0,size);else if(f.cls==='Savaşçı'&&allReady)sprite(cc,fr,0,0,size,sk);else if(f.image)cc.drawImage(f.image,-size*.48,-size*1.15,size*.96,size*1.15);else{cc.fillStyle='#aa8c68';cc.beginPath();cc.ellipse(0,-size*.39,size*.14,size*.26,0,0,Math.PI*2);cc.fill();cc.beginPath();cc.arc(0,-size*.77,size*.08,0,Math.PI*2);cc.fill();}};
-  c.save();c.translate(px+(struck?recoil*size*.055:0),floor);c.fillStyle='#0008';c.beginPath();c.ellipse(0,4,size*.25*(1+down*.5),9,0,0,Math.PI*2);c.fill();
+  c.save();c.translate(px+(struck?recoil*size*.055:0)+(entering<1?(place?1:-1)*size*1.9*(1-entering):0),floor);if(entering<1)c.globalAlpha=Math.min(1,entering*1.6);c.fillStyle='#0008';c.beginPath();c.ellipse(0,4,size*.25*(1+down*.5),9,0,0,Math.PI*2);c.fill();
   if(down){c.globalAlpha=1-.4*down;c.rotate(lean*down*1.38);c.translate(0,-down*size*.05)}else if(struck&&recoil)c.rotate(lean*Math.min(.12,recoil*.05));
   if(!acting&&!down&&!still){const breath=Math.sin(T*2.1+(place?1.7:0));c.scale(1+.004*breath,1+.013*breath)}
-  if(flip)c.scale(-1,1);gender=f.gender==='female'?'female':'male';if(acting&&f.cls==='Büyücü'&&k==='passive'&&allReady)healingAura(c,0,0,size,t,'back');
+  gender=f.gender==='female'?'female':'male';
+  if(acting&&power>0){
+   if(glow){c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(0,-size*.5,0,0,-size*.5,size*.78);g.addColorStop(0,glow+'66');g.addColorStop(.45,glow+'26');g.addColorStop(1,glow+'00');c.globalAlpha=power*(.75+.25*Math.sin(T*9));c.fillStyle=g;c.fillRect(-size*.8,-size*1.3,size*1.6,size*1.6);
+    c.scale(1,.22);c.globalAlpha=power*.8;c.strokeStyle=glow;c.lineWidth=5;c.beginPath();c.arc(0,0,size*(.34+.05*Math.sin(T*6)),0,Math.PI*2);c.stroke();c.restore()}
+   if(f.cls==='Büyücü')c.translate(0,-size*.05*power+Math.sin(T*5)*1.5*power);
+   const dip=t<.32?Math.sin(t/.32*Math.PI)*.05:0;if(dip)c.scale(1+dip*.5,1-dip);
+   if(dash){const way=returning?-1:1;for(let i=3;i>=1;i--){c.save();c.globalAlpha*=.2/i;c.translate(-way*size*.17*i,0);if(flip)c.scale(-1,1);body(c);c.restore()}c.transform(1,0,-way*.07,1,0,0);c.scale(1.05,.97)}}
+  if(flip)c.scale(-1,1);if(acting&&f.cls==='Büyücü'&&k==='passive'&&allReady)healingAura(c,0,0,size,t,'back');
   const bowman=f.cls==='Okçu'&&archer?.isReady();if(bowman)archer.behind(c,f,0,0,size,k,t,acting);
   if(struck&&flash>0&&typeof c.getTransform==='function'){
    /* Contact flash: paint the sprite on a spare canvas, whiten only its own pixels, then lay it over the scene. */
