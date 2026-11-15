@@ -1,11 +1,15 @@
 # Walking exploration
 
-Macera retains 10 encounters and a single 10-energy admission. Sahne retains seven encounters in its 15-step flow and a single daily admission. Walking changes neither rewards nor combat rules. Each region has deterministic terrain, an unobstructed trail, collision boundaries, click-to-walk pathfinding, keyboard controls, touch direction controls and a following camera. The next encounter unlocks within 66 world pixels. Position is stored on the existing run and saved on stopping, periodically while moving, and when leaving the map.
+Fullscreen viewport (100dvh with fallback), safe-area controls, click/touch pathfinding, keyboard movement, collision boundaries, following camera, minimap and saved run positions. Macera keeps 10 encounters and a single 10-energy admission; Sahne keeps its seven encounters and single admission. The exit button preserves the active journey.
 
-Run from repository root:
+Class and gender sprites reuse the actual arena artwork. The warrior uses the existing eight-frame run animation; mage and archer use their full-body standing pose with a movement bob. The enemy atlas supplies full-body monsters and bosses, with chests mapped separately. Scenery is cached into the terrain canvas and repainted only when image assets load.
 
-- `node tools/exploration/check.cjs`: all 20 terrain/count combinations, route connectivity and collision checks.
-- `node tools/exploration/integration-check.cjs`: actual canvas rendering plus keyboard movement, proximity gating, position saves, boundary collisions and lifecycle cleanup at 390px and 800px. Requires `@napi-rs/canvas`.
-- `CHROMIUM_EXECUTABLE=/usr/bin/chromium node tools/exploration/ui-check.cjs`: full application browser checks for admission costs, encounter transitions, input and layout. Requires Playwright and a runnable Chromium.
+Approaching within 104 world pixels schedules one encounter after 500ms. Closing the map cancels it. Hidden pages pause movement and do not start encounters. Macera's optional ambush flag gives the enemy the first normal hit; other duel callers keep existing initiative. Sahne applies one existing-engine enemy hit before its normal fight screen. Rewards remain in existing encounter handlers.
 
-The first two suites pass. The browser suite could not run in the implementation environment because Chromium's Unix socket creation was denied. The shared browser also could not reach the local preview. Full browser/iOS visual verification remains necessary.
+Checks (run from repository root):
+- `node tools/exploration/check.cjs`: all 20 terrain/count combinations, route connectivity and collision.
+- `node tools/exploration/ambush-check.cjs`: first enemy hit, regular initiative, lethal opening hit.
+- `node tools/exploration/integration-check.cjs`: actual rendered sprites at 390px/800px, movement, collision, one-shot ambush, persistence, cleanup. Requires @napi-rs/canvas.
+- `node tools/exploration/ui-check.cjs`: full-app Chromium mobile/desktop and mobile WebKit, viewport fill, touch movement, closing/resuming, first strike, entry costs, sprites, console errors. Requires Playwright browsers.
+
+GitHub Actions runs these checks on relevant PRs and main pushes and retains screenshots. WebKit emulation is not a physical iPhone test.

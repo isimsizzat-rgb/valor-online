@@ -107,10 +107,11 @@
     while (st.status === 'battle' && actor(st) === 'foe') { const u = st.foe; t = Math.max(t, u.cd.normal); perform(st, 'foe', choose(u, t), t, rng, true); }
     st.turnAt = now + (st.events.length ? GRACE_MS : 0);
   }
-  function create(me, foe, now, rng = Math.random) {
+  function create(me, foe, now, rng = Math.random, options = {}) {
     const st = { v: 1, me: fighter(me), foe: fighter(foe), round: 1, step: 0, status: 'battle', events: [], log: [], startedAt: now };
     const meFirst = st.me.attack === st.foe.attack ? rng() < .5 : st.me.attack > st.foe.attack;
     st.order = meFirst ? ['me', 'foe'] : ['foe', 'me'];
+    if (options.ambush) { st.order = ['foe', 'me']; perform(st, 'foe', 'normal', now, rng, true); st.turnAt = now + GRACE_MS; return st; }
     runAi(st, now, rng); return st;
   }
   /* The player's turn: a skill name, or 'auto' once 5 seconds have passed. Returns false if not allowed. */
