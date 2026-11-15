@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>Valor Online · 3D Arena denemesi</title>
+<link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="assets/arena/duel.css?v=20261115-motion">
+<style>
+html,body{margin:0;min-height:100%;background:#07090d;color:#e9e0d0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#valor-duel.vdu-overlay{position:fixed;inset:0;flex-direction:column;justify-content:flex-start;gap:6px;overflow:auto;background:radial-gradient(120% 80% at 50% 0,#1a1410,#07090d 70%)}
+.a3-top{width:min(100%,560px);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 0;box-sizing:border-box}
+.a3-top a{color:#d9bf8c;font:700 13px Georgia,serif;text-decoration:none;padding:6px 4px}
+.a3-top span{font:700 11px system-ui;letter-spacing:1.5px;color:#ab9261}
+#valor-duel .vdu-stage-slot{min-height:0}
+.a3-canvas{display:block;width:100%;aspect-ratio:1000/830;touch-action:none}
+.a3-load{position:absolute;inset:0;display:grid;place-content:center;gap:10px;text-align:center;background:#0b0d12;color:#d9bf8c;font:700 14px Georgia,serif;transition:opacity .4s}
+.a3-load i{width:160px;height:4px;border-radius:2px;background:#ffffff1c;overflow:hidden}
+.a3-load i b{display:block;height:100%;width:0;background:linear-gradient(90deg,#c98f3d,#ffe6ad);transition:width .2s}
+.a3-load.done{opacity:0;pointer-events:none}
+.a3-num{position:absolute;z-index:3;transform:translate(-50%,-50%);font:900 26px system-ui;color:#fff;-webkit-text-stroke:1px #1a0703;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 10px #ff3b1a99;white-space:nowrap;pointer-events:none;animation:a3-num 1.15s ease-out forwards}
+.a3-num.crit{color:#ffd23a;font-size:34px;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 14px #ff8a00}
+.a3-num.heal{color:#7dff9a;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 12px #2bff6a99}
+.a3-num.soak{color:#bfe2ff;font-size:22px;text-shadow:0 0 3px #000,0 2px 6px #000,0 0 12px #4aa8ff}
+.a3-num small{display:block;font:900 12px system-ui;letter-spacing:1px;color:#ffb02e;text-align:center}
+@keyframes a3-num{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}22%{transform:translate(-50%,-55%) scale(1)}100%{opacity:0;transform:translate(-50%,-150%) scale(1)}}
+.a3-pick{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin:10px 12px 0;font:11px system-ui;color:#b9ab93}
+.a3-pick button{appearance:none;padding:6px 11px;border:1px solid #6d5a38;border-radius:999px;background:#15110d;color:#e9d8bd;font:700 12px Georgia,serif;cursor:pointer}
+.a3-pick button[aria-pressed="true"]{border-color:#f0c97e;background:#2b2218;color:#ffd893}
+.a3-pick .again{border-color:#f0c97e;background:linear-gradient(#3a2c18,#221a10);color:#ffe2a0}
+.a3-note{width:min(100%,560px);margin:2px 0 10px;padding:0 14px;box-sizing:border-box;text-align:center;font:11px/1.5 system-ui;color:#8f8371}
+.a3-note a{color:#b9a47c}
+#valor-duel .vdu-cd{font-size:15px}
+</style>
+<script type="importmap">{"imports":{"three":"./assets/arena3d/vendor/three.module.min.js","three/addons/":"./assets/arena3d/vendor/"}}</script>
+</head>
+<body>
+<div id="valor-duel" class="vdu-overlay">
+ <div class="a3-top"><a href="index.html">‹ Oyuna dön</a><span>3D ARENA · DENEME</span></div>
+ <section class="vdu-dialog vdu-cine" aria-label="3D arena denemesi">
+  <div class="vdu-stage">
+   <div class="vdu-stage-slot" id="a3-slot"><canvas class="a3-canvas" id="a3-canvas" aria-label="3D arena"></canvas><div class="a3-load" id="a3-load"><span>Arena hazırlanıyor…</span><i><b></b></i></div></div>
+   <div class="vdu-hud" id="a3-hud"></div>
+  </div>
+  <div class="vdu-feed" id="a3-feed" aria-live="polite"><p class="tip">Bu sayfa bir denemedir: gerçek savaş, ödül ve sıralama etkilenmez.</p></div>
+  <div class="vdu-turn" id="a3-turn" role="status"><b></b><span></span></div>
+  <div class="vdu-skills" id="a3-skills"></div>
+  <div class="a3-pick" id="a3-pick"></div>
+ </section>
+ <p class="a3-note">Karakterler: KayKit Adventurers (Kay Lousberg, CC0) · Efektler: Effekseer örnekleri (tktk, CC0) · Motor: three.js (MIT)</p>
+</div>
+<script src="assets/arena/fx/effekseer.min.js?v=1"></script>
+<script type="module" src="assets/arena3d/arena3d.js?v=1"></script>
+</body>
+</html>
