@@ -134,6 +134,13 @@ function maxExplosion(c,target,floor,size,t){
   if(actor.cls==='Büyücü')return k==='max'?[[2.25,1.6]]:k==='strong'?Array.from({length:10},(_,i)=>[1.75+i*.12,i?.35:.8]):[[1.3,1]];
   return k==='max'?maxHits.map((v,i)=>[v,i===4?1.5:.5]):k==='strong'?[[1.75,1.1]]:[[1.6,.9]];
  }
+ /* Particle bursts (see arena-fx.js) fired on top of the painted effect: [effect, 'chest'|'ground' on the target or 'self', size]. */
+ function bursts(actor,k,index,heavy,crit){
+  if(actor.cls==='Büyücü')return k==='max'?[['fire7','ground',1.25],['sword12','ground',1.3]]:k==='strong'?(index%3?[]:[['fire2','ground',1.15]]):[['blow3','chest',1.1]];
+  if(actor.cls==='Okçu')return k==='max'?[['light2','chest',1.25],['sword12','ground',1]]:[['light2','chest',k==='strong'?1:.8]];
+  return k==='max'?(heavy?[['blow10','chest',1.5],['sword12','ground',1.15]]:[['blow10','chest',.8]]):k==='strong'?[['fire2','ground',1.25],['blow10','chest',.9]]:[['blow10','chest',crit?1.25:1]];
+ }
+ const selfBurst=actor=>actor.cls==='Büyücü'?['cure1',.5,1.2]:actor.cls==='Okçu'?['arrow1',.5,1.3]:['arrow1',.55,1.6];
  const mainImpact=list=>list.reduce((best,x)=>!best||x[1]>best[1]?x:best,null);
  function camera(s,ev,t,T,w){
   const still=s.reduced;let z=1.03+(still?0:.008*Math.sin(T*.5)),fx=w/2+(still?0:10*Math.sin(T*.21)),sx=0,sy=0;
@@ -169,7 +176,7 @@ function maxExplosion(c,target,floor,size,t){
   if(hud){if(s.wrap.parentNode!==slot)slot.prepend(s.wrap)}
   else if(before&&s.wrap.parentNode!==before.parentNode)before.before(s.wrap);else if(before&&s.wrap.nextSibling!==before)before.before(s.wrap);
   if(!s.current){arenaReady.then(()=>{if(root.isConnected&&!s.current)draw(s,null,0)});ready.then(()=>{if(root.isConnected&&!s.current)draw(s,null,0)});archer?.ready.then(()=>{if(root.isConnected&&!s.current)draw(s,null,0)});}
-  ready.then(()=>idleLoop(s));return s;}
+  ready.then(()=>idleLoop(s));if(!s.reduced)window.ValorArenaFx?.boot();return s;}
  function draw(s,event,t){canvas=s.canvas;const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,hud=s.hud,floor=h*.86,size=hud?290:230,T=clock(),still=s.reduced;
  const side=event?.side==='foe'?1:0,actor=event?.actor||s.players[side]||{},foe=event?.target||s.players[1-side]||{},start=w*.22,target=w*.78,contact=w*.62,k=event?.skill||'normal';let x=start,frame=8,returning=false;
  const imp=event?._imp||[],main=event?._main||null,cam=camera(s,event,t,T,w),shown=event&&k!=='passive'?shownDamage(event):0,soaked=!!event&&k!=='passive'&&shown<=0;
@@ -207,7 +214,7 @@ function maxExplosion(c,target,floor,size,t){
  if(event&&actor.cls==='Okçu'&&archer?.isReady())archer.effects(c,actor,start,target,floor,size,k,t);if(event&&allReady&&actor.cls==='Büyücü')mageEffect(c,k,start,target,floor,size,t);if(event&&allReady&&actor.cls==='Savaşçı'){if(k==='passive'&&t>1.05&&t<1.6){c.save();c.globalCompositeOperation='lighter';c.globalAlpha=Math.max(0,1-(t-1.05)/.55)*.16;c.fillStyle='#ffe260';c.fillRect(x-size*.8,floor-size*1.4,size*1.6,size*1.5);c.restore();}else if(k==='strong')fireWave(c,start,target,floor,size,t);else if(k==='max')maxExplosion(c,target,floor,size,t);else if(k==='normal'&&t>1.6&&t<1.95){c.save();c.globalCompositeOperation='lighter';c.globalAlpha=Math.sin((t-1.6)/.35*Math.PI);c.drawImage(maxFX,0,0,maxFX.width/4,maxFX.height/2,target-size*.3,floor-size*.75,size*.6,size*.6);c.restore();}}
  if(event&&!soaked)for(const [at,str] of imp)if(str>=.8)dust(c,target,floor,size,t-at,str);
  c.restore();c.restore();
- ambience(c,w,h,still?0:T,hud);
+ ambience(c,w,h,still?0:T,hud);if(!still)window.ValorArenaFx?.frame(s.wrap,canvas,cam,floor);
  /* Text is drawn on the screen layer, on top of the camera, and kept inside the frame. */
  const onScreen=(X,Y)=>[clamp(w/2+cam.sx+(X-cam.fx)*cam.z,150,w-150),Math.max(hud?210:70,floor+cam.sy+(Y-floor)*cam.z)];
  c.fillStyle='#decab1';c.font='20px system-ui';c.textAlign='center';
@@ -227,7 +234,7 @@ function maxExplosion(c,target,floor,size,t){
   /* The blow that ends a 1v1 fight: the target's health after this event is zero. */
   const targetHp=event.side==='me'?event.enemyHp:event.myHp;item._kill=event.skill!=='passive'&&Number.isFinite(targetHp)&&targetHp<=0;
   const main=item._main,index=event.side==='me'?1:0;
-  await new Promise(resolve=>{const at=performance.now();let last=at,tt=0,frozen=0,slow=0,struck=!main||s.reduced;
+  await new Promise(resolve=>{const at=performance.now();let last=at,tt=0,frozen=0,slow=0,struck=!main||s.reduced;const fired=new Set(),fx=window.ValorArenaFx,cw=s.canvas.width,floor=s.canvas.height*.86,size=s.hud?290:230,tx=cw*(event.side==='foe'?.22:.78),ax=cw-tx;
    const tick=now=>{if(s.version!==version||!root.isConnected){resolve();return}
     let dt=Math.max(0,now-last);if(now>last)last=now;
     if(frozen>0){const used=Math.min(frozen,dt);frozen-=used;dt-=used}
@@ -235,13 +242,16 @@ function maxExplosion(c,target,floor,size,t){
     const prev=tt;tt=Math.min(full,tt+dt/ms*full*rate);
     if(!struck&&tt>=main[0]){struck=true;tt=Math.min(full,Math.max(prev,main[0]+.02));frozen=item._kill?170:item.hit?.critical?110:main[1]>=1?70:45;if(item._kill)slow=520;
      if(event.skill==='max'&&actor.cls!=='Okçu')s.decals.push({x:canvasTargetX(s,event.side),at:clock()})}
+    if(fx&&!s.reduced){const soaked=event.skill!=='passive'&&shownDamage(event)<=0;
+     item._imp.forEach(([when,str],i)=>{if(tt<when||fired.has(i))return;fired.add(i);if(soaked)return;for(const [name,where,scale] of bursts(item.actor,event.skill,i,str>=1.5,!!item.hit?.critical))fx.burst(name,tx,where==='ground'?floor:floor-size*.45,scale*size/290)});
+     if(event.skill==='passive'&&tt>=1.05&&!fired.has('self')){fired.add('self');const [name,up,scale]=selfBurst(item.actor);fx.burst(name,ax,floor-size*up,scale*size/290)}}
     try{draw(s,item,tt)}catch(error){console.warn('Beceri animasyonu atlandı',error);resolve();return}
     if(tt>=full){resolve();return}s.raf=requestAnimationFrame(tick)};s.raf=requestAnimationFrame(tick)});
   s.current=null;if(s.version===version&&root.isConnected){if(item._kill)s.ko={index,name:s.players[index]?.name};s.wrap.classList?.remove('casting');s.wrap.querySelector('span').textContent='Hazır';draw(s,null,0);}});return s.queue;}
  const canvasTargetX=(s,side)=>s.canvas.width*(side==='foe'?.22:.78);
  /* End of a fight: the camera closes in on the winner (0 = left fighter, 1 = right fighter). */
  function finale(root,winner){const s=sessions.get(root);if(!s||s.closed)return;s.finale={side:winner?1:0,at:clock()};if(s.reduced&&!s.current)try{draw(s,null,0)}catch(error){}}
- function close(root){const s=sessions.get(root);if(s){s.version++;s.current=null;s.closed=true;s.finale=null;s.ko=null;s.decals=[];s.wrap.remove();}}
+ function close(root){const s=sessions.get(root);if(s){s.version++;s.current=null;s.closed=true;s.finale=null;s.ko=null;s.decals=[];window.ValorArenaFx?.detach(s.wrap);s.wrap.remove();}}
  window.ValorCombatMotion={mount,play,close,finale,whenIdle:root=>sessions.get(root)?.queue||Promise.resolve()};
  const style=document.createElement('style');style.textContent='.valor-combat-motion{position:relative;margin:10px 0;border:1px solid #99765166;border-radius:9px;overflow:hidden;background:#17171f}.valor-combat-motion canvas{display:block;width:100%;aspect-ratio:1000/480}.valor-motion-status{position:absolute;top:9px;left:12px;color:#ead0aa;font:11px system-ui;text-shadow:0 1px 3px #000;pointer-events:none}.vdu-dialog:has(.valor-combat-motion){max-width:720px}.vdu-dialog:has(.valor-combat-motion) .vdu-card{padding:7px}.vdu-dialog:has(.valor-combat-motion) .vdu-portrait{width:45px;height:45px;min-width:45px}.vdu-dialog:has(.valor-combat-motion) .vdu-ticker{max-height:72px}@media(max-width:500px){.valor-combat-motion canvas{aspect-ratio:1000/480}.vdu-dialog:has(.valor-combat-motion){padding:12px}.vdu-dialog:has(.valor-combat-motion) h2{margin:4px 0;font-size:18px}}';document.head.appendChild(style);
 })();
