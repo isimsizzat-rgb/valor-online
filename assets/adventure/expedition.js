@@ -52,7 +52,7 @@
   save();render();open();
  }
  function next(){const r=run();if(!r)return;
-  if(r.phase==='story'){const s=r.steps[r.i];
+  if(r.phase==='story'){if(window.ValorWalk&&!ValorWalk.near('adventure'))return;const s=r.steps[r.i];
    if(s.kind==='chest'){r.last=give(r,X.chest(r.zone));if(heartsOnline()){r.last.heartReq=crypto.randomUUID();r.last.heartsPending=true;claimHearts(r)}r.phase='chest';ui.chestAt=Date.now();save();paint(true);clearTimeout(ui.chestTimer);ui.chestTimer=setTimeout(()=>paint(true),1700);return}
    const foe=X.enemy(r.zone,s);r.duel=D.create({name:state.name||'Sen',cls:state.class,level:state.level,stats:valorArenaStats()},foe,Date.now());r.phase='fight';ui.all=[];ui.shown=0;collect(r);save();paint(true);if(r.duel.status==='done')fightOver(r);return}
   if(r.phase==='chest'||r.phase==='won'){r.i++;r.phase='story';r.duel=null;r.last=null;save();paint(true);return}
@@ -99,9 +99,9 @@
    +'<div class="vdu-skills">'+D.ORDER.map(k=>skillBtn(k,st.me,mine,t)).join('')+'</div>'
    +'<small class="vdu-hint">'+(mine?'Pasif: '+esc(D.passiveOf(st.me).text)+' · sıranı harcar':'')+'</small>'}
  function storyView(r){const s=r.steps[r.i],z=zoneOf(r);
-  return '<div class="vex-scene '+(s.kind==='chest'?'':'vex-encounter')+(s.boss?' vex-boss-scene':'')+'">'+(s.kind==='chest'?'<img src="'+z.image+'" alt="" onerror="this.hidden=true">':enemyArt(r))+'<span class="vex-scene-tag">'+(s.boss?mark('boss')+' Bölge Bossu':s.kind==='chest'?mark('mystery')+' Gizem':mark('battle')+' Karşılaşma')+'</span></div>'
+  return (window.ValorWalk?ValorWalk.markup('adventure'):'')
    +'<p class="vex-story">'+esc(s.story)+'</p>'
-   +'<button type="button" class="vex-go" onclick="valorExpedition.next()">'+(s.kind==='chest'?mark('chest')+' Sandığı aç':s.boss?mark('boss')+' Bossa saldır':mark('battle')+' Savaş')+'</button>'}
+   +'<button type="button" class="vex-go" data-walk-action '+(window.ValorWalk?'disabled ':'')+'onclick="valorExpedition.next()">'+(s.kind==='chest'?mark('chest')+' Sandığı aç':s.boss?mark('boss')+' Bossa saldır':mark('battle')+' Savaş')+'</button>'}
  function chestView(r){const opening=Date.now()-(ui.chestAt||0)<1600;
   return '<div class="vex-chest '+(opening?'opening':'open')+'"><span class="vex-chest-icon">'+mark('chest')+'</span><b>'+(opening?'Gizemli sandık açılıyor…':'Sandıktan çıkan ödül')+'</b>'+(opening?'':'<strong>'+prizeHtml(r.last||{})+'</strong>'+(r.last?.heartsPending?'<small>'+mark('hearts')+' Kalpler geliyor…</small>':''))+'</div>'
    +(opening?'':'<button type="button" class="vex-go" onclick="valorExpedition.next()">Yola devam et ❯</button>')}

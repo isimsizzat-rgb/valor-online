@@ -1,0 +1,11 @@
+.valor-walk{position:relative;isolation:isolate;overflow:hidden;border:1px solid #b49663;border-radius:14px;background:#15251f;margin:14px 0;color:#fff3d8;box-shadow:0 12px 32px #0003;text-align:left}
+.valor-walk canvas{display:block;width:100%;height:410px;touch-action:none;outline-offset:-4px}
+.valor-walk .walk-heading{position:absolute;top:14px;left:16px;right:16px;pointer-events:none;text-shadow:0 2px 4px #000;font:600 12px system-ui;letter-spacing:2px}
+.valor-walk .walk-heading strong{display:block;font:700 22px Georgia,serif;letter-spacing:0;margin-top:5px}
+.valor-walk .walk-hint{position:absolute;bottom:12px;left:12px;right:128px;font:12px/1.4 system-ui;background:#10221cdb;padding:9px 12px;border:1px solid #a48c5a66;border-radius:8px;pointer-events:none}
+.valor-walk .walk-pad{position:absolute;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,34px);gap:3px}
+.valor-walk .walk-pad button{margin:0!important;padding:0!important;width:34px!important;height:34px!important;min-width:0!important;min-height:0!important;border:1px solid #c6b07b88!important;border-radius:8px!important;background:#15251fd9!important;color:#fff3d8!important;touch-action:none;user-select:none}
+.valor-walk .walk-pad button:first-child{grid-column:2}.valor-walk .walk-pad button:nth-child(2){grid-column:1}
+[data-walk-action]:disabled{opacity:.55;cursor:not-allowed}
+.vex-dialog:has(.valor-walk){max-width:800px}.vex-dialog:has(.valor-walk) .vex-story{font-size:13px;margin:8px 0}
+@media(max-width:600px){.valor-walk canvas{height:390px}.valor-walk .walk-heading strong{font-size:19px}.vex-dialog:has(.valor-walk){padding:14px}.valor-walk .walk-hint{font-size:11px;right:124px}}
