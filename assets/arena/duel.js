@@ -14,11 +14,11 @@
  const fresh=u=>({hp:u.maxHp,shield:0,shieldTurns:0,focus:0,focusTurns:0});
  const shown=(u,side)=>duel.view?{...u,...duel.view[side]}:u;
  const animated=(el,e,u)=>!!(window.ValorCombatMotion&&el?.querySelector('.valor-combat-motion')&&['normal','strong','max','passive'].includes(e.skill)&&['Savaşçı','Büyücü','Okçu'].includes(u?.cls));
- function reveal(e){const v=duel.view;if(v){const a=v[e.side==='me'?'me':'foe'];if(Number.isFinite(e.myHp))v.me.hp=e.myHp;if(Number.isFinite(e.enemyHp))v.foe.hp=e.enemyHp;
+ function reveal(e,played){const v=duel.view;if(v){const a=v[e.side==='me'?'me':'foe'];if(Number.isFinite(e.myHp))v.me.hp=e.myHp;if(Number.isFinite(e.enemyHp))v.foe.hp=e.enemyHp;
    if(e.myShield!=null)v.me.shield=e.myShield;if(e.enemyShield!=null)v.foe.shield=e.enemyShield;for(const x of [v.me,v.foe])if(!x.shield)x.shieldTurns=0;
    if(e.passive==='shield')a.shieldTurns=D.passiveOf(e.side==='me'?duel.st.me:duel.st.foe).turns||3;if(e.passive==='focus'){a.focus=e.focus;a.focusTurns=D.passiveOf(e.side==='me'?duel.st.me:duel.st.foe).turns||3}
    if(e.focused&&a.focusTurns>0&&--a.focusTurns<=0)a.focus=0;v.round=e.round}
-  duel.revealed++;if(duel.revealed>=duel.all.length)duel.view=null;paint();floatOne(e)}
+  duel.revealed++;if(duel.revealed>=duel.all.length)duel.view=null;paint();floatOne(e,played)}
  const wait=ms=>new Promise(r=>setTimeout(r,ms));
  const now=()=>Date.now()+(duel.kind==='online'?duel.skew:0);
  const secs=ms=>Math.max(0,Math.ceil(ms/1000));
@@ -37,39 +37,66 @@
  const skillText=(k,u)=>k==='passive'?D.passiveOf(u).text+' · sıranı harcar':k==='normal'?'Normal hasar':k==='strong'?'%130 hasar':'%175 hasar';
  const fallbackIcon="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Crect width=%2210%22 height=%2210%22 rx=%222%22 fill=%22%23333%22/%3E%3C/svg%3E'";
 
- function hpBar(u){return '<div class="vdu-hp"><i style="width:'+Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%"></i>'+(u.shield>0?'<b style="width:'+Math.min(100,u.shield/u.maxHp*100)+'%"></b>':'')+'</div><small>'+money(Math.max(0,u.hp))+' / '+money(u.maxHp)+(u.shield>0?' · 🛡 '+money(u.shield)+(u.shieldTurns?' ('+u.shieldTurns+' tur)':''):'')+(u.focusTurns>0?' · 🎯 +%'+Math.round(u.focus*100)+' ('+u.focusTurns+' tur)':'')+'</small>'}
- function card(u,side,portrait){return '<div class="vdu-card vdu-'+side+'" data-side="'+side+'"><div class="vdu-portrait"><img src="'+portrait+'" alt=""></div><div class="vdu-info"><b>'+esc(u.name)+'</b><span>'+esc(u.cls)+' · Sv. '+u.level+'</span>'+hpBar(u)+'</div></div>'}
- function chip(e){const who=e.side==='me'?'Sen':esc(duel.st.foe.name);if(e.skill==='burn')return '<span class="burn">🔥 Yanık '+money(e.damage)+'</span>';
-  if(e.skill==='passive')return '<span class="pas">'+who+' · '+esc(D.PASSIVES[(e.side==='me'?duel.st.me:duel.st.foe).cls]?.name||'Pasif')+(e.shield?' 🛡'+money(e.shield):e.healed?' +'+money(e.healed):e.focus?' 🎯':'')+'</span>';
-  return '<span class="'+(e.side==='me'?'mine':'theirs')+'">'+who+' · '+esc(skillName(e.skill,e.side==='me'?duel.st.me:duel.st.foe))+' <b>'+money(D.shownDamage(e))+'</b>'+(e.hit?.critical?' Kritik':'')+(e.hit?.blocked?' Bloke':'')+(e.hit?.absorbed?' 🛡'+money(e.hit.absorbed):'')+(e.hit?.healed?' <i class="heal">+'+money(e.hit.healed)+'</i>':'')+(e.auto&&e.side==='me'?' ⏱':'')+'</span>'}
+ /* The health bars sit on top of the arena (me on the left, rival on the right, like the fighters below them). */
+ function hud(u,side,portrait){const pct=Math.max(0,Math.min(100,u.hp/u.maxHp*100)),sh=u.shield>0?Math.min(100,u.shield/u.maxHp*100):0;
+  return '<div class="vdu-hud-unit vdu-'+side+'" data-side="'+side+'"><div class="vdu-portrait"><img src="'+portrait+'" alt=""></div><div class="vdu-hud-info"><b>'+esc(u.name)+'</b><div class="vdu-hp"><em style="width:'+pct+'%"></em><i style="width:'+pct+'%"></i>'+(sh?'<b style="width:'+sh+'%"></b>':'')+'</div><small>'+money(Math.max(0,u.hp))+' / '+money(u.maxHp)+'</small><span class="vdu-tags">'+esc(u.cls)+' · Sv. '+u.level+(u.shield>0?' · 🛡 '+money(u.shield)+(u.shieldTurns?' ('+u.shieldTurns+' tur)':''):'')+(u.focusTurns>0?' · 🎯 +%'+Math.round(u.focus*100)+' ('+u.focusTurns+' tur)':'')+'</span></div></div>'}
+ function line(e){const foe=duel.st.foe,who=e.side==='me'?'Sen':esc(foe.name),cls=e.skill==='burn'?'burn':e.skill==='passive'?'pas':e.side==='me'?'mine':'theirs';
+  if(e.skill==='burn')return '<p class="burn">🔥 Yanık <b>'+money(e.damage)+'</b></p>';
+  if(e.skill==='passive')return '<p class="pas">'+who+' · '+esc(D.PASSIVES[(e.side==='me'?duel.st.me:foe).cls]?.name||'Pasif')+(e.shield?' <b>🛡 '+money(e.shield)+'</b>':e.healed?' <b>+'+money(e.healed)+'</b>':e.focus?' 🎯':'')+'</p>';
+  const dmg=D.shownDamage(e);
+  return '<p class="'+cls+'">'+who+' · '+esc(skillName(e.skill,e.side==='me'?duel.st.me:foe))+' <b>'+(dmg>0?money(dmg):e.hit?.absorbed?'Emildi':'Blok')+'</b>'+(e.hit?.critical&&dmg>0?' <u>Kritik</u>':'')+(e.hit?.blocked&&dmg>0?' <u>Bloke</u>':'')+(e.hit?.absorbed&&dmg>0?' <u>🛡 '+money(e.hit.absorbed)+'</u>':'')+(e.hit?.healed?' <i class="heal">+'+money(e.hit.healed)+'</i>':'')+(e.auto&&e.side==='me'?' ⏱':'')+'</p>'}
  function skillButton(k,mine,t){const u=duel.st.me,cd=secs((u.cd[k]||0)-t),ok=mine&&!cd&&!duel.busy&&!duel.animating;return '<button type="button" class="vdu-skill vdu-'+k+'" '+(ok?'':'disabled ')+'onclick="valorDuel.use(\''+k+'\')" title="'+esc(skillText(k,u))+'"><img src="'+skillIcon(k,u)+'" alt="" onerror="'+fallbackIcon+'"><span class="vdu-sname">'+esc(skillName(k,u))+'</span><span class="vdu-cd" data-live="cd-'+k+'">'+(cd?cd+' sn':'')+'</span></button>'}
  function markup(){const st=duel.st,t=now(),foeU=shown(st.foe,'foe'),meU=shown(st.me,'me'),mine=st.status==='battle'&&st.turn==='me'&&!duel.animating,left=secs(D.TURN_MS-(t-(turnStart()||t))),me=st.me,portraitMe=valorBattlePortraitMine(),portraitFoe=duel.rival?.portrait||(duel.kind==='training'?portraitMe:heroImages[Math.max(0,classes.indexOf(st.foe.cls))]);
-  const log=duel.all.slice(0,duel.revealed).slice(-10).reverse().map(chip).join('')||'<span>Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</span>';
-  return '<section class="vdu-dialog" role="dialog" aria-modal="true" aria-labelledby="vdu-title"><small class="vdu-eyebrow">ARENA · TUR '+(duel.view?.round||st.round)+'</small><h2 id="vdu-title">'+esc(st.foe.name)+'</h2>'
-   +card(foeU,'foe',portraitFoe)
-   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+(st.status!=='battle'?'Savaş bitti':mine?'Sıra sende!':st.turn==='me'?'':'Rakip saldırıyor…')+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span></div>'
-   +'<div class="vdu-ticker" aria-live="polite">'+log+'</div>'
-   +card(meU,'me',portraitMe)
-   +'<div class="vdu-skills">'+D.ORDER.map(k=>skillButton(k,mine,t)).join('')+'</div>'
+  const log=duel.all.slice(0,duel.revealed).slice(-3).map(line).join('')||'<p class="tip">Sıran gelince bir beceri seç · 5 sn içinde seçmezsen otomatik seçilir</p>';
+  const over=st.status!=='battle'&&!duel.animating,label=over?'Savaş bitti':st.status!=='battle'?'':mine?'Sıra sende':st.turn==='me'?'':'Rakip saldırıyor…';
+  return '<section class="vdu-dialog vdu-cine'+(over?' over':'')+'" role="dialog" aria-modal="true" aria-labelledby="vdu-title"><h2 id="vdu-title" class="vdu-sr">'+esc(st.foe.name)+' ile arena savaşı</h2>'
+   +'<div class="vdu-stage"><div class="vdu-stage-slot" data-keep></div>'
+   +'<div class="vdu-hud">'+hud(meU,'me',portraitMe)+'<span class="vdu-round"><small>TUR</small><b>'+(duel.view?.round||st.round)+'</b></span>'+hud(foeU,'foe',portraitFoe)+'</div></div>'
+   +'<div class="vdu-feed" aria-live="polite">'+log+'</div>'
+   +'<div class="vdu-turn '+(mine?'mine':'')+'" role="status"><b>'+label+'</b><span data-live="turn">'+(mine?left+' sn':'')+'</span><i class="vdu-clock" aria-hidden="true"></i></div>'
+   +'<div class="vdu-skills'+(mine?' ready':'')+'">'+D.ORDER.map(k=>skillButton(k,mine,t)).join('')+'</div>'
    +'<small class="vdu-hint">'+(mine?'Pasif: '+esc(D.passiveOf(me).text)+' · sıranı harcar':'')+'</small></section>'}
+ /* Update the screen in place instead of rebuilding it: images are never re-created (no blank portraits or skill
+    icons for a frame) and the health bars can animate from their old width to the new one. */
+ function morph(a,b){
+  if(a.nodeType!==b.nodeType||a.nodeName!==b.nodeName){a.replaceWith(b);return}
+  if(a.nodeType===3){if(a.data!==b.data)a.data=b.data;return}
+  if(a.nodeType!==1)return;
+  for(const {name} of [...a.attributes])if(!b.hasAttribute(name))a.removeAttribute(name);
+  for(const {name,value} of [...b.attributes])if(a.getAttribute(name)!==value)a.setAttribute(name,value);
+  if(a.hasAttribute('data-keep'))return;
+  const mine=[...a.childNodes],next=[...b.childNodes];
+  if(mine.length!==next.length){a.replaceChildren(...next);return}
+  for(let i=0;i<mine.length;i++)morph(mine[i],next[i])}
+ /* The turn clock drains smoothly between the 250 ms ticks. */
+ function clock(el){const bar=el.querySelector('.vdu-clock'),st=duel.st;if(!bar||!st)return;const mine=st.status==='battle'&&st.turn==='me'&&!duel.animating,t=now();
+  bar.style.transform='scaleX('+(mine?Math.max(0,Math.min(1,1-(t-(turnStart()||t))/D.TURN_MS)):0)+')'}
  function paint(){const el=document.getElementById('valor-duel');if(!el||!duel.st)return;floatNew();const html=markup();
   const stable=html.replace(/(data-live="[^"]+">)[^<]*</g,'$1<');
-  if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}return}
-  duel.stable=stable;el.innerHTML=html;mountMotion(el)}
+  if(stable===duel.stable){for(const m of html.matchAll(/data-live="([^"]+)">([^<]*)</g)){const n=el.querySelector('[data-live="'+m[1]+'"]');if(n&&n.textContent!==m[2])n.textContent=m[2]}clock(el);return}
+  duel.stable=stable;const box=document.createElement('template');box.innerHTML=html;const next=box.content.firstElementChild,live=el.firstElementChild;
+  if(live&&live.classList.contains('vdu-cine'))morph(live,next);else el.replaceChildren(next);
+  mountMotion(el);clock(el)}
  function motionPlayers(){return [duel.st.me,duel.st.foe].map((u,i)=>({...u,gender:i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender||'male')),art:typeof valorCreationCutout==='function'?valorCreationCutout(u.cls,i===0?state.gender:(duel.kind==='training'?state.gender:(duel.rival?.gender||u.gender))) : null}))}
  function mountMotion(el){if(window.ValorCombatMotion&&[duel.st.me,duel.st.foe].some(u=>['Savaşçı','Büyücü','Okçu'].includes(u.cls)))ValorCombatMotion.mount(el,motionPlayers())}
  /* Floating numbers for events not shown yet (my hit first, then the AI's answer). */
  function floatNew(){const el=document.getElementById('valor-duel');if(!el)return;const list=duel.all.slice(duel.shown);duel.shown=duel.all.length;if(!list.length)return;
   const token=duel.animToken;duel.animating=true;
   for(const e of list)duel.chain=duel.chain.catch(()=>{}).then(async()=>{if(token!==duel.animToken)return;const root=document.getElementById('valor-duel'),p=motionPlayers(),a=e.side==='me'?0:1;
-   if(animated(root,e,p[a]))await ValorCombatMotion.play(root,e,p[a],p[1-a]).catch(()=>{});else await wait(e.skill==='burn'?350:650);
-   if(token===duel.animToken&&document.getElementById('valor-duel'))reveal(e)});
+   const played=animated(root,e,p[a]);if(played)await ValorCombatMotion.play(root,e,p[a],p[1-a]).catch(()=>{});else await wait(e.skill==='burn'?350:650);
+   if(token===duel.animToken&&document.getElementById('valor-duel'))reveal(e,played)});
   const end=duel.chain=duel.chain.catch(()=>{}).then(()=>{if(token!==duel.animToken||end!==duel.chain)return;duel.animating=false;duel.view=null;duel.revealed=duel.all.length;duel.readyAt=now();paint()})}
- function floatOne(e){{
-  const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),host=document.querySelector('#valor-duel .vdu-'+target+' .vdu-portrait');if(!host)return;
-  const f=document.createElement('span');f.className='vdu-float '+(e.skill==='passive'?(e.healed?'pas heal':'pas'):e.hit?.critical?'crit':'');f.textContent=e.skill==='passive'?(e.shield?'🛡 '+money(e.shield):e.healed?'+'+money(e.healed):'🎯'):'-'+money(D.shownDamage(e));host.appendChild(f);if(e.skill!=='passive'){host.classList.remove('hit');void host.offsetWidth;host.classList.add('hit')}setTimeout(()=>f.remove(),1300);
-  /* Healing from astrology after taking a hit: green number under the damage. */
-  if(e.hit?.healed)setTimeout(()=>{if(!host.isConnected)return;const h=document.createElement('span');h.className='vdu-float heal low';h.textContent='+'+money(e.hit.healed);host.appendChild(h);setTimeout(()=>h.remove(),1300)},380);}}
+ /* Small numbers under the health bars. A skill that was animated already showed its number in the arena, so only
+    burn ticks, passives and healing appear here. They live inside the stage, so they can never spill over the title. */
+ function floatOne(e,wasAnimated){
+  const layer=document.querySelector('#valor-duel .vdu-stage-slot');if(!layer)return;
+  const target=e.skill==='passive'?e.side:(e.side==='me'?'foe':'me'),unit=document.querySelector('#valor-duel .vdu-hud-unit.vdu-'+target);
+  const add=(text,cls,delay)=>setTimeout(()=>{if(!layer.isConnected)return;const f=document.createElement('span');f.className='vdu-float on-'+target+' '+cls;f.textContent=text;layer.appendChild(f);setTimeout(()=>f.remove(),1300)},delay||0);
+  if(e.skill!=='passive'&&unit){unit.classList.remove('hit');void unit.offsetWidth;unit.classList.add('hit')}
+  if(e.skill==='passive'){if(!(wasAnimated&&e.healed))add(e.shield?'🛡 '+money(e.shield):e.healed?'+'+money(e.healed):'🎯 Odak',e.healed?'pas heal':'pas')}
+  else if(!wasAnimated)add((e.skill==='burn'?'🔥 ':'')+'-'+money(D.shownDamage(e)),e.skill==='burn'?'burn':e.hit?.critical?'crit':'');
+  /* Healing from astrology after taking a hit: green number under the bar. */
+  if(e.hit?.healed)add('+'+money(e.hit.healed),'heal low',380)}
 
  function open(){duel.finishing=false;document.getElementById('valor-duel')?.remove();const el=document.createElement('div');el.id='valor-duel';el.className='vdu-overlay';document.body.appendChild(el);document.documentElement.style.overflow='hidden';duel.stable=null;paint();clearInterval(duel.timer);duel.timer=setInterval(tick,250)}
  function close(){duel.animToken++;duel.animating=false;duel.readyAt=0;duel.view=null;duel.revealed=0;window.ValorCombatMotion?.close(document.getElementById('valor-duel'));clearInterval(duel.timer);duel.timer=null;document.getElementById('valor-duel')?.remove();document.documentElement.style.overflow=''}
@@ -80,11 +107,16 @@
 
  function battleFromDuel(){const r=duel.st.result,rounds=new Map();for(const e of duel.all){if(!rounds.has(e.round))rounds.set(e.round,{round:e.round,mine:0,theirs:0,myHit:null,enemyHit:null,myHp:e.myHp,enemyHp:e.enemyHp});const x=rounds.get(e.round);if(e.side==='me'&&e.skill!=='passive'){x.mine+=e.damage||0;if(e.hit)x.myHit=e.hit}else if(e.side==='foe'&&e.skill!=='passive'){x.theirs+=e.damage||0;if(e.hit)x.enemyHit=e.hit}x.myHp=e.myHp;x.enemyHp=e.enemyHp}
   return {...r,log:[...rounds.values()]}}
- function done(){if(duel.finishing)return;duel.finishing=true;const battle=battleFromDuel(),kind=duel.kind,rival=duel.rival;const root=document.getElementById('valor-duel');duel.chain.catch(()=>{}).then(()=>setTimeout(()=>{if(!root?.isConnected)return;close();duel.st=null;
+ function done(){if(duel.finishing)return;duel.finishing=true;const battle=battleFromDuel(),kind=duel.kind,rival=duel.rival;const root=document.getElementById('valor-duel');duel.chain.catch(()=>{}).then(()=>{const hold=curtain(root,battle);setTimeout(()=>{if(!root?.isConnected)return;close();duel.st=null;
   if(kind==='online')valorArenaOnlineFinish(rival,battle,true);
   else if(kind==='training'){valorPrecomputedBattle=battle;valorArenaImmediateTraining();valorPrecomputedBattle=null}
-  else{valorPrecomputedBattle=battle;valorArenaWithFury(()=>valorArenaImmediateFight(rival.id));valorPrecomputedBattle=null}},500))}
+  else{valorPrecomputedBattle=battle;valorArenaWithFury(()=>valorArenaImmediateFight(rival.id));valorPrecomputedBattle=null}},hold)})}
 
+ /* Last beat of the fight. Returns how long to stay on the arena before the result card opens. */
+ function curtain(root,battle){/* Inside the kept slot, so screen updates leave it alone. */
+  const stage=root?.querySelector('.vdu-stage-slot');if(!stage)return 500;
+  const word=battle.draw?'BERABERE':battle.win?'ZAFER':'YENİLGİ',b=document.createElement('div');b.className='vdu-banner '+(battle.draw?'draw':battle.win?'win':'loss');b.innerHTML='<span>'+word+'</span>';stage.appendChild(b);
+  if(!battle.draw)window.ValorCombatMotion?.finale?.(root,battle.win?0:1);return 1500}
  async function use(skill){const st=duel.st;if(!st||duel.busy||duel.animating||st.status!=='battle'||st.turn!=='me')return;
   if(duel.kind==='online'){duel.busy=true;paint();let r;try{r=await server({mode:'duel_act',skill})}finally{duel.busy=false}
    if(r?.duel){adopt(r.duel,!r.error)}else if(r?.error&&!r.duel){toast(valorFightError(r.error));close();return}
