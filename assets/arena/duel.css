@@ -48,3 +48,70 @@ html body :is(#valor-duel,#valor-tduel,#valor-adv) .vdu-skill:not(:disabled):act
 /* Team Arena: no portraits on the fighter cards (the animation shows the characters), just name and HP */
 .vtd-unit{padding:8px 7px 6px}.vtd-unit>b{font-size:12px;margin-bottom:2px}.vtd-unit .vdu-hp{height:9px}
 .vtd-unit.hit{animation:vdu-shake .35s}.vtd-unit .vdu-float{top:-6px}
+
+/* ---------- Cinematic 1v1 duel screen ----------
+   The arena fills the top of the dialog edge to edge; both health bars float over it, and the log, turn clock and
+   skills sit underneath. Everything is scoped to #valor-duel so the team arena keeps its own layout. */
+#valor-duel.vdu-overlay{padding:6px}
+#valor-duel .vdu-cine{width:min(100%,560px);max-width:560px;max-height:100dvh;padding:0 0 12px;border-radius:14px;overflow:hidden auto;background:linear-gradient(180deg,#0b0d12,#14110f 70%,#1b1512)}
+.vdu-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#valor-duel .vdu-stage{position:relative;background:#0b0d12;border-bottom:1px solid #a5895466}
+#valor-duel .vdu-stage-slot{position:relative;min-height:150px;overflow:hidden}
+#valor-duel .valor-combat-motion{margin:0;border:0;border-radius:0}
+#valor-duel .valor-combat-motion canvas{aspect-ratio:1000/760}
+#valor-duel .valor-motion-status{top:62px;left:50%;transform:translateX(-50%);padding:4px 13px;border-radius:999px;border:1px solid #c9a46a80;background:#0a0d14c4;color:#f6e2b8;font:700 12px Georgia,serif;white-space:nowrap;opacity:0;transition:opacity .18s}
+#valor-duel .valor-combat-motion.casting .valor-motion-status{opacity:1}
+
+.vdu-hud{position:absolute;inset:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;padding:10px 10px 0;pointer-events:none}
+.vdu-hud-unit{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.vdu-hud-unit.vdu-foe{flex-direction:row-reverse;text-align:right}
+.vdu-hud-unit.hit{animation:vdu-shake .35s}
+#valor-duel .vdu-hud .vdu-portrait{width:38px;min-width:38px;height:38px;box-shadow:0 2px 8px #000c;background:#120f0d}
+.vdu-hud-unit.vdu-foe .vdu-portrait{border-color:#c46a5a}
+.vdu-hud-info{flex:1;min-width:0}
+.vdu-hud-info>b{display:block;font:700 13px/1.15 Georgia,serif;color:#fff1cf;text-shadow:0 1px 3px #000,0 0 8px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vdu-hud .vdu-hp{height:9px;margin:3px 0 2px;border-radius:5px;background:#07090dd9;box-shadow:0 0 0 1px #000a,0 2px 6px #0008}
+.vdu-hud .vdu-hp :is(i,em){position:absolute;top:0;left:0;height:100%}
+/* The pale bar behind the health shrinks a moment later, so the size of each hit stays readable. */
+.vdu-hud .vdu-hp em{background:#ffe7a8;transition:width .7s .3s ease-out}
+.vdu-hud .vdu-hp i{transition:width .25s ease-out}
+.vdu-hud .vdu-foe .vdu-hp :is(i,em){left:auto;right:0}
+.vdu-hud .vdu-foe .vdu-hp b{right:auto;left:0}
+.vdu-hud-info small{display:block;font:700 10.5px system-ui;color:#f4ead6;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+.vdu-tags{display:block;font:9.5px system-ui;color:#d9cbab;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vdu-round{display:grid;justify-items:center;min-width:34px;padding:3px 7px 2px;border:1px solid #c9a46a80;border-radius:8px;background:#0a0d14b8}
+.vdu-round small{font:9px system-ui;letter-spacing:1.5px;color:#ab9261}
+.vdu-round b{font:700 16px/1.1 Georgia,serif;color:#efd49b;font-variant-numeric:tabular-nums}
+
+#valor-duel .vdu-stage-slot .vdu-float{top:92px;left:25%;font-size:18px}
+#valor-duel .vdu-stage-slot .vdu-float.on-foe{left:75%}
+#valor-duel .vdu-stage-slot .vdu-float.crit{font-size:22px}
+#valor-duel .vdu-stage-slot .vdu-float.burn{color:#ffb469}
+#valor-duel .vdu-stage-slot .vdu-float.low{top:116px}
+
+.vdu-feed{display:flex;flex-direction:column;justify-content:flex-end;height:54px;padding:5px 14px 0;overflow:hidden}
+.vdu-feed p{margin:0;font:11.5px/16px system-ui;color:#d8cfbf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.4}
+.vdu-feed p:nth-last-child(2){opacity:.68}
+.vdu-feed p:last-child{opacity:1}
+.vdu-feed p.tip{white-space:normal;text-align:center;opacity:.8}
+.vdu-feed .mine{color:#ffe0a0}.vdu-feed .theirs{color:#ffb3a3}.vdu-feed .pas{color:#9fd3ff}.vdu-feed .burn{color:#ffa66b}
+.vdu-feed b{color:#fff;font-variant-numeric:tabular-nums}
+.vdu-feed u{margin-left:4px;padding:0 5px;border:1px solid;border-radius:8px;font-size:10px;text-decoration:none;opacity:.85}
+.vdu-feed .heal{color:#7dff9a;font-style:normal}
+
+#valor-duel .vdu-cine .vdu-turn{position:relative;min-height:19px;margin:6px 12px 0;padding:0 2px 7px;border:0;border-radius:0;background:none;box-shadow:none}
+#valor-duel .vdu-cine .vdu-turn b{font-size:14px;color:#b9ab93}
+#valor-duel .vdu-cine .vdu-turn.mine b{color:#ffd893}
+#valor-duel .vdu-cine .vdu-turn::after{content:"";position:absolute;inset:auto 0 0;height:3px;border-radius:2px;background:#ffffff17}
+.vdu-clock{position:absolute;z-index:1;inset:auto 0 0;height:3px;border-radius:2px;background:linear-gradient(90deg,#c98f3d,#ffe6ad);transform:scaleX(0);transform-origin:left;transition:transform .25s linear}
+#valor-duel .vdu-cine .vdu-skills{margin:9px 12px 0}
+html body #valor-duel .vdu-skills.ready .vdu-skill:not(:disabled){border-color:#f0c97e!important;box-shadow:0 0 14px #eeb55450!important}
+#valor-duel .vdu-cine .vdu-hint{margin:6px 12px 0}
+
+.vdu-banner{position:absolute;z-index:4;inset:0;display:grid;place-items:center;pointer-events:none;background:radial-gradient(#0000 30%,#000b);animation:vdu-fade .4s both}
+.vdu-banner span{padding-left:10px;font:700 clamp(34px,11vw,54px) Georgia,serif;letter-spacing:10px;color:#ffe2a0;text-shadow:0 0 24px #ffb84d,0 3px 0 #3a1d06,0 6px 18px #000;animation:vdu-stamp .55s cubic-bezier(.2,1.4,.4,1) both}
+.vdu-banner.loss span{color:#f0bcb1;text-shadow:0 0 24px #b3261e,0 3px 0 #2b0806,0 6px 18px #000}
+.vdu-banner.draw span{color:#dfe5ee;text-shadow:0 0 20px #6f8fb5,0 3px 0 #10151c,0 6px 18px #000}
+@keyframes vdu-fade{from{opacity:0}}
+@keyframes vdu-stamp{from{opacity:0;transform:scale(1.9)}}
+@media(prefers-reduced-motion:reduce){.vdu-banner,.vdu-banner span,.vdu-hud-unit.hit{animation:none}.vdu-hud .vdu-hp :is(i,em),.vdu-clock{transition:none}}
