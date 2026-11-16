@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
       - run: npm install --no-save playwright @napi-rs/canvas
       - run: npx playwright install --with-deps chromium webkit
-      - run: node tools/exploration/check.cjs && node tools/exploration/ambush-check.cjs && node tools/exploration/integration-check.cjs
+      - run: node tools/exploration/check.cjs && node tools/exploration/ambush-check.cjs && node tools/exploration/walk-check.cjs && node tools/exploration/walk-art-check.cjs && node tools/exploration/integration-check.cjs
       - run: node tools/exploration/ui-check.cjs
       - uses: actions/upload-artifact@v4
         if: always()
