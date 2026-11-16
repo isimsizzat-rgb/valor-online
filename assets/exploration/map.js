@@ -27,7 +27,7 @@
    terrainVersion=A.version;g.fillStyle=palette[0];g.fillRect(0,0,map.width,map.height);
    for(let y=0;y<C.ROWS;y++)for(let x=0;x<C.COLS;x++){
     const px=x*C.TILE,py=y*C.TILE,n=map.hash(x,y),road=map.road(x,y);
-    
+
     for(let j=0;j<22;j++){const v=map.hash(x*23+j,y*17+j);g.fillStyle=j%3===0?'#d2c9a22b':'#060e1433';g.beginPath();g.ellipse(px+v*40,py+map.hash(y+j,x)*40,road?3+v*5:1+v*2,road?2+v*3:1,0,0,7);g.fill()}
    }
    const trail=[map.start,...C.create(c.seed,10).nodes];
