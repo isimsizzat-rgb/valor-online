@@ -21,7 +21,7 @@
  function mount(el){
   const kind=el.dataset.walk,c=context(kind);if(!c?.ready)return;A.preload(state.class,state.gender);
   const map=C.create(c.seed,c.count),palette=themes[c.seed],canvas=el.querySelector('canvas'),ctx=canvas.getContext('2d'),abort=new AbortController(),opts={signal:abort.signal};
-  let p=position(c,map),route=[],keys=new Set(),last=0,frame=0,moving=false,facing=1,cam={x:0,y:0},w=0,h=0,wasNear=null,dirty=false,lastSaved=0,zoom=1,triggered=false,engageTimer=null,ambushAt=0,terrainVersion=-1,stick={x:0,y:0,id:null},destination=null;
+  let p=position(c,map),route=[],keys=new Set(),last=0,frame=0,moving=false,facing=1,cam={x:0,y:0},w=0,h=0,wasNear=null,dirty=false,lastSaved=0,zoom=1,triggered=false,engageTimer=null,ambushAt=0,terrainVersion=-1,stick={x:0,y:0,id:null},destination=null,walkDirection=c.r.walkDirection||'down',walkDistance=0;
   const terrainScale=c.seed===0?2:1,terrain=document.createElement('canvas');terrain.width=map.width*terrainScale;terrain.height=map.height*terrainScale;const g=terrain.getContext('2d');g.scale(terrainScale,terrainScale);
   function paintTerrain(){
    terrainVersion=A.version;if(A.backdrop(g,c.seed,map.width,map.height))return;g.fillStyle=palette[0];g.fillRect(0,0,map.width,map.height);
@@ -63,14 +63,14 @@
    let dx=stick.x||(keys.has('right')?1:0)-(keys.has('left')?1:0),dy=stick.y||(keys.has('down')?1:0)-(keys.has('up')?1:0);
    if(route.length&&!dx&&!dy){const next=route[0],dist=Math.hypot(next.x-p.x,next.y-p.y);if(dist<5)route.shift();else {dx=(next.x-p.x)/dist;dy=(next.y-p.y)/dist}}
    const len=Math.hypot(dx,dy),old={...p};if(len&&!triggered){const speed=stick.id!==null?Math.min(1,len):1;dx=dx/len*180*dt*speed;dy=dy/len*180*dt*speed;if(map.walkable(p.x+dx,p.y))p.x+=dx;if(map.walkable(p.x,p.y+dy))p.y+=dy;if(dx)facing=dx>0?1:-1}
-   const nowMoving=Math.hypot(p.x-old.x,p.y-old.y)>.01;if(nowMoving)setPosition();if((moving&&!nowMoving)||(dirty&&t-lastSaved>1500))persist();moving=nowMoving;
+   const nowMoving=Math.hypot(p.x-old.x,p.y-old.y)>.01;if(nowMoving){walkDirection=window.ValorWalkAnimation?ValorWalkAnimation.direction(p.x-old.x,p.y-old.y,walkDirection):walkDirection;walkDistance+=Math.hypot(p.x-old.x,p.y-old.y);c.r.walkDirection=walkDirection;setPosition();}if((moving&&!nowMoving)||(dirty&&t-lastSaved>1500))persist();moving=nowMoving;
    const vw=w/zoom,vh=h/zoom;updateCamera();
    ctx.clearRect(0,0,w,h);ctx.drawImage(terrain,cam.x*terrainScale,cam.y*terrainScale,vw*terrainScale,vh*terrainScale,0,0,w,h);
    ctx.save();ctx.scale(zoom,zoom);ctx.translate(-cam.x,-cam.y);
    if(destination&&route.length){ctx.strokeStyle='#e9d29a';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(destination.x,destination.y,13,7,0,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(destination.x-5,destination.y);ctx.lineTo(destination.x+5,destination.y);ctx.moveTo(destination.x,destination.y-4);ctx.lineTo(destination.x,destination.y+4);ctx.stroke()}
    const entities=map.nodes.map((n,i)=>({n,i})).filter(e=>e.i>=c.index);entities.push({n:p,i:-1});entities.sort((a,b)=>a.n.y-b.n.y);
    for(const {n,i} of entities){
-    if(i===-1){A.hero(ctx,state.class,state.gender,p.x,p.y,94,t,moving,facing);continue}
+    if(i===-1){A.hero(ctx,state.class,state.gender,p.x,p.y,94,t,moving,facing,walkDirection,walkDistance);continue}
     const info=A.info(kind,c.r,i),current=i===c.index;let ex=n.x,ey=n.y;
     if(current&&triggered&&!info.chest){const q=Math.min(1,(t-ambushAt)/420);ex+=(p.x-n.x)*q*.65;ey+=(p.y-n.y)*q*.65}
     if(current){ctx.strokeStyle=triggered?'#ff6255':'#d9ad6688';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(n.x,n.y,AGGRO,AGGRO*.55,0,0,7);ctx.stroke()}

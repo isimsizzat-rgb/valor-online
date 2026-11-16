@@ -15,7 +15,12 @@
   if(info.chest)c.drawImage(im,-size*.45,-size*.8,size*.9,size*.8);
   else {const sw=im.naturalWidth/6,sh=im.naturalHeight/5;c.drawImage(im,info.id%6*sw,Math.floor(info.id/6)*sh,sw,sh,-size*.6,-size+bob,size*1.2,size)}c.restore();return true;
  }
- function hero(c,cls,gender,x,y,size,t,moving,facing){
+ function hero(c,cls,gender,x,y,size,t,moving,facing,direction='down',distance=0){
+  const anim=window.ValorWalkAnimation;
+  if(anim){const sheet=load('assets/exploration/walk/'+anim.key(cls,gender)+'.webp');if(usable(sheet)){
+   const pose=anim.pose(distance,moving,direction),sw=sheet.naturalWidth/6,sh=sheet.naturalHeight/4,scale=size/(sh*.92);shadow(c,x,y,size*.2);
+   c.drawImage(sheet,pose.frame*sw,pose.row*sh,sw,sh,x-sw*scale*.5,y-sh*scale*.96,sw*scale,sh*scale);return true;
+  }}
   const female=gender==='female',frame=moving?Math.floor(t/95)%8:0;let src,rect,foot;
   if(cls==='Savaşçı'){src='assets/arena/motion/'+(moving?(female?'warrior-female-run':'warrior-run-v2'):(female?'warrior-female-attack':'warrior-attack-v2'))+'.webp';const f=moving?frame:0;rect=[f%2*543,Math.floor(f/2)*362,moving?543:female?575:543,moving?362:354];foot=[moving?370:300,moving?357:350]}
   else if(cls==='Büyücü'){src='assets/arena/motion/mage-'+(female?'female':'male')+'-raise.webp';rect=[0,0,543,354];foot=[300,350]}
@@ -24,9 +29,10 @@
   c.save();c.translate(x,y+bob);c.scale(facing,1);c.drawImage(im,...rect,-foot[0]*scale,-foot[1]*scale,rect[2]*scale,rect[3]*scale);
   if(cls==='Büyücü'){const staff=load('assets/arena/motion/mage-staff.webp');if(usable(staff)){const height=size*.95,width=height*staff.naturalWidth/staff.naturalHeight;c.drawImage(staff,-size*.22-width/2,-size*.93,width,height)}}c.restore();return true;
  }
+ function walkReady(cls,gender){return !!window.ValorWalkAnimation&&usable(load('assets/exploration/walk/'+ValorWalkAnimation.key(cls,gender)+'.webp'))}
  function backdrop(c,seed,w,h){if(seed!==0)return false;const im=load('assets/exploration/forest-map.webp');if(!usable(im))return false;c.drawImage(im,0,0,w,h);return true}
  function scenery(c,id,x,y,size){const im=load('assets/exploration/scenery.webp');if(!usable(im))return;const sw=im.naturalWidth/4,sh=im.naturalHeight/2;c.drawImage(im,id%4*sw,Math.floor(id/4)*sh,sw,sh,x-size/2,y-size,size,size)}
  function preload(cls,gender){hero({save(){},restore(){},translate(){},scale(){},drawImage(){},beginPath(){},ellipse(){},fill(){}},cls,gender,0,0,100,0,true,1);load('assets/exploration/scenery.webp');load('assets/exploration/enemies.webp');load('assets/valor-dungeon/valor-chest.webp')}
  function enemyHtml(info){return info.chest?'<img src="assets/valor-dungeon/valor-chest.webp" alt="Sandık">':'<span class="walk-enemy-art" role="img" aria-label="'+escapeAttr(info.name)+'" style="background-position:'+(info.id%6*20)+'% '+(Math.floor(info.id/6)*25)+'%"></span>'}
- window.ValorWalkArt={hero,enemy,info,preload,enemyHtml,enemyNames,scenery,backdrop,get version(){return version}};
+ window.ValorWalkArt={hero,enemy,info,preload,enemyHtml,enemyNames,scenery,backdrop,walkReady,get version(){return version}};
 })();
