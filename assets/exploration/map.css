@@ -27,3 +27,6 @@ body:has(.walk-stage-screen){overflow:hidden}
 .walk-stage-enemy{height:min(34dvh,300px);aspect-ratio:1.2;margin:12px auto;background:radial-gradient(ellipse at 50% 80%,#8b5a3744,transparent 70%)}
 #valor-adv .vdu-portrait>.walk-enemy-art{background-color:#1c292b}
 @media(max-width:420px){html body .valor-walk .walk-hint{font-size:10px;padding:8px;right:166px}}
+html body .valor-walk .walk-joystick{position:absolute;left:22px;bottom:calc(22px + env(safe-area-inset-bottom));width:116px;height:116px;border-radius:50%;border:1px solid #d9bd7a66;background:radial-gradient(circle,#1c332c66 0 35%,#101d2480 36% 68%,#d8bd7c33 69% 70%,#10221f99 71%);box-shadow:0 5px 22px #0004,inset 0 0 20px #0004;touch-action:none;user-select:none;-webkit-user-select:none;display:grid;place-items:center;z-index:3}
+html body .valor-walk .walk-stick{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ecdcb0,#b79b60 65%,#786036);box-shadow:0 3px 12px #0008,inset 0 1px 2px #fff7;border:1px solid #ead7aa;pointer-events:none;will-change:transform}
+html body .valor-walk .walk-hint{left:154px;right:18px;bottom:calc(32px + env(safe-area-inset-bottom));font-size:11px;max-width:260px;pointer-events:none}
