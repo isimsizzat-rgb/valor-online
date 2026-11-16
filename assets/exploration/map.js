@@ -75,7 +75,7 @@
    frame=requestAnimationFrame(draw);
   }
   function cleanup(){clearTimeout(engageTimer);persist();cancelAnimationFrame(frame);observer.disconnect();abort.abort();active.delete(el)}
-  active.set(el,cleanup);frame=requestAnimationFrame(draw);
+  active.set(el,cleanup);draw(performance.now());
  }
  function scan(){for(const [el,clean] of active)if(!el.isConnected)clean();document.querySelectorAll('[data-walk]').forEach(el=>{if(!active.has(el))mount(el)})}
  new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
