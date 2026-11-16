@@ -24,8 +24,9 @@
   c.save();c.translate(x,y+bob);c.scale(facing,1);c.drawImage(im,...rect,-foot[0]*scale,-foot[1]*scale,rect[2]*scale,rect[3]*scale);
   if(cls==='Büyücü'){const staff=load('assets/arena/motion/mage-staff.webp');if(usable(staff)){const height=size*.95,width=height*staff.naturalWidth/staff.naturalHeight;c.drawImage(staff,-size*.22-width/2,-size*.93,width,height)}}c.restore();return true;
  }
+ function backdrop(c,seed,w,h){if(seed!==0)return false;const im=load('assets/exploration/forest-map.webp');if(!usable(im))return false;c.drawImage(im,0,0,w,h);return true}
  function scenery(c,id,x,y,size){const im=load('assets/exploration/scenery.webp');if(!usable(im))return;const sw=im.naturalWidth/4,sh=im.naturalHeight/2;c.drawImage(im,id%4*sw,Math.floor(id/4)*sh,sw,sh,x-size/2,y-size,size,size)}
  function preload(cls,gender){hero({save(){},restore(){},translate(){},scale(){},drawImage(){},beginPath(){},ellipse(){},fill(){}},cls,gender,0,0,100,0,true,1);load('assets/exploration/scenery.webp');load('assets/exploration/enemies.webp');load('assets/valor-dungeon/valor-chest.webp')}
  function enemyHtml(info){return info.chest?'<img src="assets/valor-dungeon/valor-chest.webp" alt="Sandık">':'<span class="walk-enemy-art" role="img" aria-label="'+escapeAttr(info.name)+'" style="background-position:'+(info.id%6*20)+'% '+(Math.floor(info.id/6)*25)+'%"></span>'}
- window.ValorWalkArt={hero,enemy,info,preload,enemyHtml,enemyNames,scenery,get version(){return version}};
+ window.ValorWalkArt={hero,enemy,info,preload,enemyHtml,enemyNames,scenery,backdrop,get version(){return version}};
 })();

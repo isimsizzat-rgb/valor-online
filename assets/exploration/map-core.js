@@ -5,11 +5,12 @@
  const stops=[{x:7,y:20},{x:14,y:20},{x:23,y:20},{x:29,y:17},{x:25,y:12},{x:17,y:12},{x:8,y:12},{x:6,y:6},{x:17,y:5},{x:29,y:5}];
  const center=p=>({x:(p.x+.5)*TILE,y:(p.y+.5)*TILE});
  function create(seed=0,count=10){
-  const nodes=count===7?[stops[0],stops[1],stops[3],stops[4],stops[6],stops[7],stops[9]]:stops;
-  const route=[{x:3,y:20},...stops];
+  const points=seed===0?stops.map((p,i)=>i===2?{x:23,y:19}:i===3?{x:29,y:16}:p):stops;
+  const nodes=count===7?[points[0],points[1],points[3],points[4],points[6],points[7],points[9]]:points;
+  const route=[{x:3,y:20},...points];
   const road=(x,y)=>route.some((p,i)=>{if(!i)return false;const a=route[i-1],dx=p.x-a.x,dy=p.y-a.y,t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(x-a.x-t*dx,y-a.y-t*dy)<1.8});
   const hash=(x,y)=>{const v=Math.sin(x*127.1+y*311.7+seed*74.7)*43758.5453;return v-Math.floor(v)};
-  const cells=Array.from({length:ROWS},(_,y)=>Array.from({length:COLS},(_,x)=>x>1&&y>1&&x<COLS-2&&y<ROWS-2&&(road(x,y)||hash(x,y)>.21)));
+  const cells=Array.from({length:ROWS},(_,y)=>Array.from({length:COLS},(_,x)=>x>1&&y>1&&x<COLS-2&&y<ROWS-2&&(road(x,y)||(seed!==0&&hash(x,y)>.21))));
   const pass=(x,y)=>!!cells[y]?.[x];
   function path(from,to){
    const a={x:Math.floor(from.x/TILE),y:Math.floor(from.y/TILE)},b={x:Math.floor(to.x/TILE),y:Math.floor(to.y/TILE)};
