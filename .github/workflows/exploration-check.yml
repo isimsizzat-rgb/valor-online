@@ -1,0 +1,27 @@
+name: Exploration checks
+on:
+  pull_request:
+    paths: ['assets/exploration/**', 'assets/adventure/expedition.js', 'assets/arena/duel-core.js', 'tools/exploration/**', 'index.html', '.github/workflows/exploration-check.yml']
+  push:
+    branches: [main]
+    paths: ['assets/exploration/**', 'assets/adventure/expedition.js', 'assets/arena/duel-core.js', 'tools/exploration/**', '.github/workflows/exploration-check.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright @napi-rs/canvas
+      - run: npx playwright install --with-deps chromium webkit
+      - run: node tools/exploration/check.cjs && node tools/exploration/ambush-check.cjs && node tools/exploration/integration-check.cjs
+      - run: node tools/exploration/ui-check.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exploration-screenshots
+          path: /tmp/walk-screenshots

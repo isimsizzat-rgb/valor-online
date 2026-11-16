@@ -25,7 +25,7 @@
 
  // Named artwork is also resolved for journeys saved before the art update.
  const encounterArt={"Yaban Kurdu":7,"Patika Haydudu":"bandit","Dikenli Sarmaşık":"thorn-vine","Yaşlı Ayı Grimtaş":"boss-bear","Kızıl Tilki":"red-fox","Koru Eşkıyası":"bandit","Kan Böceği":"blood-beetle","Kızıl Orman Bekçisi":"boss-forest-guardian","Bataklık Sülüğü":"swamp-leech","Sis Hayaleti":5,"Çamur Golemi":"mud-golem","Bataklık Cadısı Morra":"boss-swamp-witch","Harabe Muhafızı":0,"Taş Örümcek":3,"Lanetli Rahip":15,"Unutulmuş Kral Arvel":23,"Gölge Avcısı":10,"Karanlık Yarasa":"dark-bat","Boşluk Kedisi":"void-cat","Gölgelerin Efendisi Nyx":14,"Fırtına Kartalı":"storm-eagle","Şimşek Ruhu":"lightning-spirit","Geçit Yağmacısı":"bandit","Gök Gürültüsü Devi Thoran":22,"Buz Kurdu":7,"Kar Trolü":2,"Ayaz Perisi":"frost-fairy","Buzul Ejderi Frostvyrn":9,"Lav Semenderi":"lava-salamander","Kül Golemi":18,"Alev İblisi":"flame-demon","Ateş Lordu Ignar":"boss-fire-lord","Uçurum Sürüngeni":"abyss-reptile","Lanetli Şövalye":26,"Ruh Emici":25,"Uçurumun Sesi Malgor":27,"Ejderha Muhafızı":16,"Pul Zırhlı Şövalye":4,"Ejderha Yavrusu":"dragon-hatchling","Kadim Ejderha Valdrak":19};
- function enemyArt(r){const step=r.steps[r.i],ref=encounterArt[step.foe];
+ function enemyArt(r){if(window.ValorWalkArt)return ValorWalkArt.enemyHtml(ValorWalkArt.info('adventure',r,r.i));const step=r.steps[r.i],ref=encounterArt[step.foe];
   if(typeof ref==='number')return '<span class="vex-enemy-art vex-enemy-atlas" role="img" aria-label="'+esc(step.foe)+'" style="background-position:'+(ref%6*20)+'% '+(Math.floor(ref/6)*25)+'%"></span>';
   return '<span class="vex-enemy-art" role="img" aria-label="'+esc(step.foe)+'"><img src="assets/adventure/encounters/'+(ref||'bandit')+'.webp" alt="" decoding="async"></span>'}
  function victoryArt(){return '<img class="vex-victory-art" src="assets/adventure/encounters/victory.webp" alt="Altın kılıç ve zafer çelengi">'}
@@ -51,10 +51,10 @@
   state.adventureRun={zone:i,steps:plan.steps,i:0,phase:'story',duel:null,earned:{},last:null,startedAt:Date.now()};
   save();render();open();
  }
- function next(){const r=run();if(!r)return;
+ function next(ambush=false){const r=run();if(!r)return;
   if(r.phase==='story'){if(window.ValorWalk&&!ValorWalk.near('adventure'))return;const s=r.steps[r.i];
    if(s.kind==='chest'){r.last=give(r,X.chest(r.zone));if(heartsOnline()){r.last.heartReq=crypto.randomUUID();r.last.heartsPending=true;claimHearts(r)}r.phase='chest';ui.chestAt=Date.now();save();paint(true);clearTimeout(ui.chestTimer);ui.chestTimer=setTimeout(()=>paint(true),1700);return}
-   const foe=X.enemy(r.zone,s);r.duel=D.create({name:state.name||'Sen',cls:state.class,level:state.level,stats:valorArenaStats()},foe,Date.now());r.phase='fight';ui.all=[];ui.shown=0;collect(r);save();paint(true);if(r.duel.status==='done')fightOver(r);return}
+   const foe=X.enemy(r.zone,s);r.duel=D.create({name:state.name||'Sen',cls:state.class,level:state.level,stats:valorArenaStats()},foe,Date.now(),Math.random,{ambush:ambush===true});r.phase='fight';ui.all=[];ui.shown=0;collect(r);save();paint(true);if(r.duel.status==='done')fightOver(r);return}
   if(r.phase==='chest'||r.phase==='won'){r.i++;r.phase='story';r.duel=null;r.last=null;save();paint(true);return}
   if(r.phase==='lost'||r.phase==='done'){finish();}
  }
@@ -145,6 +145,6 @@
   if(r){const z=zoneOf(r);html=html.replace('<div class="adventure-zone-grid">','<button type="button" class="vex-resume" onclick="valorExpedition.open()"><span>'+mark('compass')+' Yarım kalan macera</span><b>'+esc(z.name)+' · Adım '+(r.i+1)+' / 10</b><em>Devam et ❯</em></button><div class="adventure-zone-grid">')}
   return html};
  battle=valorAdventurePage;
- window.valorExpedition={use,next,open,close,state:run};
+ window.valorExpedition={use,next,ambush:()=>next(true),open,close,state:run};
  if(page==='Macera')render();
 })();
